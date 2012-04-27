@@ -44,18 +44,7 @@ public class AmusePanel extends CommonPanel {
     private static final long   serialVersionUID = 1L;
 
     public static Hdf5TimedPlayer getTimer() {
-        return AmusePanel.timer;
-    }
-
-    public static void startAnimation() {
-        AmusePanel.timer.init();
-        new Thread(AmusePanel.timer).start();
-    };
-
-    public static void stopAnimation() {
-        if (AmusePanel.timer.isInitialized()) {
-            AmusePanel.timer.close();
-        }
+        return timer;
     }
 
     protected JSlider             timeBar;
@@ -72,14 +61,8 @@ public class AmusePanel extends CommonPanel {
     private final AmuseWindow     amuseWindow;
 
     public AmusePanel(AmuseWindow amuseWindow, String path, String cmdlnfileName) {
-        super(amuseWindow);
+        super(amuseWindow, InputHandler.getInstance());
         this.amuseWindow = amuseWindow;
-
-        // Read command line file information
-        if (cmdlnfileName != null) {
-            final File cmdlnfile = new File(cmdlnfileName);
-            handleFile(cmdlnfile);
-        }
 
         timeBar = new openglCommon.util.CustomJSlider();
         timeBar.setValue(0);
@@ -89,7 +72,6 @@ public class AmusePanel extends CommonPanel {
         timeBar.setMinimum(0);
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
-
         AmusePanel.timer = new Hdf5TimedPlayer(amuseWindow, timeBar, frameCounter);
 
         // Make the menu bar
@@ -149,6 +131,12 @@ public class AmusePanel extends CommonPanel {
         createMovieTweakPanel();
 
         add(bottomPanel, BorderLayout.SOUTH);
+
+        // Read command line file information
+        if (cmdlnfileName != null) {
+            final File cmdlnfile = new File(cmdlnfileName);
+            handleFile(cmdlnfile);
+        }
     }
 
     void close() {
@@ -204,9 +192,8 @@ public class AmusePanel extends CommonPanel {
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
                 final InputHandler inputHandler = InputHandler.getInstance();
-                final String fileName = "" + AmusePanel.timer.getFrame() + " {" + inputHandler.getRotation().get(0)
-                        + "," + inputHandler.getRotation().get(1) + " - " + Float.toString(inputHandler.getViewDist())
-                        + "} ";
+                final String fileName = "" + timer.getFrame() + " {" + inputHandler.getRotation().get(0) + ","
+                        + inputHandler.getRotation().get(1) + " - " + Float.toString(inputHandler.getViewDist()) + "} ";
                 amuseWindow.makeSnapshot(fileName);
             }
         });
@@ -215,7 +202,7 @@ public class AmusePanel extends CommonPanel {
         rewindButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AmusePanel.timer.rewind();
+                timer.rewind();
                 playButton.setIcon(playIcon);
             }
         });
@@ -224,7 +211,7 @@ public class AmusePanel extends CommonPanel {
         oneBackButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AmusePanel.timer.oneBack();
+                timer.oneBack();
                 playButton.setIcon(playIcon);
             }
         });
@@ -233,11 +220,11 @@ public class AmusePanel extends CommonPanel {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (AmusePanel.timer.isPlaying()) {
-                    AmusePanel.timer.stop();
+                if (timer.isPlaying()) {
+                    timer.stop();
                     playButton.setIcon(playIcon);
                 } else {
-                    AmusePanel.timer.start();
+                    timer.start();
                     playButton.setIcon(stopIcon);
                 }
             }
@@ -247,7 +234,7 @@ public class AmusePanel extends CommonPanel {
         oneForwardButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AmusePanel.timer.oneForward();
+                timer.oneForward();
                 playButton.setIcon(playIcon);
             }
         });
@@ -258,7 +245,7 @@ public class AmusePanel extends CommonPanel {
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    AmusePanel.timer.setFrame(timeBar.getValue(), false);
+                    timer.setFrame(timeBar.getValue(), false);
                     playButton.setIcon(playIcon);
                 }
             }
@@ -276,8 +263,8 @@ public class AmusePanel extends CommonPanel {
                 final JFormattedTextField source = (JFormattedTextField) e.getSource();
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
-                        if (AmusePanel.timer.isInitialized()) {
-                            AmusePanel.timer.setFrame(((Number) frameCounter.getValue()).intValue(), false);
+                        if (timer.isInitialized()) {
+                            timer.setFrame(((Number) frameCounter.getValue()).intValue(), false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -303,7 +290,7 @@ public class AmusePanel extends CommonPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setMovieRotate(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         movieConfig.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Rotation", settings.getMovieRotate(),
@@ -328,7 +315,7 @@ public class AmusePanel extends CommonPanel {
                 new ActionListener[] { new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        AmusePanel.timer.movieMode();
+                        timer.movieMode();
                     }
                 } }));
     }
@@ -346,42 +333,42 @@ public class AmusePanel extends CommonPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setInvertGasColor(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         final ItemListener cblInvertedBackground = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setGasInvertedBackgroundColor(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         final ItemListener cblGasColorInfluencedByStars = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setStarInfluencedGasColor(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         final ItemListener cblExaggerateStarColors = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setStarColorsExaggerated(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         final ItemListener cblStereo = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setStereo(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         final ItemListener cblStereoSwitch = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setStereoSwitched(e.getStateChange());
-                AmusePanel.timer.redraw();
+                timer.redraw();
             }
         };
         visualConfig
@@ -507,19 +494,19 @@ public class AmusePanel extends CommonPanel {
                     @Override
                     public void actionPerformed(ActionEvent arg0) {
                         settings.setLOD(0);
-                        AmusePanel.timer.redraw();
+                        timer.redraw();
                     }
                 }, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent arg0) {
                         settings.setLOD(1);
-                        AmusePanel.timer.redraw();
+                        timer.redraw();
                     }
                 }, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent arg0) {
                         settings.setLOD(2);
-                        AmusePanel.timer.redraw();
+                        timer.redraw();
                     }
                 } }));
     }
@@ -540,10 +527,11 @@ public class AmusePanel extends CommonPanel {
                 dialog.setVisible(true);
             } else {
                 prefix = ext[0].substring(0, ext[0].length() - 6);
-                AmusePanel.stopAnimation();
-                AmusePanel.timer = new Hdf5TimedPlayer(amuseWindow, timeBar, frameCounter);
-                AmusePanel.timer.open(path, prefix);
-                AmusePanel.startAnimation();
+
+                timer = new Hdf5TimedPlayer(amuseWindow, timeBar, frameCounter);
+                timer.open(path, prefix);
+                timer.init();
+                new Thread(AmusePanel.timer).start();
 
                 settings.setScreenshotPath(path);
             }

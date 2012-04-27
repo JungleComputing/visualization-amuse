@@ -4,7 +4,6 @@ in vec3  MCposition;
 
 uniform sampler3D Noise;  
 uniform vec4 AmbientMaterial;     
-uniform float NoiseScale;
 uniform float Offset;
 
 uniform int StarDrawMode;

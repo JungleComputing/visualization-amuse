@@ -20,27 +20,27 @@
 	<classpathentry kind="lib" path="lib/jogl/jogl.all.jar"/>
 	<classpathentry kind="lib" path="lib/hdf/jhdf.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="commonTest/lib/hdf/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="AmuseVisualization/lib/hdf/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/hdf/jhdf4obj.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="commonTest/lib/hdf/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="AmuseVisualization/lib/hdf/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/hdf/jhdf5.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="commonTest/lib/hdf/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="AmuseVisualization/lib/hdf/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/hdf/jhdf5obj.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="commonTest/lib/hdf/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="AmuseVisualization/lib/hdf/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/hdf/jhdfobj.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="commonTest/lib/hdf/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="AmuseVisualization/lib/hdf/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="OpenGLCommon.jar"/>

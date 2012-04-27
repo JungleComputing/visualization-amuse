@@ -1,0 +1,22 @@
+//Copyright 2010 JogAmp Community. All rights reserved.
+
+#version 150 
+
+uniform mat4 PMVMatrix;
+
+in vec4 MCvertex;
+in vec4 MCvertexColor;
+in vec2 MCtexCoord;
+
+out vec2 tCoordsFS;
+out vec3 vColor;
+out float vAlpha;
+
+void main(void)
+{
+	tCoordsFS = MCtexCoord;
+	vColor = MCvertexColor.rgb;
+	vAlpha = MCvertexColor.a;
+	
+	gl_Position = PMVMatrix * MCvertex;
+}

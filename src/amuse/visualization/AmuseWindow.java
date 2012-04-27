@@ -1,5 +1,6 @@
 package amuse.visualization;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL;
@@ -23,6 +24,7 @@ import openglCommon.math.VecF3;
 import openglCommon.math.VecF4;
 import openglCommon.models.Axis;
 import openglCommon.models.Model;
+import openglCommon.models.MultiColorText;
 import openglCommon.models.Text;
 import openglCommon.models.base.Quad;
 import openglCommon.shaders.Program;
@@ -38,7 +40,7 @@ public class AmuseWindow extends CommonWindow {
 
     private AmuseGasOctreeNode  octreeRoot;
     private Program             animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader,
-            gaussianBlurShader, textShader;;
+            gaussianBlurShader, textShader;
     private FBO                 starHaloFBO, starHaloFBO4k;
     private FBO                 gasFBO, gasFBO4k;
     private FBO                 starFBO, starFBO4k;
@@ -46,12 +48,12 @@ public class AmuseWindow extends CommonWindow {
     private FBO                 axesFBO, axesFBO4k;
     private FBO                 hudFBO, hudFBO4k;
 
-    private Model               FSQ_postprocess, FSQ_blur;
+    private Quad                FSQ_postprocess, FSQ_blur;
     private Model               xAxis, yAxis, zAxis;
 
     private final int           fontSize     = 30;
 
-    private Text                myText;
+    private MultiColorText      myText;
     private Perlin3D            noiseTex;
 
     private final VecF3         lightPos     = new VecF3(2f, 2f, 2f);
@@ -68,17 +70,22 @@ public class AmuseWindow extends CommonWindow {
         super(inputHandler, post_process);
     }
 
-    private void blur(GL3 gl, FBO target, Model fullScreenQuad, int passes, int blurType, float blurSize) {
+    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getTexture().getMultitexNumber());
+
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
+        gaussianBlurShader.setUniformMatrix("MVMatrix", new MatF4());
+
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
         gaussianBlurShader.setUniform("scrWidth", target.getTexture().getWidth());
         gaussianBlurShader.setUniform("scrHeight", target.getTexture().getHeight());
         gaussianBlurShader.setUniform("Alpha", 1f);
 
+        gaussianBlurShader.setUniform("blurDirection", 0);
+
         try {
-            gaussianBlurShader.use(gl);
+            // gaussianBlurShader.use(gl);
 
             for (int i = 0; i < passes; i++) {
                 target.bind(gl);
@@ -255,19 +262,22 @@ public class AmuseWindow extends CommonWindow {
 
         // Load and compile shaders, then use program.
         try {
-            animatedTurbulenceShader = loader.createProgram(gl, "shaders/vs_sunsurface.vp",
-                    "shaders/fs_animatedTurbulence.fp");
-            pplShader = loader.createProgram(gl, "shaders/vs_ppl.vp", "shaders/fs_ppl.fp");
-            axesShader = loader.createProgram(gl, "shaders/vs_axes.vp", "shaders/fs_axes.fp");
-            gasShader = loader.createProgram(gl, "shaders/vs_gas.vp", "shaders/fs_gas.fp");
-            textShader = loader.createProgram(gl, "shaders/vs_curveShader.vp", "shaders/fs_curveShader.fp");
+            animatedTurbulenceShader = loader.createProgram(gl, "animatedTurbulence", new File(
+                    "shaders/vs_sunsurface.vp"), new File("shaders/fs_animatedTurbulence.fp"));
+            pplShader = loader.createProgram(gl, "ppl", new File("shaders/vs_ppl.vp"), new File("shaders/fs_ppl.fp"));
+            axesShader = loader.createProgram(gl, "axes", new File("shaders/vs_axes.vp"),
+                    new File("shaders/fs_axes.fp"));
+            gasShader = loader.createProgram(gl, "gas", new File("shaders/vs_gas.vp"), new File("shaders/fs_gas.fp"));
+            textShader = loader.createProgram(gl, "text", new File("shaders/vs_multiColorTextShader.vp"), new File(
+                    "shaders/fs_multiColorTextShader.fp"));
 
             if (post_process) {
-                postprocessShader = loader.createProgram(gl, "shaders/vs_postprocess.vp", "shaders/fs_postprocess.fp");
+                postprocessShader = loader.createProgram(gl, "postprocess", new File("shaders/vs_postprocess.vp"),
+                        new File("shaders/fs_postprocess.fp"));
             }
             if (post_process) {
-                gaussianBlurShader = loader.createProgram(gl, "shaders/vs_postprocess.vp",
-                        "shaders/fs_gaussian_blur.fp");
+                gaussianBlurShader = loader.createProgram(gl, "gaussianBlur", new File("shaders/vs_postprocess.vp"),
+                        new File("shaders/fs_gaussian_blur.fp"));
             }
         } catch (final Exception e) {
             System.err.println(e.getMessage());
@@ -289,7 +299,7 @@ public class AmuseWindow extends CommonWindow {
         zAxis.init(gl);
 
         // TEXT
-        myText = new Text(axisMaterial);
+        myText = new MultiColorText(axisMaterial);
         myText.init(gl);
 
         // FULL SCREEN QUADS
@@ -433,7 +443,7 @@ public class AmuseWindow extends CommonWindow {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         final String text = "Frame: " + AmusePanel.getTimer().getFrame();
-        myText.setString(gl, textShader, font, text, fontSize);
+        myText.setString(gl, textShader, font, text, Color4.green, fontSize);
 
         hudFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
@@ -450,16 +460,16 @@ public class AmuseWindow extends CommonWindow {
 
     private void renderScene(GL3 gl, MatF4 mv, ArrayList<Star> stars, AmuseGasOctreeNode octreeRoot, FBO starHaloFBO,
             FBO starFBO, FBO gasFBO, FBO axesFBO) {
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        if (settings.getGasInvertedBackgroundColor()) {
+            gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+            gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        }
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         try {
             renderStarHalos(gl, mv, starHaloFBO, stars);
-            if (settings.getGasInvertedBackgroundColor()) {
-                gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            }
             renderGas(gl, mv, gasFBO, octreeRoot);
-            gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             renderStars(gl, mv, starFBO, stars);
             renderAxes(gl, mv, axesFBO);
         } catch (final UninitializedException e) {
@@ -530,7 +540,9 @@ public class AmuseWindow extends CommonWindow {
         postprocessShader.setUniform("hudBrightness", settings.getPostprocessingHudBrightness());
         postprocessShader.setUniform("overallBrightness", settings.getPostprocessingOverallBrightness());
 
+        postprocessShader.setUniformMatrix("MVMatrix", new MatF4());
         postprocessShader.setUniformMatrix("PMatrix", new MatF4());
+
         postprocessShader.setUniform("scrWidth", width);
         postprocessShader.setUniform("scrHeight", height);
 

@@ -14,7 +14,6 @@ import openglCommon.models.Model;
 import openglCommon.util.CustomJSlider;
 import openglCommon.util.InputHandler;
 import amuse.visualization.AmuseSettings;
-import amuse.visualization.AmuseTest;
 import amuse.visualization.AmuseWindow;
 
 public class Hdf5TimedPlayer implements Runnable {
@@ -50,8 +49,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private Hdf5Snapshotter           snappy;
     private AmuseWindow               amuseWindow;
 
-    public Hdf5TimedPlayer(AmuseTest amuseTest, CustomJSlider timeBar, JFormattedTextField frameCounter) {
-        // this.amuseWindow = glw;
+    public Hdf5TimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
     }
