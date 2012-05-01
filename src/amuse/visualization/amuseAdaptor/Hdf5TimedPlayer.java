@@ -21,33 +21,32 @@ public class Hdf5TimedPlayer implements Runnable {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
 
-    private final AmuseSettings       settings        = AmuseSettings.getInstance(); ;
+    private final AmuseSettings settings = AmuseSettings.getInstance();;
 
-    private states                    currentState    = states.UNOPENED;
-    private int                       currentFrame;
+    private states currentState = states.UNOPENED;
+    private int currentFrame;
 
-    private ArrayList<Star>           stars;
-    private AmuseGasOctreeNode        octreeRoot;
+    private ArrayList<Star> stars;
+    private AmuseGasOctreeNode octreeRoot;
 
-    private boolean                   running         = true;
+    private boolean running = true;
 
-    private String                    path            = null;
-    private String                    namePrefix      = null;
-    private final String              gravNamePostfix = ".grav";
+    private String path = null;
+    private String namePrefix = null;
+    private final String gravNamePostfix = ".grav";
 
-    private long                      startTime, stopTime;
+    private long startTime, stopTime;
 
-    private final JSlider             timeBar;
+    private final JSlider timeBar;
     private final JFormattedTextField frameCounter;
 
-    private HashMap<Integer, Model>   starModels;
-    private HashMap<Integer, Model>   cloudModels;
+    private HashMap<Integer, Model> starModels;
 
-    private boolean                   initialized     = false;
-    private InputHandler              inputHandler;
+    private boolean initialized = false;
+    private InputHandler inputHandler;
 
-    private Hdf5Snapshotter           snappy;
-    private AmuseWindow               amuseWindow;
+    private Hdf5Snapshotter snappy;
+    private AmuseWindow amuseWindow;
 
     public Hdf5TimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
@@ -72,10 +71,6 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void delete(GL3 gl) {
         for (final Entry<Integer, Model> e : starModels.entrySet()) {
-            final Model m = e.getValue();
-            m.delete(gl);
-        }
-        for (final Entry<Integer, Model> e : cloudModels.entrySet()) {
             final Model m = e.getValue();
             m.delete(gl);
         }
@@ -108,7 +103,6 @@ public class Hdf5TimedPlayer implements Runnable {
         // The star and gas models can be re-used for efficiency, we therefore
         // store them in these central databases
         starModels = new HashMap<Integer, Model>();
-        cloudModels = new HashMap<Integer, Model>();
 
         final int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
 
@@ -282,8 +276,8 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     private synchronized void updateFrame(boolean overrideUpdate) throws FileOpeningException {
-        snappy.open(namePrefix, currentFrame, settings.getLOD(), cloudModels, overrideUpdate);
-        final ArrayList<Star> newStars = snappy.getStars();
+        snappy.open2(namePrefix, currentFrame, settings.getLOD(), overrideUpdate);
+        final ArrayList<Star> newStars = snappy.getStars2();
         final AmuseGasOctreeNode newOctreeRoot = snappy.getOctreeRoot();
 
         synchronized (this) {

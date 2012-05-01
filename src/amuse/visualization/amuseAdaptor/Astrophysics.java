@@ -9,27 +9,26 @@ import openglCommon.math.VectorFMath;
 import amuse.visualization.AmuseSettings;
 
 public class Astrophysics {
-    private final static AmuseSettings settings                        = AmuseSettings.getInstance();
+    private final static AmuseSettings settings = AmuseSettings.getInstance();
 
-    public final static double         SIGMA                           = 5.67037321E-8;
-    public final static double         WIEN                            = 2.8977685E-3;
+    public final static double SIGMA = 5.67037321E-8;
+    public final static double WIEN = 2.8977685E-3;
 
-    public final static double         SOLAR_LUMINOSITY                = 3.839E26;
-    public final static double         SOLAR_RADIUS                    = 6.955E8;
-    public final static double         EARTH_RADIUS                    = 6371;
+    public final static double SOLAR_LUMINOSITY = 3.839E26;
+    public final static double SOLAR_RADIUS = 6.955E8;
+    public final static double EARTH_RADIUS = 6371;
 
-    public final static double         PARSEC                          = 3.08568025E16;
-    public final static double         DISTANCE_FACTOR                 = 25.0;
-    public final static double         STAR_RADIUS_FACTOR_SMALL        = 0.25;
-    public final static double         STAR_RADIUS_AT_1000_SOLAR_RADII = 8.0;
+    public final static double PARSEC = 3.08568025E16;
+    public final static double DISTANCE_FACTOR = 25.0;
+    public final static double STAR_RADIUS_FACTOR_SMALL = 0.25;
+    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 8.0;
 
-    public final static double         STAR_FORMULAE_INTERSECTION      = Astrophysics.find_intersection();
+    public final static double STAR_FORMULAE_INTERSECTION = Astrophysics.find_intersection();
 
-    private final static VecF4         INITIAL_GAS_COLOR               = new VecF4(.6f, .3f, .3f, 0f);
-    private final static VecF4         transparent                     = new VecF4(0, 0, 0, 0);
-    private final static Material      gasMaterial                     = new Material(Astrophysics.INITIAL_GAS_COLOR,
-                                                                               Astrophysics.transparent,
-                                                                               Astrophysics.transparent);
+    private final static VecF4 INITIAL_GAS_COLOR = new VecF4(.6f, .3f, .3f, 0f);
+    private final static VecF4 transparent = new VecF4(0, 0, 0, 0);
+    private final static Material gasMaterial = new Material(Astrophysics.INITIAL_GAS_COLOR, Astrophysics.transparent,
+            Astrophysics.transparent);
 
     private static double colorIntensity(double max, double min, double current) {
         return (current - min) / (max - min);
@@ -75,6 +74,14 @@ public class Astrophysics {
         final float fz = (float) (Astrophysics.DISTANCE_FACTOR * (z / Astrophysics.PARSEC));
 
         return new VecF3(fx, fy, fz);
+    }
+
+    public static VecF3 velocityToScreenCoord(double vx, double vy, double vz) {
+        final float fvx = (float) (Astrophysics.DISTANCE_FACTOR * (vx / Astrophysics.PARSEC));
+        final float fvy = (float) (Astrophysics.DISTANCE_FACTOR * (vy / Astrophysics.PARSEC));
+        final float fvz = (float) (Astrophysics.DISTANCE_FACTOR * (vz / Astrophysics.PARSEC));
+
+        return new VecF3(fvx, fvy, fvz);
     }
 
     public static VecF4 starColor(double luminosity, double radius) {

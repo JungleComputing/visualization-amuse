@@ -6,19 +6,19 @@ import java.util.HashMap;
 import openglCommon.datastructures.Material;
 import openglCommon.exceptions.FileOpeningException;
 import openglCommon.math.VecF3;
-import openglCommon.models.Model;
 import openglCommon.models.base.Sphere;
 import amuse.visualization.AmuseSettings;
 
 public class Hdf5Snapshotter {
-    private final AmuseSettings       settings        = AmuseSettings.getInstance();
+    private final AmuseSettings settings = AmuseSettings.getInstance();
 
     private static AmuseGasOctreeNode cubeRoot;
-    private ArrayList<Star>           stars;
+    private ArrayList<Star> stars;
+    private HashMap<Long, Star> starMap;
 
-    private final static String       evoNamePostfix  = ".evo";
-    private final static String       gravNamePostfix = ".grav";
-    private final static String       gasNamePostfix  = ".gas";
+    private final static String evoNamePostfix = ".evo";
+    private final static String gravNamePostfix = ".grav";
+    private final static String gasNamePostfix = ".gas";
 
     private static String intToString(int input) {
         String result = "";
@@ -42,6 +42,7 @@ public class Hdf5Snapshotter {
     private int lastDisplayedFrame = -1;
 
     public Hdf5Snapshotter() {
+        starMap = new HashMap<Long, Star>();
         stars = new ArrayList<Star>();
     }
 
@@ -53,8 +54,14 @@ public class Hdf5Snapshotter {
         return stars;
     }
 
-    public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> cloudModels,
-            boolean overrideUpdate) throws FileOpeningException {
+    public ArrayList<Star> getStars2() {
+        ArrayList<Star> result = new ArrayList<Star>();
+        result.addAll(starMap.values());
+        return result;
+    }
+
+    public void open(String namePrefix, int currentFrame, int levelOfDetail, boolean overrideUpdate)
+            throws FileOpeningException {
 
         if ((currentFrame != lastDisplayedFrame) || overrideUpdate) {
             final int gasSubdivision = settings.getGasSubdivision();
@@ -73,6 +80,39 @@ public class Hdf5Snapshotter {
             Hdf5GasCloudReader.read(Hdf5Snapshotter.cubeRoot, gasName);
 
             stars = Hdf5StarReader.read(starSubdivision, evoName, gravName);
+
+            if (settings.getGasStarInfluencedColor()) {
+                Hdf5Snapshotter.cubeRoot.finalizeAdding(stars);
+            }
+
+            lastDisplayedFrame = currentFrame;
+        }
+    }
+
+    public void open2(String namePrefix, int currentFrame, int levelOfDetail, boolean overrideUpdate)
+            throws FileOpeningException {
+
+        if ((currentFrame != lastDisplayedFrame) || overrideUpdate) {
+            final int gasSubdivision = settings.getGasSubdivision();
+            final int starSubdivision = settings.getStarSubdivision();
+            final int gasParticlesPerOctreeNode = settings.getGasParticlesPerOctreeNode();
+
+            String evoName, gravNameLast, gravNameNext, gasName;
+
+            // Read gas
+            gasName = namePrefix + Hdf5Snapshotter.intToString(currentFrame) + Hdf5Snapshotter.gasNamePostfix;
+
+            Hdf5Snapshotter.cubeRoot = new AmuseGasOctreeNode(new Sphere(Material.random(), gasSubdivision, 1f,
+                    new VecF3()), gasParticlesPerOctreeNode, 0, gasSubdivision, new VecF3(-settings.getOctreeEdges(),
+                    -settings.getOctreeEdges(), -settings.getOctreeEdges()), settings.getOctreeEdges());
+            Hdf5GasCloudReader.read(Hdf5Snapshotter.cubeRoot, gasName);
+
+            // Read stars
+            evoName = namePrefix + Hdf5Snapshotter.intToString(currentFrame) + Hdf5Snapshotter.evoNamePostfix;
+            gravNameLast = namePrefix + Hdf5Snapshotter.intToString(currentFrame) + Hdf5Snapshotter.gravNamePostfix;
+            gravNameNext = namePrefix + Hdf5Snapshotter.intToString(currentFrame + 1) + Hdf5Snapshotter.gravNamePostfix;
+
+            starMap = Hdf5StarUpdater.read(starMap, starSubdivision, evoName, gravNameLast, gravNameNext);
 
             if (settings.getGasStarInfluencedColor()) {
                 Hdf5Snapshotter.cubeRoot.finalizeAdding(stars);

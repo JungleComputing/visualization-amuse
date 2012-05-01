@@ -36,35 +36,37 @@ import amuse.visualization.amuseAdaptor.Hdf5TimedPlayer;
 import amuse.visualization.amuseAdaptor.Star;
 
 public class AmuseWindow extends CommonWindow {
-    private ArrayList<Star>     stars;
+    private ArrayList<Star> stars;
 
-    private AmuseGasOctreeNode  octreeRoot;
-    private Program             animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader,
-            gaussianBlurShader, textShader;
-    private FBO                 starHaloFBO, starHaloFBO4k;
-    private FBO                 gasFBO, gasFBO4k;
-    private FBO                 starFBO, starFBO4k;
+    private AmuseGasOctreeNode octreeRoot;
+    private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader,
+            textShader;
+    private FBO starHaloFBO, starHaloFBO4k;
+    private FBO gasFBO, gasFBO4k;
+    private FBO starFBO, starFBO4k;
 
-    private FBO                 axesFBO, axesFBO4k;
-    private FBO                 hudFBO, hudFBO4k;
+    private FBO axesFBO, axesFBO4k;
+    private FBO hudFBO, hudFBO4k;
 
-    private Quad                FSQ_postprocess, FSQ_blur;
-    private Model               xAxis, yAxis, zAxis;
+    private Quad FSQ_postprocess, FSQ_blur;
+    private Model xAxis, yAxis, zAxis;
 
-    private final int           fontSize     = 30;
+    private final int fontSize = 30;
 
-    private MultiColorText      myText;
-    private Perlin3D            noiseTex;
+    private MultiColorText myText;
+    private Perlin3D noiseTex;
 
-    private final VecF3         lightPos     = new VecF3(2f, 2f, 2f);
+    private final VecF3 lightPos = new VecF3(2f, 2f, 2f);
 
-    private final float         shininess    = 50f;
+    private final float shininess = 50f;
 
-    private float               offset       = 0;
+    private float offset = 0;
 
-    private boolean             snapshotting = false;
+    private boolean snapshotting = false;
 
-    private final AmuseSettings settings     = AmuseSettings.getInstance();
+    private final AmuseSettings settings = AmuseSettings.getInstance();
+
+    private int step;
 
     public AmuseWindow(InputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -128,6 +130,12 @@ public class AmuseWindow extends CommonWindow {
                 drawable.getContext().release();
             } catch (final GLException e) {
                 e.printStackTrace();
+            }
+
+            step++;
+            if (step >= Star.STEPS) {
+                timer.setFrame(timer.getFrame() + 1, false);
+                step = 0;
             }
         }
     }
@@ -489,7 +497,7 @@ public class AmuseWindow extends CommonWindow {
             pplShader.setUniform("StarDrawMode", 1);
 
             for (final Star s : stars) {
-                s.draw(gl, pplShader, mv);
+                s.draw2(gl, pplShader, mv, step);
             }
 
             blur(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPasses(), settings.getStarHaloBlurType(),
@@ -514,7 +522,7 @@ public class AmuseWindow extends CommonWindow {
         animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
         for (final Star s : stars) {
-            s.draw(gl, animatedTurbulenceShader, mv);
+            s.draw2(gl, animatedTurbulenceShader, mv, step);
         }
         starsFBO.unBind(gl);
     }
