@@ -124,12 +124,19 @@ public class Hdf5StarUpdater {
             vy1 = (double[]) datasets.get("gravNext/particles/0000000001/attributes/vy").read();
             vz1 = (double[]) datasets.get("gravNext/particles/0000000001/attributes/vz").read();
 
+            float factor = 500000000000f;
+
             for (int i = 0; i < numParticles; i++) {
                 final Long key = keys[i];
                 final VecF3 locationLast = new VecF3((float) x0[i], (float) y0[i], (float) z0[i]);
                 final VecF3 locationNext = new VecF3((float) x1[i], (float) y1[i], (float) z1[i]);
-                final VecF3 velocityLast = new VecF3((float) vx0[i], (float) vy0[i], (float) vz0[i]);
-                final VecF3 velocityNext = new VecF3((float) vx1[i], (float) vy1[i], (float) vz1[i]);
+                final VecF3 velocityLast = new VecF3((float) vx0[i] * factor, (float) vy0[i] * factor, (float) vz0[i]
+                        * factor);
+                final VecF3 velocityNext = new VecF3((float) vx1[i] * factor, (float) vy1[i] * factor, (float) vz1[i]
+                        * factor);
+
+                // System.out.println(x0[i]);
+                // System.out.println(vx0[i] * 1000000000000f);
 
                 final Star newStar = new Star(key, starModelBase, locationLast, locationNext, velocityLast,
                         velocityNext, realRadius[i], luminosity[i]);
