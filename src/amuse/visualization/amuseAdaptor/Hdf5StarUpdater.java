@@ -12,6 +12,7 @@ import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
 import openglCommon.exceptions.FileOpeningException;
 import openglCommon.math.VecF3;
+import openglCommon.math.VectorFMath;
 import openglCommon.models.Model;
 import openglCommon.models.base.Sphere;
 
@@ -124,7 +125,8 @@ public class Hdf5StarUpdater {
             vy1 = (double[]) datasets.get("gravNext/particles/0000000001/attributes/vy").read();
             vz1 = (double[]) datasets.get("gravNext/particles/0000000001/attributes/vz").read();
 
-            float factor = 500000000000f;
+            float factor = (float) 0.50E12;
+            // float factor = (float) 1.21E12;
 
             for (int i = 0; i < numParticles; i++) {
                 final Long key = keys[i];
@@ -135,7 +137,10 @@ public class Hdf5StarUpdater {
                 final VecF3 velocityNext = new VecF3((float) vx1[i] * factor, (float) vy1[i] * factor, (float) vz1[i]
                         * factor);
 
-                // System.out.println(x0[i]);
+                float length = VectorFMath.length(locationNext.sub(locationLast));
+
+                // System.out.println(length /
+                // VectorFMath.length(velocityLast));
                 // System.out.println(vx0[i] * 1000000000000f);
 
                 final Star newStar = new Star(key, starModelBase, locationLast, locationNext, velocityLast,
