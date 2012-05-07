@@ -1,8 +1,6 @@
 package amuse.visualization.amuseAdaptor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.media.opengl.GL3;
 
@@ -11,7 +9,6 @@ import openglCommon.math.MatF4;
 import openglCommon.math.MatrixFMath;
 import openglCommon.math.VecF3;
 import openglCommon.math.VecF4;
-import openglCommon.math.VectorFMath;
 import openglCommon.models.Model;
 import openglCommon.shaders.Program;
 import openglCommon.util.InputHandler;
@@ -314,55 +311,56 @@ public class AmuseGasOctreeNode {
         }
     }
 
-    public void finalizeAdding(ArrayList<Star> stars) {
-        if (subdivided) {
-            ppp.finalizeAdding(stars);
-            ppn.finalizeAdding(stars);
-            pnp.finalizeAdding(stars);
-            pnn.finalizeAdding(stars);
-            npp.finalizeAdding(stars);
-            npn.finalizeAdding(stars);
-            nnp.finalizeAdding(stars);
-            nnn.finalizeAdding(stars);
-        } else {
-            density = (childCounter / (cubeSize * cubeSize * cubeSize));
-
-            VecF3 finalColor = new VecF3();
-            final HashMap<VecF3, Float> effectiveColors = new HashMap<VecF3, Float>();
-            float totalEffectiveColor = 0f;
-
-            // System.out.println("New Gas particle ------------------");
-
-            for (final Star s : stars) {
-                final VecF3 location = s.getLocation();
-                final float distance = VectorFMath.length(location.sub(center));
-                final float radius = s.getRadius();
-                final float effectFactor = radius / distance;
-
-                if (effectFactor > 0.01f) {
-
-                    final VecF3 color = s.getColor().stripAlpha();
-                    if (effectiveColors.containsKey(color)) {
-                        final float newFactor = effectiveColors.get(color) + effectFactor;
-                        effectiveColors.put(color, newFactor);
-                    } else {
-                        effectiveColors.put(color, effectFactor);
-                    }
-                    totalEffectiveColor += effectFactor;
-                }
-            }
-
-            for (final Map.Entry<VecF3, Float> entry : effectiveColors.entrySet()) {
-                VecF3 color = entry.getKey();
-                final float factor = entry.getValue() / totalEffectiveColor;
-
-                color = color.mul(factor);
-
-                finalColor = finalColor.add(color);
-            }
-
-            color = new VecF4(finalColor, density);
-            drawable = true;
-        }
-    }
+    // public void finalizeAdding(ArrayList<Star> stars) {
+    // if (subdivided) {
+    // ppp.finalizeAdding(stars);
+    // ppn.finalizeAdding(stars);
+    // pnp.finalizeAdding(stars);
+    // pnn.finalizeAdding(stars);
+    // npp.finalizeAdding(stars);
+    // npn.finalizeAdding(stars);
+    // nnp.finalizeAdding(stars);
+    // nnn.finalizeAdding(stars);
+    // } else {
+    // density = (childCounter / (cubeSize * cubeSize * cubeSize));
+    //
+    // VecF3 finalColor = new VecF3();
+    // final HashMap<VecF3, Float> effectiveColors = new HashMap<VecF3,
+    // Float>();
+    // float totalEffectiveColor = 0f;
+    //
+    // // System.out.println("New Gas particle ------------------");
+    //
+    // for (final Star s : stars) {
+    // final VecF3 location = s.getLocation();
+    // final float distance = VectorFMath.length(location.sub(center));
+    // final float radius = s.getRadius();
+    // final float effectFactor = radius / distance;
+    //
+    // if (effectFactor > 0.01f) {
+    //
+    // final VecF3 color = s.getColor().stripAlpha();
+    // if (effectiveColors.containsKey(color)) {
+    // final float newFactor = effectiveColors.get(color) + effectFactor;
+    // effectiveColors.put(color, newFactor);
+    // } else {
+    // effectiveColors.put(color, effectFactor);
+    // }
+    // totalEffectiveColor += effectFactor;
+    // }
+    // }
+    //
+    // for (final Map.Entry<VecF3, Float> entry : effectiveColors.entrySet()) {
+    // VecF3 color = entry.getKey();
+    // final float factor = entry.getValue() / totalEffectiveColor;
+    //
+    // color = color.mul(factor);
+    //
+    // finalColor = finalColor.add(color);
+    // }
+    //
+    // color = new VecF4(finalColor, density);
+    // drawable = true;
+    // }
+    // }
 }

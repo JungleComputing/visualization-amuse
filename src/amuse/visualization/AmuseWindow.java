@@ -33,40 +33,38 @@ import openglCommon.util.InputHandler;
 import amuse.visualization.amuseAdaptor.AmuseGasOctreeNode;
 import amuse.visualization.amuseAdaptor.Astrophysics;
 import amuse.visualization.amuseAdaptor.Hdf5TimedPlayer;
-import amuse.visualization.amuseAdaptor.Star;
+import amuse.visualization.amuseAdaptor.Star2;
 
 public class AmuseWindow extends CommonWindow {
-    private ArrayList<Star> stars;
+    private ArrayList<Star2>    stars;
 
-    private AmuseGasOctreeNode octreeRoot;
-    private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader,
-            textShader;
-    private FBO starHaloFBO, starHaloFBO4k;
-    private FBO gasFBO, gasFBO4k;
-    private FBO starFBO, starFBO4k;
+    private AmuseGasOctreeNode  octreeRoot;
+    private Program             animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader,
+            gaussianBlurShader, textShader;
+    private FBO                 starHaloFBO, starHaloFBO4k;
+    private FBO                 gasFBO, gasFBO4k;
+    private FBO                 starFBO, starFBO4k;
 
-    private FBO axesFBO, axesFBO4k;
-    private FBO hudFBO, hudFBO4k;
+    private FBO                 axesFBO, axesFBO4k;
+    private FBO                 hudFBO, hudFBO4k;
 
-    private Quad FSQ_postprocess, FSQ_blur;
-    private Model xAxis, yAxis, zAxis;
+    private Quad                FSQ_postprocess, FSQ_blur;
+    private Model               xAxis, yAxis, zAxis;
 
-    private final int fontSize = 30;
+    private final int           fontSize     = 30;
 
-    private MultiColorText myText;
-    private Perlin3D noiseTex;
+    private MultiColorText      myText;
+    private Perlin3D            noiseTex;
 
-    private final VecF3 lightPos = new VecF3(2f, 2f, 2f);
+    private final VecF3         lightPos     = new VecF3(2f, 2f, 2f);
 
-    private final float shininess = 50f;
+    private final float         shininess    = 50f;
 
-    private float offset = 0;
+    private float               offset       = 0;
 
-    private boolean snapshotting = false;
+    private boolean             snapshotting = false;
 
-    private final AmuseSettings settings = AmuseSettings.getInstance();
-
-    private int step;
+    private final AmuseSettings settings     = AmuseSettings.getInstance();
 
     public AmuseWindow(InputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -131,20 +129,14 @@ public class AmuseWindow extends CommonWindow {
             } catch (final GLException e) {
                 e.printStackTrace();
             }
-
-            step++;
-            if (step >= Star.STEPS) {
-                timer.setFrame(timer.getFrame() + 1, false);
-                step = 0;
-            }
         }
     }
 
-    private synchronized void displayContext(ArrayList<Star> stars, AmuseGasOctreeNode octreeRoot, FBO starFBO,
+    private synchronized void displayContext(ArrayList<Star2> stars2, AmuseGasOctreeNode octreeRoot, FBO starFBO,
             FBO starHaloFBO, FBO gasFBO, FBO hudFBO, FBO axesFBO) {
         final GL3 gl = GLContext.getCurrentGL().getGL3();
 
-        stars.get(0).init(gl);
+        stars2.get(0).init(gl);
         octreeRoot.init(gl);
 
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
@@ -180,7 +172,7 @@ public class AmuseWindow extends CommonWindow {
             mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
 
-            renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+            renderScene(gl, mv, stars2, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
 
             try {
                 renderHUDText(gl, mv, hudFBO);
@@ -201,7 +193,7 @@ public class AmuseWindow extends CommonWindow {
             mv2 = mv2.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
 
-            renderScene(gl, mv2, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+            renderScene(gl, mv2, stars2, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
 
             try {
                 renderHUDText(gl, mv2, hudFBO);
@@ -226,7 +218,7 @@ public class AmuseWindow extends CommonWindow {
             loader.setUniformMatrix("PMatrix", p);
             loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
 
-            renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+            renderScene(gl, mv, stars2, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
 
             try {
                 renderHUDText(gl, mv, hudFBO);
@@ -466,7 +458,7 @@ public class AmuseWindow extends CommonWindow {
 
     }
 
-    private void renderScene(GL3 gl, MatF4 mv, ArrayList<Star> stars, AmuseGasOctreeNode octreeRoot, FBO starHaloFBO,
+    private void renderScene(GL3 gl, MatF4 mv, ArrayList<Star2> stars2, AmuseGasOctreeNode octreeRoot, FBO starHaloFBO,
             FBO starFBO, FBO gasFBO, FBO axesFBO) {
         if (settings.getGasInvertedBackgroundColor()) {
             gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -476,16 +468,16 @@ public class AmuseWindow extends CommonWindow {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         try {
-            renderStarHalos(gl, mv, starHaloFBO, stars);
+            renderStarHalos(gl, mv, starHaloFBO, stars2);
             renderGas(gl, mv, gasFBO, octreeRoot);
-            renderStars(gl, mv, starFBO, stars);
+            renderStars(gl, mv, starFBO, stars2);
             renderAxes(gl, mv, axesFBO);
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void renderStarHalos(GL3 gl, MatF4 mv, FBO starHaloFBO, ArrayList<Star> stars)
+    private void renderStarHalos(GL3 gl, MatF4 mv, FBO starHaloFBO, ArrayList<Star2> stars2)
             throws UninitializedException {
         if (post_process) {
             starHaloFBO.bind(gl);
@@ -496,8 +488,8 @@ public class AmuseWindow extends CommonWindow {
             pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2));
             pplShader.setUniform("StarDrawMode", 1);
 
-            for (final Star s : stars) {
-                s.draw2(gl, pplShader, mv, step);
+            for (final Star2 s : stars2) {
+                s.draw(gl, pplShader, mv);
             }
 
             blur(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPasses(), settings.getStarHaloBlurType(),
@@ -507,7 +499,7 @@ public class AmuseWindow extends CommonWindow {
         }
     }
 
-    private void renderStars(GL3 gl, MatF4 mv, FBO starsFBO, ArrayList<Star> stars) throws UninitializedException {
+    private void renderStars(GL3 gl, MatF4 mv, FBO starsFBO, ArrayList<Star2> stars2) throws UninitializedException {
         starsFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
@@ -521,8 +513,8 @@ public class AmuseWindow extends CommonWindow {
 
         animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
-        for (final Star s : stars) {
-            s.draw2(gl, animatedTurbulenceShader, mv, step);
+        for (final Star2 s : stars2) {
+            s.draw(gl, animatedTurbulenceShader, mv);
         }
         starsFBO.unBind(gl);
     }

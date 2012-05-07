@@ -99,6 +99,9 @@ public class AmuseSettings extends Settings {
     private static float   GAS_OPACITY_FACTOR_DEF                  = 0.05f;
     private static float   GAS_OPACITY_FACTOR_MAX                  = 0.5f;
 
+    private static boolean BEZIER_INTERPOLATION                    = false;
+    private static int     BEZIER_INTERPOLATION_STEPS              = 10;
+
     public static AmuseSettings getInstance() {
         return SingletonHolder.instance;
     }
@@ -215,6 +218,9 @@ public class AmuseSettings extends Settings {
             AmuseSettings.GAS_OPACITY_FACTOR_MIN = props.getFloatProperty("GAS_OPACITY_FACTOR_MIN");
             AmuseSettings.GAS_OPACITY_FACTOR_DEF = props.getFloatProperty("GAS_OPACITY_FACTOR_DEF");
             AmuseSettings.GAS_OPACITY_FACTOR_MAX = props.getFloatProperty("GAS_OPACITY_FACTOR_MAX");
+
+            AmuseSettings.BEZIER_INTERPOLATION = props.getBooleanProperty("BEZIER_INTERPOLATION");
+            AmuseSettings.BEZIER_INTERPOLATION_STEPS = props.getIntProperty("BEZIER_INTERPOLATION_STEPS");
         } catch (NumberFormatException e) {
             System.out.println(e.getMessage());
         }
@@ -558,5 +564,21 @@ public class AmuseSettings extends Settings {
 
     public float getGasOpacityFactorMax() {
         return AmuseSettings.GAS_OPACITY_FACTOR_MAX;
+    }
+
+    public void setBezierInterpolation(boolean value) {
+        AmuseSettings.BEZIER_INTERPOLATION = value;
+    }
+
+    public boolean getBezierInterpolation() {
+        return AmuseSettings.BEZIER_INTERPOLATION;
+    }
+
+    public void setBezierInterpolationSteps(int value) {
+        AmuseSettings.BEZIER_INTERPOLATION_STEPS = value;
+    }
+
+    public int getBezierInterpolationSteps() {
+        return AmuseSettings.BEZIER_INTERPOLATION_STEPS;
     }
 }
