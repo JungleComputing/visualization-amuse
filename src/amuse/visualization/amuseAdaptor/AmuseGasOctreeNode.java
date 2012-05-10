@@ -15,27 +15,27 @@ import openglCommon.util.InputHandler;
 import amuse.visualization.AmuseSettings;
 
 public class AmuseGasOctreeNode {
-    private final static AmuseSettings               settings    = AmuseSettings.getInstance();
+    private final static AmuseSettings settings = AmuseSettings.getInstance();
 
-    protected final int                              maxElements;
+    protected final int maxElements;
     protected final ArrayList<AmuseGasOctreeElement> elements;
-    protected final VecF3                            center;
-    protected final float                            cubeSize;
-    protected final int                              depth;
-    protected final Model                            model;
-    protected final MatF4                            TMatrix;
-    protected final float                            scale;
+    protected final VecF3 center;
+    protected final float cubeSize;
+    protected final int depth;
+    protected final Model model;
+    protected final MatF4 TMatrix;
+    protected final float scale;
 
-    protected AmuseGasOctreeNode                     ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
-    protected int                                    childCounter;
-    protected boolean                                subdivided  = false;
-    protected boolean                                initialized = false;
-    protected boolean                                drawable    = false;
-    protected VecF4                                  color;
-    protected int                                    subdivision;
+    protected AmuseGasOctreeNode ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
+    protected int childCounter;
+    protected boolean subdivided = false;
+    protected boolean initialized = false;
+    protected boolean drawable = false;
+    protected VecF4 color;
+    protected int subdivision;
 
-    private double                                   total_u;
-    private float                                    density;
+    private double total_u;
+    private float density;
 
     public AmuseGasOctreeNode(Model baseModel, int maxElements, int depth, int subdivision, VecF3 corner, float halfSize) {
         this.model = baseModel;
@@ -169,6 +169,7 @@ public class AmuseGasOctreeNode {
                     Material material = model.getMaterial();
                     material.setColor(color);
                     material.setTransparency(density * settings.getGasOpacityFactor());
+                    model.setMaterial(material);
 
                     MatF4 newM = MVMatrix.mul(TMatrix);
 

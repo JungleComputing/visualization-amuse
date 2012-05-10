@@ -68,20 +68,20 @@ public class Astrophysics {
         return (int) Math.round(radius_in_solar * 10);
     }
 
+    public static VecF3 locationToScreenCoord(VecF3 location) {
+        final float fx = (float) (Astrophysics.DISTANCE_FACTOR * (location.get(0) / Astrophysics.PARSEC));
+        final float fy = (float) (Astrophysics.DISTANCE_FACTOR * (location.get(1) / Astrophysics.PARSEC));
+        final float fz = (float) (Astrophysics.DISTANCE_FACTOR * (location.get(2) / Astrophysics.PARSEC));
+
+        return new VecF3(fx, fy, fz);
+    }
+
     public static VecF3 locationToScreenCoord(double x, double y, double z) {
         final float fx = (float) (Astrophysics.DISTANCE_FACTOR * (x / Astrophysics.PARSEC));
         final float fy = (float) (Astrophysics.DISTANCE_FACTOR * (y / Astrophysics.PARSEC));
         final float fz = (float) (Astrophysics.DISTANCE_FACTOR * (z / Astrophysics.PARSEC));
 
         return new VecF3(fx, fy, fz);
-    }
-
-    public static VecF3 velocityToScreenCoord(double vx, double vy, double vz) {
-        final float fvx = (float) (Astrophysics.DISTANCE_FACTOR * (vx / Astrophysics.PARSEC));
-        final float fvy = (float) (Astrophysics.DISTANCE_FACTOR * (vy / Astrophysics.PARSEC));
-        final float fvz = (float) (Astrophysics.DISTANCE_FACTOR * (vz / Astrophysics.PARSEC));
-
-        return new VecF3(fvx, fvy, fvz);
     }
 
     public static VecF4 starColor(double luminosity, double radius) {

@@ -39,26 +39,26 @@ public class AmusePanel extends CommonPanel {
         NONE, VISUAL, MOVIE
     }
 
-    private final AmuseSettings settings         = AmuseSettings.getInstance();
+    private final AmuseSettings settings = AmuseSettings.getInstance();
 
-    private static final long   serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     public static Hdf5TimedPlayer getTimer() {
         return timer;
     }
 
-    protected JSlider             timeBar;
+    protected JSlider timeBar;
 
     protected JFormattedTextField frameCounter;
-    private TweakState            currentConfigState = TweakState.NONE;
+    private TweakState currentConfigState = TweakState.NONE;
 
     public static Hdf5TimedPlayer timer;
 
-    private final JPanel          configPanel;
+    private final JPanel configPanel;
 
-    private final JPanel          visualConfig, movieConfig;
+    private final JPanel visualConfig, movieConfig;
 
-    private final AmuseWindow     amuseWindow;
+    private final AmuseWindow amuseWindow;
 
     public AmusePanel(AmuseWindow amuseWindow, String path, String cmdlnfileName) {
         super(amuseWindow, InputHandler.getInstance());
@@ -192,7 +192,7 @@ public class AmusePanel extends CommonPanel {
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
                 final InputHandler inputHandler = InputHandler.getInstance();
-                final String fileName = "" + timer.getFrame() + " {" + inputHandler.getRotation().get(0) + ","
+                final String fileName = "" + timer.getFrameNumber() + " {" + inputHandler.getRotation().get(0) + ","
                         + inputHandler.getRotation().get(1) + " - " + Float.toString(inputHandler.getViewDist()) + "} ";
                 amuseWindow.makeSnapshot(fileName);
             }
@@ -531,7 +531,7 @@ public class AmusePanel extends CommonPanel {
                 timer = new Hdf5TimedPlayer(amuseWindow, timeBar, frameCounter);
                 timer.open(path, prefix);
                 timer.init();
-                new Thread(AmusePanel.timer).start();
+                new Thread(timer).start();
 
                 settings.setScreenshotPath(path);
             }

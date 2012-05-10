@@ -12,9 +12,9 @@ import ncsa.hdf.object.HObject;
 import openglCommon.exceptions.FileOpeningException;
 
 public class Hdf5Util {
-    private final static String evoNamePostfix  = ".evo";
+    private final static String evoNamePostfix = ".evo";
     private final static String gravNamePostfix = ".grav";
-    private final static String gasNamePostfix  = ".gas";
+    private final static String gasNamePostfix = ".gas";
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -58,6 +58,12 @@ public class Hdf5Util {
 
     public static String getGasFileName(String prefix, int currentFrame) {
         return prefix + intToString(currentFrame) + gasNamePostfix;
+    }
+
+    public static int getNumFiles(String pathName) {
+        final String[] ls = new File(pathName).list(new ExtFilter(evoNamePostfix));
+
+        return ls.length;
     }
 
     public static int getNumGasFiles(String fileName) {

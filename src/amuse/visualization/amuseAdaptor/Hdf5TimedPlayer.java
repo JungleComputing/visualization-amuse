@@ -1,49 +1,46 @@
 package amuse.visualization.amuseAdaptor;
 
-import java.util.ArrayList;
-
 import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
+import openglCommon.datastructures.Material;
 import openglCommon.math.VecF3;
+import openglCommon.models.Model;
+import openglCommon.models.base.Sphere;
 import openglCommon.util.CustomJSlider;
 import openglCommon.util.InputHandler;
 import amuse.visualization.AmuseSettings;
 import amuse.visualization.AmuseWindow;
-import amuse.visualization.amuseAdaptor.exceptions.KeyframeUnavailableException;
 
 public class Hdf5TimedPlayer implements Runnable {
     public static enum states {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
 
-    private final AmuseSettings       settings        = AmuseSettings.getInstance(); ;
+    private final AmuseSettings settings = AmuseSettings.getInstance();;
 
-    private states                    currentState    = states.UNOPENED;
-    private int                       currentFrame;
+    private states currentState = states.UNOPENED;
+    private int frameNumber;
+    private Hdf5Frame currentFrame;
 
-    private Hdf5GasCloudUpdater       cloudUpdater;
-    private Hdf5StarUpdater           starUpdater;
+    private boolean running = true;
 
-    private ArrayList<Star2>          stars;
-    private AmuseGasOctreeNode        octreeRoot;
+    private String path = null;
+    private String namePrefix = null;
 
-    private boolean                   running         = true;
+    private long startTime, stopTime;
 
-    private String                    path            = null;
-    private String                    namePrefix      = null;
-    private final String              gravNamePostfix = ".grav";
-
-    private long                      startTime, stopTime;
-
-    private final JSlider             timeBar;
+    private final JSlider timeBar;
     private final JFormattedTextField frameCounter;
 
-    private boolean                   initialized     = false;
-    private InputHandler              inputHandler;
+    private boolean initialized = false;
+    private InputHandler inputHandler;
 
-    private AmuseWindow               amuseWindow;
+    private AmuseWindow amuseWindow;
+
+    private Model starModelBase = new Sphere(Material.random(), settings.getStarSubdivision(), 1f, new VecF3(0, 0, 0));
+    private Model gasModelBase = new Sphere(Material.random(), settings.getGasSubdivision(), 1f, new VecF3(0, 0, 0));
 
     public Hdf5TimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
@@ -60,7 +57,7 @@ public class Hdf5TimedPlayer implements Runnable {
     public void close() {
         running = false;
         initialized = false;
-        currentFrame = 0;
+        frameNumber = 0;
         timeBar.setValue(0);
         frameCounter.setValue(0);
         timeBar.setMaximum(0);
@@ -70,16 +67,12 @@ public class Hdf5TimedPlayer implements Runnable {
         // TODO
     }
 
-    public int getFrame() {
+    public int getFrameNumber() {
+        return frameNumber;
+    }
+
+    public Hdf5Frame getFrame() {
         return currentFrame;
-    }
-
-    public synchronized AmuseGasOctreeNode getOctreeRoot() {
-        return octreeRoot;
-    }
-
-    public synchronized ArrayList<Star2> getStars() {
-        return stars;
     }
 
     public states getState() {
@@ -92,29 +85,11 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        starUpdater = new Hdf5StarUpdater(namePrefix);
-        cloudUpdater = new Hdf5GasCloudUpdater(namePrefix);
+        frameNumber = settings.getInitialSimulationFrame();
 
-        new Thread(starUpdater).start();
-        new Thread(cloudUpdater).start();
+        updateFrame(true);
 
-        while (starUpdater.getCurrentFrame() == 0 || cloudUpdater.getCurrentFrame() == 0) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            updateFrame(false);
-        } catch (KeyframeUnavailableException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        final int initialMaxBar = starUpdater.getLastFrame();
+        final int initialMaxBar = Hdf5Util.getNumFiles(path);
         timeBar.setMaximum(initialMaxBar);
 
         initialized = true;
@@ -138,12 +113,12 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void oneBack() {
         stop();
-        setFrame(currentFrame - 1, false);
+        setFrame(frameNumber - 1, false);
     }
 
     public void oneForward() {
         stop();
-        setFrame(currentFrame + 1, false);
+        setFrame(frameNumber + 1, false);
     }
 
     public void open(String path, String namePrefix) {
@@ -153,7 +128,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void redraw() {
         if (initialized) {
-            setFrame(currentFrame, true);
+            setFrame(frameNumber, true);
             currentState = states.REDRAWING;
         }
     }
@@ -169,13 +144,13 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        currentFrame = settings.getInitialSimulationFrame();
+        frameNumber = settings.getInitialSimulationFrame();
 
         inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
-        timeBar.setValue(currentFrame);
-        frameCounter.setValue(currentFrame);
+        timeBar.setValue(frameNumber);
+        frameCounter.setValue(frameNumber);
 
         currentState = states.STOPPED;
 
@@ -185,36 +160,37 @@ public class Hdf5TimedPlayer implements Runnable {
                 try {
                     startTime = System.currentTimeMillis();
 
-                    try {
-                        updateFrame(false);
-                    } catch (final KeyframeUnavailableException e) {
-                        setFrame(currentFrame - 1, false);
-                        currentState = states.WAITINGONFRAME;
-                        System.err.println(e);
-                        System.err.println(" run File not found, retrying from frame " + currentFrame + ".");
-                        continue;
-                    }
+                    // try {
+                    updateFrame(false);
+                    // } catch (final KeyframeUnavailableException e) {
+                    // setFrame(currentFrame - 1, false);
+                    // currentState = states.WAITINGONFRAME;
+                    // System.err.println(e);
+                    // System.err.println(" run File not found, retrying from frame "
+                    // + currentFrame + ".");
+                    // continue;
+                    // }
 
                     if (currentState == states.MOVIEMAKING) {
                         if (settings.getMovieRotate()) {
                             final VecF3 rotation = inputHandler.getRotation();
-                            System.out.println("Simulation frame: " + currentFrame + ", Rotation x: " + rotation.get(0)
+                            System.out.println("Simulation frame: " + frameNumber + ", Rotation x: " + rotation.get(0)
                                     + " y: " + rotation.get(1));
-                            amuseWindow.makeSnapshot(String.format("%05d", (currentFrame)));
+                            amuseWindow.makeSnapshot(String.format("%05d", (frameNumber)));
 
                             rotation.set(1, rotation.get(1) + settings.getMovieRotationSpeedDef());
                             inputHandler.setRotation(rotation);
                         } else {
-                            amuseWindow.makeSnapshot(String.format("%05d", currentFrame));
+                            amuseWindow.makeSnapshot(String.format("%05d", frameNumber));
                         }
                     }
 
                     if (currentState != states.REDRAWING) {
-                        currentFrame++;
+                        frameNumber++;
                     }
 
-                    timeBar.setValue(currentFrame);
-                    frameCounter.setValue(currentFrame);
+                    timeBar.setValue(frameNumber);
+                    frameCounter.setValue(frameNumber);
 
                     stopTime = System.currentTimeMillis();
                     if (((startTime - stopTime) < settings.getWaitTimeMovie()) && (currentState != states.MOVIEMAKING)) {
@@ -245,27 +221,33 @@ public class Hdf5TimedPlayer implements Runnable {
     public void setFrame(int value, boolean overrideUpdate) {
         // System.out.println("setValue?");
         currentState = states.STOPPED;
-        currentFrame = value;
+        frameNumber = value;
 
-        timeBar.setValue(currentFrame);
-        frameCounter.setValue(currentFrame);
+        timeBar.setValue(frameNumber);
+        frameCounter.setValue(frameNumber);
 
-        try {
-            updateFrame(overrideUpdate);
-        } catch (final KeyframeUnavailableException e) {
-            System.err.println(e);
-            System.err.println("setFrame File not found, retrying from frame " + currentFrame + ".");
-
-            if (value - 1 < 0) {
-                setFrame(0, overrideUpdate);
-            } else {
-                setFrame(value - 1, overrideUpdate);
-            }
-            currentState = states.WAITINGONFRAME;
-        } catch (final Throwable t) {
-            System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
-            t.printStackTrace(System.err);
+        if (overrideUpdate) {
+            starModelBase = new Sphere(Material.random(), settings.getStarSubdivision(), 1f, new VecF3(0, 0, 0));
+            gasModelBase = new Sphere(Material.random(), settings.getGasSubdivision(), 1f, new VecF3(0, 0, 0));
         }
+
+        // try {
+        updateFrame(overrideUpdate);
+        // } catch (final KeyframeUnavailableException e) {
+        // System.err.println(e);
+        // System.err.println("setFrame File not found, retrying from frame " +
+        // currentFrame + ".");
+        //
+        // if (value - 1 < 0) {
+        // setFrame(0, overrideUpdate);
+        // } else {
+        // setFrame(value - 1, overrideUpdate);
+        // }
+        // currentState = states.WAITINGONFRAME;
+        // } catch (final Throwable t) {
+        // System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
+        // t.printStackTrace(System.err);
+        // }
     }
 
     public void start() {
@@ -276,13 +258,15 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.STOPPED;
     }
 
-    private synchronized void updateFrame(boolean overrideUpdate) throws KeyframeUnavailableException {
-        final ArrayList<Star2> newStars = starUpdater.getStarsAt(currentFrame, 0);
-        final AmuseGasOctreeNode newOctreeRoot = cloudUpdater.getOctreeAt(currentFrame, 0);
+    private synchronized void updateFrame(boolean overrideUpdate) {
+        if (currentFrame == null || currentFrame.getNumber() != frameNumber || overrideUpdate) {
+            // System.out.println("Updating frame: " + frameNumber + ".");
+            Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
 
-        synchronized (this) {
-            stars = newStars;
-            octreeRoot = newOctreeRoot;
+            frame.readFromFile();
+            frame.process();
+
+            currentFrame = frame;
         }
     }
 }
