@@ -5,6 +5,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import openglCommon.datastructures.Material;
+import openglCommon.exceptions.FileOpeningException;
+import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.VecF3;
 import openglCommon.models.Model;
 import openglCommon.models.base.Sphere;
@@ -18,7 +20,7 @@ public class Hdf5TimedPlayer implements Runnable {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
 
-    private final AmuseSettings settings = AmuseSettings.getInstance();;
+    private final AmuseSettings settings = AmuseSettings.getInstance();
 
     private states currentState = states.UNOPENED;
     private int frameNumber;
@@ -87,7 +89,18 @@ public class Hdf5TimedPlayer implements Runnable {
 
         frameNumber = settings.getInitialSimulationFrame();
 
-        updateFrame(true);
+        try {
+            updateFrame(true);
+        } catch (FileOpeningException e) {
+            System.err.println("Initial simulation frame (settings) not found. Trying again from frame 0.");
+            frameNumber = 0;
+            try {
+                updateFrame(true);
+            } catch (FileOpeningException e1) {
+                System.err.println("Frame 0 also not found. Exiting.");
+                System.exit(1);
+            }
+        }
 
         final int initialMaxBar = Hdf5Util.getNumFiles(path);
         timeBar.setMaximum(initialMaxBar);
@@ -160,16 +173,15 @@ public class Hdf5TimedPlayer implements Runnable {
                 try {
                     startTime = System.currentTimeMillis();
 
-                    // try {
-                    updateFrame(false);
-                    // } catch (final KeyframeUnavailableException e) {
-                    // setFrame(currentFrame - 1, false);
-                    // currentState = states.WAITINGONFRAME;
-                    // System.err.println(e);
-                    // System.err.println(" run File not found, retrying from frame "
-                    // + currentFrame + ".");
-                    // continue;
-                    // }
+                    try {
+                        updateFrame(false);
+                    } catch (final FileOpeningException e) {
+                        setFrame(frameNumber - 1, false);
+                        currentState = states.WAITINGONFRAME;
+                        System.err.println(e);
+                        System.err.println(" run File not found, retrying from frame " + frameNumber + ".");
+                        continue;
+                    }
 
                     if (currentState == states.MOVIEMAKING) {
                         if (settings.getMovieRotate()) {
@@ -231,23 +243,22 @@ public class Hdf5TimedPlayer implements Runnable {
             gasModelBase = new Sphere(Material.random(), settings.getGasSubdivision(), 1f, new VecF3(0, 0, 0));
         }
 
-        // try {
-        updateFrame(overrideUpdate);
-        // } catch (final KeyframeUnavailableException e) {
-        // System.err.println(e);
-        // System.err.println("setFrame File not found, retrying from frame " +
-        // currentFrame + ".");
-        //
-        // if (value - 1 < 0) {
-        // setFrame(0, overrideUpdate);
-        // } else {
-        // setFrame(value - 1, overrideUpdate);
-        // }
-        // currentState = states.WAITINGONFRAME;
-        // } catch (final Throwable t) {
-        // System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
-        // t.printStackTrace(System.err);
-        // }
+        try {
+            updateFrame(overrideUpdate);
+        } catch (final FileOpeningException e) {
+            System.err.println(e);
+            System.err.println("setFrame File not found, retrying from frame " + frameNumber + ".");
+
+            if (value - 1 < 0) {
+                setFrame(0, overrideUpdate);
+            } else {
+                setFrame(value - 1, overrideUpdate);
+            }
+            currentState = states.WAITINGONFRAME;
+        } catch (final Throwable t) {
+            System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
+            t.printStackTrace(System.err);
+        }
     }
 
     public void start() {
@@ -258,13 +269,17 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.STOPPED;
     }
 
-    private synchronized void updateFrame(boolean overrideUpdate) {
+    private synchronized void updateFrame(boolean overrideUpdate) throws FileOpeningException {
         if (currentFrame == null || currentFrame.getNumber() != frameNumber || overrideUpdate) {
             // System.out.println("Updating frame: " + frameNumber + ".");
             Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
 
-            frame.readFromFile();
-            frame.process();
+            frame.init();
+            try {
+                frame.process();
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
 
             currentFrame = frame;
         }

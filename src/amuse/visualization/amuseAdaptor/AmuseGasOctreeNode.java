@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.media.opengl.GL3;
 
 import openglCommon.datastructures.Material;
+import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.MatF4;
 import openglCommon.math.MatrixFMath;
 import openglCommon.math.VecF3;
@@ -158,7 +159,7 @@ public class AmuseGasOctreeNode {
         subdivided = true;
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
         if (initialized) {
             if (subdivided) {
                 draw_sorted(gl, program, MVMatrix);
@@ -176,10 +177,12 @@ public class AmuseGasOctreeNode {
                     model.draw(gl, program, newM);
                 }
             }
+        } else {
+            throw new UninitializedException();
         }
     }
 
-    protected void draw_unsorted(GL3 gl, Program program, MatF4 MVMatrix) {
+    protected void draw_unsorted(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
         nnn.draw(gl, program, MVMatrix);
         pnn.draw(gl, program, MVMatrix);
         npn.draw(gl, program, MVMatrix);
@@ -190,7 +193,7 @@ public class AmuseGasOctreeNode {
         ppp.draw(gl, program, MVMatrix);
     }
 
-    protected void draw_sorted(GL3 gl, Program program, MatF4 MVMatrix) {
+    protected void draw_sorted(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
         InputHandler inputHandler = InputHandler.getInstance();
 
         if (inputHandler.getCurrentOctant() == InputHandler.octants.NNN) {

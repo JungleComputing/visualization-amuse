@@ -23,6 +23,8 @@ public class Astrophysics {
     public final static double STAR_RADIUS_FACTOR_SMALL = 0.25;
     public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 8.0;
 
+    public final static double VELOCITY_MULTIPLICATION_FACTOR = 1.21E12;
+
     public final static double STAR_FORMULAE_INTERSECTION = Astrophysics.find_intersection();
 
     private final static VecF4 INITIAL_GAS_COLOR = new VecF4(.6f, .3f, .3f, 0f);
@@ -66,6 +68,14 @@ public class Astrophysics {
         final double radius_in_solar = size / Astrophysics.SOLAR_RADIUS;
 
         return (int) Math.round(radius_in_solar * 10);
+    }
+
+    public static VecF3 velocityToCorrectUnits(double vx, double vy, double vz) {
+        final float fx = (float) (Astrophysics.VELOCITY_MULTIPLICATION_FACTOR * vx);
+        final float fy = (float) (Astrophysics.VELOCITY_MULTIPLICATION_FACTOR * vy);
+        final float fz = (float) (Astrophysics.VELOCITY_MULTIPLICATION_FACTOR * vz);
+
+        return new VecF3(fx, fy, fz);
     }
 
     public static VecF3 locationToScreenCoord(VecF3 location) {

@@ -10,6 +10,7 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.HObject;
 import openglCommon.exceptions.FileOpeningException;
+import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.MatF4;
 import openglCommon.math.VecF3;
 import openglCommon.models.Model;
@@ -27,7 +28,7 @@ public class Hdf5Frame {
     private ArrayList<Star> starResult;
     private AmuseGasOctreeNode gasResult;
 
-    private boolean doneReading, doneProcessing;
+    private boolean initialized, doneProcessing;
 
     public Hdf5Frame(Model starModel, Model gasModel, String namePrefix, int keyFrame) {
         this.starModel = starModel;
@@ -38,19 +39,19 @@ public class Hdf5Frame {
         this.stars = new StarMap();
         this.gasses = new GasMap();
 
-        doneReading = false;
+        initialized = false;
         doneProcessing = false;
     }
 
-    public synchronized void readFromFile() {
-        long[] skeys, gkeys;
-        double[] luminosity, realRadius, sx, sy, sz, svx, svy, svz, gx, gy, gz, gvx, gvy, gvz, gu;
+    public synchronized void init() throws FileOpeningException {
+        if (!initialized) {
+            long[] skeys, gkeys;
+            double[] luminosity, realRadius, sx, sy, sz, svx, svy, svz, gx, gy, gz, gvx, gvy, gvz, gu;
 
-        final HashMap<String, Dataset> datasets = new HashMap<String, Dataset>();
-        List<HObject> evoMemberList, gravMemberList, gasMemberList;
-        FileFormat evoFile, gravFile, gasFile;
+            final HashMap<String, Dataset> datasets = new HashMap<String, Dataset>();
+            List<HObject> evoMemberList, gravMemberList, gasMemberList;
+            FileFormat evoFile, gravFile, gasFile;
 
-        try {
             evoFile = Hdf5Util.getFile(Hdf5Util.getEvoFileName(namePrefix, keyFrame));
             evoMemberList = Hdf5Util.getRoot(evoFile).getMemberList();
             Hdf5Util.traverse("evo", datasets, evoMemberList);
@@ -88,14 +89,10 @@ public class Hdf5Frame {
 
                 gu = (double[]) datasets.get("gas/particles/0000000001/attributes/u").read();
 
-                // float factor = (float) 0.50E12;
-                float factor = (float) 1.21E12;
-
                 for (int i = 0; i < skeys.length; i++) {
                     final Long key = skeys[i];
                     final VecF3 location = new VecF3((float) sx[i], (float) sy[i], (float) sz[i]);
-                    final VecF3 velocity = new VecF3((float) svx[i] * factor, (float) svy[i] * factor, (float) svz[i]
-                            * factor);
+                    final VecF3 velocity = Astrophysics.velocityToCorrectUnits(svx[i], svy[i], svz[i]);
 
                     stars.put(key, new Star(starModel, location, velocity, luminosity[i], realRadius[i]));
                 }
@@ -104,8 +101,7 @@ public class Hdf5Frame {
                     final long key = gkeys[i];
 
                     VecF3 location = new VecF3((float) gx[i], (float) gy[i], (float) gz[i]);
-                    VecF3 velocity = new VecF3((float) gvx[i] * factor, (float) gvy[i] * factor, (float) gvz[i]
-                            * factor);
+                    final VecF3 velocity = Astrophysics.velocityToCorrectUnits(gvx[i], gvy[i], gvz[i]);
 
                     gasses.put(key, new Gas(location, velocity, gu[i]));
                 }
@@ -122,15 +118,14 @@ public class Hdf5Frame {
             Hdf5Util.closeFile(evoFile);
             Hdf5Util.closeFile(gravFile);
             Hdf5Util.closeFile(gasFile);
-        } catch (FileOpeningException e1) {
-            e1.printStackTrace();
+
+            initialized = true;
         }
-        doneReading = true;
     }
 
-    public void process() {
-        if (!doneReading)
-            readFromFile();
+    public void process() throws UninitializedException {
+        if (!initialized)
+            throw new UninitializedException();
 
         starResult = stars.process();
         gasResult = gasses.process(gasModel);
@@ -138,24 +133,34 @@ public class Hdf5Frame {
         doneProcessing = true;
     }
 
-    public void drawStars(GL3 gl, Program starProgram, MatF4 MVMatrix) {
+    public void drawStars(GL3 gl, Program starProgram, MatF4 MVMatrix) throws UninitializedException {
         if (!doneProcessing)
             process();
 
         starModel.init(gl);
 
-        for (Star s : starResult) {
-            s.draw(gl, starProgram, MVMatrix);
+        try {
+            for (Star s : starResult) {
+                s.init();
+                s.draw(gl, starProgram, MVMatrix);
+            }
+        } catch (UninitializedException e) {
+            e.printStackTrace();
         }
     }
 
-    public void drawGas(GL3 gl, Program gasProgram, MatF4 MVMatrix) {
+    public void drawGas(GL3 gl, Program gasProgram, MatF4 MVMatrix) throws UninitializedException {
         if (!doneProcessing)
             process();
 
         gasModel.init(gl);
+        gasResult.init(gl);
 
-        gasResult.draw(gl, gasProgram, MVMatrix);
+        try {
+            gasResult.draw(gl, gasProgram, MVMatrix);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getNumber() {
