@@ -16,16 +16,16 @@ import amuse.visualization.AmuseSettings;
 public class Star {
     private final static AmuseSettings settings = AmuseSettings.getInstance();
 
-    public final Model baseModel;
-    public final VecF3 rawLocation;
-    public final VecF3 velocity;
-    public final VecF4 color;
-    public final float radius;
+    private final Model baseModel;
+    private final VecF3 rawLocation;
+    private final VecF3 velocity;
+    private final VecF4 color;
+    private final float radius;
 
     private final Material material;
     private final VecF4 haloColor;
 
-    private boolean initialized;
+    private boolean initialized, interpolated;
 
     private VecF3[] bezierPoints;
     private VecF4[] interpolatedColors;
@@ -48,6 +48,7 @@ public class Star {
         this.haloColor.set(3, haloAlpha);
 
         initialized = false;
+        interpolated = false;
     }
 
     public void init() {
@@ -55,6 +56,7 @@ public class Star {
             this.processedLocation = Astrophysics.locationToScreenCoord(rawLocation);
 
             initialized = true;
+            interpolated = false;
         }
     }
 
@@ -75,11 +77,12 @@ public class Star {
             }
 
             initialized = true;
+            interpolated = true;
         }
     }
 
     public void draw(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
-        if (!initialized) {
+        if (!initialized || interpolated) {
             throw new UninitializedException();
         }
 
@@ -93,18 +96,60 @@ public class Star {
         baseModel.draw(gl, program, MVMatrix);
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int interpolationStep) throws UninitializedException {
-        if (!initialized) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
             throw new UninitializedException();
         }
 
-        baseModel.setMaterial(interpolatedMaterials[interpolationStep]);
-        baseModel.setScale(interpolatedRadii[interpolationStep]);
+        baseModel.setMaterial(interpolatedMaterials[step]);
+        baseModel.setScale(interpolatedRadii[step]);
 
-        MVMatrix = MVMatrix.mul(MatrixFMath.translate(bezierPoints[interpolationStep]));
+        MVMatrix = MVMatrix.mul(MatrixFMath.translate(bezierPoints[step]));
 
-        program.setUniformVector("HaloColor", interpolatedColors[interpolationStep]);
+        program.setUniformVector("HaloColor", interpolatedColors[step]);
 
         baseModel.draw(gl, program, MVMatrix);
+    }
+
+    public VecF4 getColor() throws UninitializedException {
+        if (!initialized || interpolated) {
+            throw new UninitializedException();
+        }
+        return color;
+    }
+
+    public VecF4 getColor(int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
+            throw new UninitializedException();
+        }
+        return interpolatedColors[step];
+    }
+
+    public VecF3 getLocation() throws UninitializedException {
+        if (!initialized || interpolated) {
+            throw new UninitializedException();
+        }
+        return processedLocation;
+    }
+
+    public VecF3 getLocation(int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
+            throw new UninitializedException();
+        }
+        return bezierPoints[step];
+    }
+
+    public float getRadius() throws UninitializedException {
+        if (!initialized || interpolated) {
+            throw new UninitializedException();
+        }
+        return radius;
+    }
+
+    public float getRadius(int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
+            throw new UninitializedException();
+        }
+        return interpolatedRadii[step];
     }
 }

@@ -23,7 +23,10 @@ public class Hdf5TimedPlayer implements Runnable {
     private final AmuseSettings settings = AmuseSettings.getInstance();
 
     private states currentState = states.UNOPENED;
-    private int frameNumber;
+    private int frameNumber, interpolationStep;
+
+    private final int maxInterpolation = settings.getBezierInterpolationSteps();
+
     private Hdf5Frame currentFrame;
 
     private boolean running = true;
@@ -88,14 +91,15 @@ public class Hdf5TimedPlayer implements Runnable {
         }
 
         frameNumber = settings.getInitialSimulationFrame();
+        interpolationStep = 0;
 
         try {
-            updateFrame(true);
+            currentFrame = updateFrame(true);
         } catch (FileOpeningException e) {
             System.err.println("Initial simulation frame (settings) not found. Trying again from frame 0.");
             frameNumber = 0;
             try {
-                updateFrame(true);
+                currentFrame = updateFrame(true);
             } catch (FileOpeningException e1) {
                 System.err.println("Frame 0 also not found. Exiting.");
                 System.exit(1);
@@ -173,8 +177,16 @@ public class Hdf5TimedPlayer implements Runnable {
                 try {
                     startTime = System.currentTimeMillis();
 
+                    if (currentState != states.REDRAWING) {
+                        interpolationStep++;
+                        if (interpolationStep == maxInterpolation) {
+                            frameNumber++;
+                            interpolationStep = 0;
+                        }
+                    }
+
                     try {
-                        updateFrame(false);
+                        currentFrame = updateFrame(false);
                     } catch (final FileOpeningException e) {
                         setFrame(frameNumber - 1, false);
                         currentState = states.WAITINGONFRAME;
@@ -195,10 +207,6 @@ public class Hdf5TimedPlayer implements Runnable {
                         } else {
                             amuseWindow.makeSnapshot(String.format("%05d", frameNumber));
                         }
-                    }
-
-                    if (currentState != states.REDRAWING) {
-                        frameNumber++;
                     }
 
                     timeBar.setValue(frameNumber);
@@ -234,6 +242,7 @@ public class Hdf5TimedPlayer implements Runnable {
         // System.out.println("setValue?");
         currentState = states.STOPPED;
         frameNumber = value;
+        interpolationStep = 0;
 
         timeBar.setValue(frameNumber);
         frameCounter.setValue(frameNumber);
@@ -244,7 +253,7 @@ public class Hdf5TimedPlayer implements Runnable {
         }
 
         try {
-            updateFrame(overrideUpdate);
+            currentFrame = updateFrame(overrideUpdate);
         } catch (final FileOpeningException e) {
             System.err.println(e);
             System.err.println("setFrame File not found, retrying from frame " + frameNumber + ".");
@@ -269,19 +278,37 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.STOPPED;
     }
 
-    private synchronized void updateFrame(boolean overrideUpdate) throws FileOpeningException {
+    private synchronized Hdf5Frame updateFrame(boolean overrideUpdate) throws FileOpeningException {
+        Hdf5Frame newFrame = currentFrame;
+
         if (currentFrame == null || currentFrame.getNumber() != frameNumber || overrideUpdate) {
-            // System.out.println("Updating frame: " + frameNumber + ".");
-            Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
+            if (settings.getBezierInterpolation()) {
+                Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
+                Hdf5Frame nextFrame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber + 1);
 
-            frame.init();
-            try {
-                frame.process();
-            } catch (UninitializedException e) {
-                e.printStackTrace();
+                frame.init();
+                nextFrame.init();
+                try {
+                    frame.process(nextFrame);
+                } catch (UninitializedException e) {
+                    e.printStackTrace();
+                }
+
+                newFrame = frame;
+            } else {
+                Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
+
+                frame.init();
+                try {
+                    frame.process();
+                } catch (UninitializedException e) {
+                    e.printStackTrace();
+                }
+
+                newFrame = frame;
             }
-
-            currentFrame = frame;
         }
+
+        return newFrame;
     }
 }

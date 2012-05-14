@@ -1,6 +1,5 @@
 package amuse.visualization.amuseAdaptor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,8 +14,11 @@ import openglCommon.math.MatF4;
 import openglCommon.math.VecF3;
 import openglCommon.models.Model;
 import openglCommon.shaders.Program;
+import amuse.visualization.AmuseSettings;
 
 public class Hdf5Frame {
+    private static final AmuseSettings settings = AmuseSettings.getInstance();
+
     private final int keyFrame;
     private final String namePrefix;
 
@@ -25,10 +27,10 @@ public class Hdf5Frame {
     private final StarMap stars;
     private final GasMap gasses;
 
-    private ArrayList<Star> starResult;
     private AmuseGasOctreeNode gasResult;
+    private AmuseGasOctreeNode[] gasInterpolatedResult;
 
-    private boolean initialized, doneProcessing;
+    private boolean initialized, doneProcessing, interpolated;
 
     public Hdf5Frame(Model starModel, Model gasModel, String namePrefix, int keyFrame) {
         this.starModel = starModel;
@@ -41,9 +43,10 @@ public class Hdf5Frame {
 
         initialized = false;
         doneProcessing = false;
+        interpolated = false;
     }
 
-    public synchronized void init() throws FileOpeningException {
+    public void init() throws FileOpeningException {
         if (!initialized) {
             long[] skeys, gkeys;
             double[] luminosity, realRadius, sx, sy, sz, svx, svy, svz, gx, gy, gz, gvx, gvy, gvz, gu;
@@ -127,40 +130,75 @@ public class Hdf5Frame {
         if (!initialized)
             throw new UninitializedException();
 
-        starResult = stars.process();
-        gasResult = gasses.process(gasModel);
+        stars.process();
+
+        if (!settings.getGasStarInfluencedColor()) {
+            gasResult = gasses.process(gasModel);
+        } else {
+            gasResult = gasses.process(gasModel, stars);
+        }
 
         doneProcessing = true;
     }
 
+    public void process(Hdf5Frame otherFrame) throws UninitializedException {
+        if (!initialized)
+            throw new UninitializedException();
+
+        stars.process(otherFrame.stars);
+
+        if (!settings.getGasStarInfluencedColor()) {
+            gasInterpolatedResult = gasses.process(gasModel, otherFrame.gasses);
+        } else {
+            gasInterpolatedResult = gasses.process(gasModel, otherFrame.gasses, stars);
+        }
+
+        doneProcessing = true;
+        interpolated = true;
+    }
+
     public void drawStars(GL3 gl, Program starProgram, MatF4 MVMatrix) throws UninitializedException {
-        if (!doneProcessing)
+        if (!doneProcessing || interpolated)
             process();
 
         starModel.init(gl);
 
         try {
-            for (Star s : starResult) {
-                s.init();
-                s.draw(gl, starProgram, MVMatrix);
-            }
+            stars.draw(gl, starProgram, MVMatrix);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void drawStars(GL3 gl, Program starProgram, MatF4 MVMatrix, int step) throws UninitializedException {
+        if (!doneProcessing || !interpolated)
+            throw new UninitializedException();
+
+        starModel.init(gl);
+
+        try {
+            stars.draw(gl, starProgram, MVMatrix, step);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
     }
 
     public void drawGas(GL3 gl, Program gasProgram, MatF4 MVMatrix) throws UninitializedException {
-        if (!doneProcessing)
+        if (!doneProcessing || interpolated)
             process();
 
         gasModel.init(gl);
-        gasResult.init(gl);
 
-        try {
-            gasResult.draw(gl, gasProgram, MVMatrix);
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
+        gasResult.draw(gl, gasProgram, MVMatrix);
+    }
+
+    public void drawGas(GL3 gl, Program gasProgram, MatF4 MVMatrix, int step) throws UninitializedException {
+        if (!doneProcessing || !interpolated)
+            throw new UninitializedException();
+
+        gasModel.init(gl);
+
+        gasInterpolatedResult[step].draw(gl, gasProgram, MVMatrix);
     }
 
     public int getNumber() {

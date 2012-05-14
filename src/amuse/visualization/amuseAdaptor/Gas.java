@@ -1,5 +1,6 @@
 package amuse.visualization.amuseAdaptor;
 
+import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.VecF3;
 import openglCommon.math.VectorFMath;
 import amuse.visualization.AmuseSettings;
@@ -7,14 +8,16 @@ import amuse.visualization.AmuseSettings;
 public class Gas {
     private final static AmuseSettings settings = AmuseSettings.getInstance();
 
-    public VecF3 rawLocation, processedLocation;
-    public final VecF3 velocity;
-    public final float energy;
+    private final VecF3 rawLocation;
 
-    public VecF3[] bezierPoints;
-    public final float[] interpolatedEnergy = new float[settings.getBezierInterpolationSteps()];
+    private VecF3 processedLocation;
+    private final VecF3 velocity;
+    private final float energy;
 
-    private boolean initialized;
+    private VecF3[] bezierPoints;
+    private final float[] interpolatedEnergy = new float[settings.getBezierInterpolationSteps()];
+
+    private boolean initialized, interpolated;
 
     public Gas(VecF3 location, VecF3 velocity, double energy) {
         this.rawLocation = location;
@@ -27,6 +30,7 @@ public class Gas {
             this.processedLocation = Astrophysics.locationToScreenCoord(rawLocation);
 
             initialized = true;
+            interpolated = false;
         }
     }
 
@@ -44,6 +48,35 @@ public class Gas {
             }
 
             initialized = true;
+            interpolated = true;
         }
+    }
+
+    public VecF3 getLocation() throws UninitializedException {
+        if (!initialized || interpolated) {
+            throw new UninitializedException();
+        }
+        return processedLocation;
+    }
+
+    public VecF3 getLocation(int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
+            throw new UninitializedException();
+        }
+        return bezierPoints[step];
+    }
+
+    public float getEnergy() throws UninitializedException {
+        if (!initialized || interpolated) {
+            throw new UninitializedException();
+        }
+        return energy;
+    }
+
+    public float getEnergy(int step) throws UninitializedException {
+        if (!initialized || !interpolated) {
+            throw new UninitializedException();
+        }
+        return interpolatedEnergy[step];
     }
 }
