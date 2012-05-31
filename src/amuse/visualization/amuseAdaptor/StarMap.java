@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.media.opengl.GL3;
 
-import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.MatF4;
 import openglCommon.shaders.Program;
 
@@ -26,11 +25,12 @@ public class StarMap extends HashMap<Long, Star> {
             Star s = entry.getValue();
             Star o = otherStars.get(key);
 
-            s.init(o);
+            s.setInterpolationStar(o);
+            s.init();
         }
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
         for (Map.Entry<Long, Star> entry : entrySet()) {
             Star s = entry.getValue();
 
@@ -38,7 +38,7 @@ public class StarMap extends HashMap<Long, Star> {
         }
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int step) throws UninitializedException {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int step) {
         for (Map.Entry<Long, Star> entry : entrySet()) {
             Star s = entry.getValue();
 

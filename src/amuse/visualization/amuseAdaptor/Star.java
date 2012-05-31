@@ -3,7 +3,6 @@ package amuse.visualization.amuseAdaptor;
 import javax.media.opengl.GL3;
 
 import openglCommon.datastructures.Material;
-import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.MatF4;
 import openglCommon.math.MatrixFMath;
 import openglCommon.math.VecF3;
@@ -14,25 +13,27 @@ import openglCommon.shaders.Program;
 import amuse.visualization.AmuseSettings;
 
 public class Star {
-    private final static AmuseSettings settings = AmuseSettings.getInstance();
+    private final static AmuseSettings settings              = AmuseSettings.getInstance();
 
-    private final Model baseModel;
-    private final VecF3 rawLocation;
-    private final VecF3 velocity;
-    private final VecF4 color;
-    private final float radius;
+    private final Model                baseModel;
+    private final VecF3                rawLocation;
+    private final VecF3                velocity;
+    private final VecF4                color;
+    private final float                radius;
 
-    private final Material material;
-    private final VecF4 haloColor;
+    private final Material             material;
+    private final VecF4                haloColor;
 
-    private boolean initialized, interpolated;
+    private boolean                    initialized, interpolated;
 
-    private VecF3[] bezierPoints;
-    private VecF4[] interpolatedColors;
-    private final Material[] interpolatedMaterials = new Material[settings.getBezierInterpolationSteps()];
-    private final float[] interpolatedRadii = new float[settings.getBezierInterpolationSteps()];
+    private VecF3[]                    bezierPoints;
+    private VecF4[]                    interpolatedColors;
+    private final Material[]           interpolatedMaterials = new Material[settings.getBezierInterpolationSteps()];
+    private final float[]              interpolatedRadii     = new float[settings.getBezierInterpolationSteps()];
 
-    private VecF3 processedLocation;
+    private VecF3                      processedLocation;
+
+    private Star                       interpolationStar;
 
     public Star(Model baseModel, VecF3 location, VecF3 velocity, double luminosity, double radius) {
         this.baseModel = baseModel;
@@ -55,35 +56,35 @@ public class Star {
         if (!initialized) {
             this.processedLocation = Astrophysics.locationToScreenCoord(rawLocation);
 
-            initialized = true;
-            interpolated = false;
-        }
-    }
+            if (interpolationStar == null) {
+                interpolated = false;
+            } else {
+                if (!initialized) {
+                    int steps = settings.getBezierInterpolationSteps();
 
-    public void init(Star otherStar) {
-        if (!initialized) {
-            int steps = settings.getBezierInterpolationSteps();
+                    bezierPoints = VectorFMath.bezierCurve(steps, rawLocation, velocity, interpolationStar.velocity,
+                            interpolationStar.rawLocation);
+                    interpolatedColors = VectorFMath.interpolateColors(steps, color, interpolationStar.color);
 
-            bezierPoints = VectorFMath.bezierCurve(steps, rawLocation, velocity, otherStar.velocity,
-                    otherStar.rawLocation);
-            interpolatedColors = VectorFMath.interpolateColors(steps, color, otherStar.color);
+                    float rstep = (interpolationStar.radius - radius) / steps;
+                    for (int i = 0; i < steps; i++) {
+                        bezierPoints[i] = Astrophysics.locationToScreenCoord(bezierPoints[i]);
+                        interpolatedMaterials[i] = new Material(interpolatedColors[i], interpolatedColors[i],
+                                interpolatedColors[i]);
+                        interpolatedRadii[i] = radius + (rstep * i);
+                    }
 
-            float rstep = (otherStar.radius - radius) / steps;
-            for (int i = 0; i < steps; i++) {
-                bezierPoints[i] = Astrophysics.locationToScreenCoord(bezierPoints[i]);
-                interpolatedMaterials[i] = new Material(interpolatedColors[i], interpolatedColors[i],
-                        interpolatedColors[i]);
-                interpolatedRadii[i] = radius + (rstep * i);
+                    interpolated = true;
+                }
             }
 
             initialized = true;
-            interpolated = true;
         }
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix) throws UninitializedException {
-        if (!initialized || interpolated) {
-            throw new UninitializedException();
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
+        if (!initialized) {
+            init();
         }
 
         baseModel.setMaterial(material);
@@ -96,60 +97,84 @@ public class Star {
         baseModel.draw(gl, program, MVMatrix);
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int step) throws UninitializedException {
-        if (!initialized || !interpolated) {
-            throw new UninitializedException();
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix, int step) {
+        if (!initialized) {
+            init();
         }
 
-        baseModel.setMaterial(interpolatedMaterials[step]);
-        baseModel.setScale(interpolatedRadii[step]);
+        if (interpolated) {
+            baseModel.setMaterial(interpolatedMaterials[step]);
+            baseModel.setScale(interpolatedRadii[step]);
 
-        MVMatrix = MVMatrix.mul(MatrixFMath.translate(bezierPoints[step]));
+            MVMatrix = MVMatrix.mul(MatrixFMath.translate(bezierPoints[step]));
 
-        program.setUniformVector("HaloColor", interpolatedColors[step]);
+            program.setUniformVector("HaloColor", interpolatedColors[step]);
 
-        baseModel.draw(gl, program, MVMatrix);
+            baseModel.draw(gl, program, MVMatrix);
+        } else {
+            draw(gl, program, MVMatrix);
+        }
     }
 
-    public VecF4 getColor() throws UninitializedException {
-        if (!initialized || interpolated) {
-            throw new UninitializedException();
+    public VecF4 getColor() {
+        if (!initialized) {
+            init();
         }
         return color;
     }
 
-    public VecF4 getColor(int step) throws UninitializedException {
-        if (!initialized || !interpolated) {
-            throw new UninitializedException();
-        }
-        return interpolatedColors[step];
-    }
-
-    public VecF3 getLocation() throws UninitializedException {
-        if (!initialized || interpolated) {
-            throw new UninitializedException();
+    public VecF3 getLocation() {
+        if (!initialized) {
+            init();
         }
         return processedLocation;
     }
 
-    public VecF3 getLocation(int step) throws UninitializedException {
-        if (!initialized || !interpolated) {
-            throw new UninitializedException();
-        }
-        return bezierPoints[step];
-    }
-
-    public float getRadius() throws UninitializedException {
-        if (!initialized || interpolated) {
-            throw new UninitializedException();
+    public float getRadius() {
+        if (!initialized) {
+            init();
         }
         return radius;
     }
 
-    public float getRadius(int step) throws UninitializedException {
-        if (!initialized || !interpolated) {
-            throw new UninitializedException();
+    public VecF4 getColor(int step) {
+        if (!initialized) {
+            init();
         }
-        return interpolatedRadii[step];
+
+        if (interpolated) {
+            return interpolatedColors[step];
+        } else {
+            return color;
+        }
+    }
+
+    public VecF3 getLocation(int step) {
+        if (!initialized) {
+            init();
+        }
+
+        if (interpolated) {
+            return bezierPoints[step];
+        } else {
+            return processedLocation;
+        }
+    }
+
+    public float getRadius(int step) {
+        if (!initialized) {
+            init();
+        }
+
+        if (interpolated) {
+            return interpolatedRadii[step];
+        } else {
+            return radius;
+        }
+    }
+
+    public void setInterpolationStar(Star otherStar) {
+        this.interpolationStar = otherStar;
+        this.initialized = false;
     }
 }

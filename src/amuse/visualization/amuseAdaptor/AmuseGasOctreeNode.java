@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.media.opengl.GL3;
 
 import openglCommon.datastructures.Material;
-import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.MatF4;
 import openglCommon.math.MatrixFMath;
 import openglCommon.math.VecF3;
@@ -19,26 +18,26 @@ import openglCommon.util.InputHandler;
 import amuse.visualization.AmuseSettings;
 
 public class AmuseGasOctreeNode {
-    private final static AmuseSettings settings = AmuseSettings.getInstance();
+    private final static AmuseSettings               settings   = AmuseSettings.getInstance();
 
-    protected final int maxElements;
+    protected final int                              maxElements;
     protected final ArrayList<AmuseGasOctreeElement> elements;
-    protected final VecF3 center;
-    protected final float cubeSize;
-    protected final int depth;
-    protected final Model model;
-    protected final MatF4 TMatrix;
-    protected final float scale;
+    protected final VecF3                            center;
+    protected final float                            cubeSize;
+    protected final int                              depth;
+    protected final Model                            model;
+    protected final MatF4                            TMatrix;
+    protected final float                            scale;
 
-    protected AmuseGasOctreeNode ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
-    protected int childCounter;
-    protected boolean subdivided = false;
-    protected boolean drawable = false;
-    protected VecF4 color;
-    protected int subdivision;
+    protected AmuseGasOctreeNode                     ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
+    protected int                                    childCounter;
+    protected boolean                                subdivided = false;
+    protected boolean                                drawable   = false;
+    protected VecF4                                  color;
+    protected int                                    subdivision;
 
-    private double total_u;
-    private float density;
+    private double                                   total_u;
+    private float                                    density;
 
     public AmuseGasOctreeNode(Model baseModel, int maxElements, int depth, int subdivision, VecF3 corner, float halfSize) {
         this.model = baseModel;
@@ -313,27 +312,23 @@ public class AmuseGasOctreeNode {
 
             // System.out.println("New Gas particle ------------------");
 
-            try {
-                for (final Star s : stars.values()) {
-                    final VecF3 location = s.getLocation();
-                    final float distance = VectorFMath.length(location.sub(center));
-                    final float radius = s.getRadius();
-                    final float effectFactor = radius / distance;
+            for (final Star s : stars.values()) {
+                final VecF3 location = s.getLocation();
+                final float distance = VectorFMath.length(location.sub(center));
+                final float radius = s.getRadius();
+                final float effectFactor = radius / distance;
 
-                    if (effectFactor > 0.01f) {
+                if (effectFactor > 0.01f) {
 
-                        final VecF3 color = s.getColor().stripAlpha();
-                        if (effectiveColors.containsKey(color)) {
-                            final float newFactor = effectiveColors.get(color) + effectFactor;
-                            effectiveColors.put(color, newFactor);
-                        } else {
-                            effectiveColors.put(color, effectFactor);
-                        }
-                        totalEffectiveColor += effectFactor;
+                    final VecF3 color = s.getColor().stripAlpha();
+                    if (effectiveColors.containsKey(color)) {
+                        final float newFactor = effectiveColors.get(color) + effectFactor;
+                        effectiveColors.put(color, newFactor);
+                    } else {
+                        effectiveColors.put(color, effectFactor);
                     }
+                    totalEffectiveColor += effectFactor;
                 }
-            } catch (UninitializedException e) {
-                e.printStackTrace();
             }
 
             for (final Map.Entry<VecF3, Float> entry : effectiveColors.entrySet()) {

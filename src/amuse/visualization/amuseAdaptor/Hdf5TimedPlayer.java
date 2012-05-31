@@ -4,12 +4,7 @@ import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
-import openglCommon.datastructures.Material;
-import openglCommon.exceptions.FileOpeningException;
-import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.VecF3;
-import openglCommon.models.Model;
-import openglCommon.models.base.Sphere;
 import openglCommon.util.CustomJSlider;
 import openglCommon.util.InputHandler;
 import amuse.visualization.AmuseSettings;
@@ -17,7 +12,7 @@ import amuse.visualization.AmuseWindow;
 
 public class Hdf5TimedPlayer implements Runnable {
     public static enum states {
-        UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
+        UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, WAITINGONFRAME, PLAYING
     }
 
     private final AmuseSettings settings = AmuseSettings.getInstance();
@@ -32,7 +27,6 @@ public class Hdf5TimedPlayer implements Runnable {
     private boolean running = true;
 
     private String path = null;
-    private String namePrefix = null;
 
     private long startTime, stopTime;
 
@@ -44,8 +38,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
     private AmuseWindow amuseWindow;
 
-    private Model starModelBase = new Sphere(Material.random(), settings.getStarSubdivision(), 1f, new VecF3(0, 0, 0));
-    private Model gasModelBase = new Sphere(Material.random(), settings.getGasSubdivision(), 1f, new VecF3(0, 0, 0));
+    private Hdf5FrameManager frameManager;
 
     public Hdf5TimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
@@ -76,12 +69,12 @@ public class Hdf5TimedPlayer implements Runnable {
         return frameNumber;
     }
 
-    public Hdf5Frame getFrame() {
-        return currentFrame;
+    public int getInterpolationStep() {
+        return interpolationStep;
     }
 
-    public states getState() {
-        return currentState;
+    public Hdf5Frame getFrame() {
+        return currentFrame;
     }
 
     public void init() {
@@ -90,24 +83,10 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        frameNumber = settings.getInitialSimulationFrame();
-        interpolationStep = 0;
-
-        try {
-            currentFrame = updateFrame(true);
-        } catch (FileOpeningException e) {
-            System.err.println("Initial simulation frame (settings) not found. Trying again from frame 0.");
-            frameNumber = 0;
-            try {
-                currentFrame = updateFrame(true);
-            } catch (FileOpeningException e1) {
-                System.err.println("Frame 0 also not found. Exiting.");
-                System.exit(1);
-            }
-        }
-
         final int initialMaxBar = Hdf5Util.getNumFiles(path);
         timeBar.setMaximum(initialMaxBar);
+
+        setFrame(settings.getInitialSimulationFrame(), true);
 
         initialized = true;
     }
@@ -116,7 +95,7 @@ public class Hdf5TimedPlayer implements Runnable {
         return initialized;
     }
 
-    public boolean isPlaying() {
+    public synchronized boolean isPlaying() {
         if ((currentState == states.PLAYING) || (currentState == states.MOVIEMAKING)) {
             return true;
         }
@@ -124,28 +103,26 @@ public class Hdf5TimedPlayer implements Runnable {
         return false;
     }
 
-    public void movieMode() {
+    public synchronized void movieMode() {
         currentState = states.MOVIEMAKING;
     }
 
     public void oneBack() {
-        stop();
         setFrame(frameNumber - 1, false);
     }
 
     public void oneForward() {
-        stop();
         setFrame(frameNumber + 1, false);
     }
 
     public void open(String path, String namePrefix) {
         this.path = path;
-        this.namePrefix = namePrefix;
+        this.frameManager = new Hdf5FrameManager(0, namePrefix);
     }
 
-    public void redraw() {
+    public synchronized void redraw() {
         if (initialized) {
-            setFrame(frameNumber, true);
+            updateFrame(frameNumber, true);
             currentState = states.REDRAWING;
         }
     }
@@ -161,39 +138,16 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        frameNumber = settings.getInitialSimulationFrame();
-
         inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
-        timeBar.setValue(frameNumber);
-        frameCounter.setValue(frameNumber);
-
-        currentState = states.STOPPED;
+        stop();
 
         while (running) {
             if ((currentState == states.PLAYING) || (currentState == states.REDRAWING)
                     || (currentState == states.MOVIEMAKING)) {
                 try {
                     startTime = System.currentTimeMillis();
-
-                    if (currentState != states.REDRAWING) {
-                        interpolationStep++;
-                        if (interpolationStep == maxInterpolation) {
-                            frameNumber++;
-                            interpolationStep = 0;
-                        }
-                    }
-
-                    try {
-                        currentFrame = updateFrame(false);
-                    } catch (final FileOpeningException e) {
-                        setFrame(frameNumber - 1, false);
-                        currentState = states.WAITINGONFRAME;
-                        System.err.println(e);
-                        System.err.println(" run File not found, retrying from frame " + frameNumber + ".");
-                        continue;
-                    }
 
                     if (currentState == states.MOVIEMAKING) {
                         if (settings.getMovieRotate()) {
@@ -209,9 +163,21 @@ public class Hdf5TimedPlayer implements Runnable {
                         }
                     }
 
-                    timeBar.setValue(frameNumber);
-                    frameCounter.setValue(frameNumber);
+                    // Forward either frame or interpolation step, depending on
+                    // settings
+                    if (currentState != states.REDRAWING) {
+                        if (settings.getBezierInterpolation()) {
+                            interpolationStep++;
+                            if (interpolationStep == maxInterpolation) {
+                                updateFrame(frameNumber + 1, false);
+                                interpolationStep = 0;
+                            }
+                        } else {
+                            updateFrame(frameNumber + 1, false);
+                        }
+                    }
 
+                    // Wait for the _rest_ of the timeframe
                     stopTime = System.currentTimeMillis();
                     if (((startTime - stopTime) < settings.getWaitTimeMovie()) && (currentState != states.MOVIEMAKING)) {
                         Thread.sleep(settings.getWaitTimeMovie() - (startTime - stopTime));
@@ -240,75 +206,38 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void setFrame(int value, boolean overrideUpdate) {
         // System.out.println("setValue?");
-        currentState = states.STOPPED;
-        frameNumber = value;
+        stop();
         interpolationStep = 0;
 
-        timeBar.setValue(frameNumber);
-        frameCounter.setValue(frameNumber);
-
         if (overrideUpdate) {
-            starModelBase = new Sphere(Material.random(), settings.getStarSubdivision(), 1f, new VecF3(0, 0, 0));
-            gasModelBase = new Sphere(Material.random(), settings.getGasSubdivision(), 1f, new VecF3(0, 0, 0));
+            frameManager.resetModels();
         }
 
-        try {
-            currentFrame = updateFrame(overrideUpdate);
-        } catch (final FileOpeningException e) {
-            System.err.println(e);
-            System.err.println("setFrame File not found, retrying from frame " + frameNumber + ".");
-
-            if (value - 1 < 0) {
-                setFrame(0, overrideUpdate);
-            } else {
-                setFrame(value - 1, overrideUpdate);
-            }
-            currentState = states.WAITINGONFRAME;
-        } catch (final Throwable t) {
-            System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
-            t.printStackTrace(System.err);
-        }
+        updateFrame(value, overrideUpdate);
     }
 
-    public void start() {
+    public synchronized void start() {
         currentState = states.PLAYING;
     }
 
-    public void stop() {
+    public synchronized void stop() {
         currentState = states.STOPPED;
     }
 
-    private synchronized Hdf5Frame updateFrame(boolean overrideUpdate) throws FileOpeningException {
+    private synchronized void updateFrame(int frameNumber, boolean overrideUpdate) {
         Hdf5Frame newFrame = currentFrame;
 
         if (currentFrame == null || currentFrame.getNumber() != frameNumber || overrideUpdate) {
-            if (settings.getBezierInterpolation()) {
-                Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
-                Hdf5Frame nextFrame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber + 1);
+            Hdf5Frame frame = frameManager.getFrame(frameNumber);
 
-                frame.init();
-                nextFrame.init();
-                try {
-                    frame.process(nextFrame);
-                } catch (UninitializedException e) {
-                    e.printStackTrace();
-                }
-
+            if (!frame.isError()) {
                 newFrame = frame;
-            } else {
-                Hdf5Frame frame = new Hdf5Frame(starModelBase, gasModelBase, namePrefix, frameNumber);
-
-                frame.init();
-                try {
-                    frame.process();
-                } catch (UninitializedException e) {
-                    e.printStackTrace();
-                }
-
-                newFrame = frame;
+                this.frameNumber = frameNumber;
+                this.timeBar.setValue(frameNumber);
+                this.frameCounter.setValue(frameNumber);
             }
         }
 
-        return newFrame;
+        currentFrame = newFrame;
     }
 }

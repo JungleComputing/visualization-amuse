@@ -102,6 +102,8 @@ public class AmuseSettings extends Settings {
     private static boolean BEZIER_INTERPOLATION                    = false;
     private static int     BEZIER_INTERPOLATION_STEPS              = 10;
 
+    private static int     PREPROCESSING_AMOUNT                    = 5;
+
     public static AmuseSettings getInstance() {
         return SingletonHolder.instance;
     }
@@ -221,6 +223,8 @@ public class AmuseSettings extends Settings {
 
             AmuseSettings.BEZIER_INTERPOLATION = props.getBooleanProperty("BEZIER_INTERPOLATION");
             AmuseSettings.BEZIER_INTERPOLATION_STEPS = props.getIntProperty("BEZIER_INTERPOLATION_STEPS");
+
+            AmuseSettings.PREPROCESSING_AMOUNT = props.getIntProperty("PREPROCESSING_AMOUNT");
         } catch (NumberFormatException e) {
             System.out.println(e.getMessage());
         }
@@ -580,5 +584,13 @@ public class AmuseSettings extends Settings {
 
     public int getBezierInterpolationSteps() {
         return AmuseSettings.BEZIER_INTERPOLATION_STEPS;
+    }
+
+    public int getPreprocessAmount() {
+        return AmuseSettings.PREPROCESSING_AMOUNT;
+    }
+
+    public void setPreprocessAmount(int value) {
+        AmuseSettings.PREPROCESSING_AMOUNT = value;
     }
 }
