@@ -1,0 +1,15 @@
+#version 140
+
+in vec4 MCvertex;
+
+uniform mat4 PMatrix;
+uniform mat4 global_MVMatrix;
+uniform mat4 node_MVmatrix;
+
+uniform float node_scale;
+
+void main() {
+	mat4 scale_matrix = mat4(node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, 1);
+	
+    gl_Position = PMatrix * global_MVMatrix * node_MVmatrix * scale_matrix * MCvertex;
+}

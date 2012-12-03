@@ -1,0 +1,331 @@
+package nl.esciencecenter.visualization.amuse.planetformation.data;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.media.opengl.GL3;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSlider;
+
+import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
+import openglCommon.math.VecF3;
+import openglCommon.math.VectorFMath;
+import openglCommon.util.CustomJSlider;
+import openglCommon.util.InputHandler;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class AmuseTimedPlayer implements Runnable {
+    private final static Logger logger = LoggerFactory
+                                               .getLogger(AmuseTimedPlayer.class);
+
+    public static enum states {
+        UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
+    }
+
+    private final AmuseSettings       settings           = AmuseSettings
+                                                                 .getInstance();
+
+    private states                    currentState       = states.UNOPENED;
+    private int                       frameNumber;
+
+    private final boolean             running            = true;
+    private boolean                   initialized        = false;
+
+    private long                      startTime, stopTime;
+
+    private final JSlider             timeBar;
+    private final JFormattedTextField frameCounter;
+
+    private final InputHandler        inputHandler;
+
+    private AmuseDatasetManager       dsManager;
+    private AmuseSceneStorage         sceneStorage;
+
+    private boolean                   needsScreenshot    = false;
+    private String                    screenshotFilename = "";
+
+    private final long                waittime           = settings
+                                                                 .getWaitTimeMovie();
+
+    private final ArrayList<VecF3>    bezierPoints, fixedPoints;
+    private final ArrayList<Integer>  bezierSteps;
+
+    public AmuseTimedPlayer(CustomJSlider timeBar2,
+            JFormattedTextField frameCounter) {
+        this.timeBar = timeBar2;
+        this.frameCounter = frameCounter;
+        this.inputHandler = InputHandler.getInstance();
+
+        bezierPoints = new ArrayList<VecF3>();
+
+        fixedPoints = new ArrayList<VecF3>();
+        bezierSteps = new ArrayList<Integer>();
+
+        fixedPoints.add(new VecF3(394, 624, -80)); // Europa
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(379, 702, -140)); // Gulf Stream
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(359, 651, -140)); // Equator
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(320, 599, -90)); // South Africa
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(339, 540, -140)); // India
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(382, 487, -80)); // Japan
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(353, 360, -110)); // Panama
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(311, 326, -110)); // Argentina
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(412, 302, -140)); // Greenland
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(394, 264, -80)); // Europa
+
+        VecF3 lastPoint = fixedPoints.get(0);
+        VecF3 still = new VecF3(0, 0, 0);
+        for (int i = 1; i < fixedPoints.size(); i++) {
+            VecF3 newPoint = fixedPoints.get(i);
+
+            VecF3[] bezierPointsTemp = VectorFMath.bezierCurve(
+                    bezierSteps.get(i - 1), lastPoint, still, still, newPoint);
+
+            for (int j = 1; j < bezierPointsTemp.length; j++) {
+                bezierPoints.add(bezierPointsTemp[j]);
+            }
+
+            lastPoint = newPoint;
+        }
+    }
+
+    public void close() {
+        initialized = false;
+        frameNumber = 0;
+        timeBar.setValue(0);
+        frameCounter.setValue(0);
+        timeBar.setMaximum(0);
+    }
+
+    public void delete(GL3 gl) {
+        // TODO
+    }
+
+    public void init(File file_bin, File file_gas) {
+        this.dsManager = new AmuseDatasetManager(file_bin, file_gas, 1, 4);
+        this.sceneStorage = dsManager.getSceneStorage();
+
+        frameNumber = dsManager.getFrameNumberOfIndex(0);
+        final int initialMaxBar = dsManager.getNumFiles() - 1;
+
+        timeBar.setMaximum(initialMaxBar);
+        timeBar.setMinimum(0);
+
+        updateFrame(frameNumber, true);
+
+        initialized = true;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public synchronized boolean isPlaying() {
+        if ((currentState == states.PLAYING)
+                || (currentState == states.MOVIEMAKING)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public synchronized void movieMode() {
+        currentState = states.MOVIEMAKING;
+    }
+
+    public synchronized void oneBack() {
+        stop();
+
+        try {
+            int newFrameNumber = dsManager.getPreviousFrameNumber(frameNumber);
+            updateFrame(newFrameNumber, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void oneForward() {
+        stop();
+
+        try {
+            int newFrameNumber = dsManager.getNextFrameNumber(frameNumber);
+            updateFrame(newFrameNumber, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void redraw() {
+        if (initialized) {
+            updateFrame(frameNumber, true);
+            currentState = states.REDRAWING;
+        }
+    }
+
+    public synchronized void rewind() {
+        stop();
+        updateFrame(0, false);
+    }
+
+    public synchronized void setScreenshotNeeded(boolean value) {
+        if (value) {
+            final VecF3 rotation = inputHandler.getRotation();
+            final float viewDist = inputHandler.getViewDist();
+
+            System.out.println("Simulation frame: " + frameNumber
+                    + ", Rotation x: " + rotation.get(0) + " y: "
+                    + rotation.get(1) + " , viewDist: " + viewDist);
+
+            screenshotFilename = settings.getScreenshotPath()
+                    + String.format("%05d", (frameNumber)) + ".png";
+        }
+        needsScreenshot = value;
+    }
+
+    public synchronized boolean isScreenshotNeeded() {
+        return needsScreenshot;
+    }
+
+    public synchronized String getScreenshotFileName() {
+        return screenshotFilename;
+    }
+
+    @Override
+    public void run() {
+        if (!initialized) {
+            System.err.println("HDFTimer started while not initialized.");
+            System.exit(1);
+        }
+
+        inputHandler.setRotation(new VecF3(settings.getInitialRotationX(),
+                settings.getInitialRotationY(), 0f));
+        inputHandler.setViewDist(settings.getInitialZoom());
+
+        // inputHandler.setRotation(new VecF3(bezierPoints.get(0).get(0),
+        // bezierPoints.get(0).get(1), 0f));
+        // inputHandler.setViewDist(bezierPoints.get(0).get(2));
+
+        stop();
+
+        while (running) {
+            if ((currentState == states.PLAYING)
+                    || (currentState == states.REDRAWING)
+                    || (currentState == states.MOVIEMAKING)) {
+                try {
+                    if (!isScreenshotNeeded()) {
+                        startTime = System.currentTimeMillis();
+
+                        if (currentState == states.MOVIEMAKING) {
+                            final VecF3 rotation = inputHandler.getRotation();
+                            if (settings.getMovieRotate()) {
+                                // rotation.set(
+                                // 1,
+                                // rotation.get(1)
+                                // + settings
+                                // .getMovieRotationSpeedDef());
+                                // inputHandler.setRotation(rotation);
+                                inputHandler.setRotation(new VecF3(bezierPoints
+                                        .get(frameNumber).get(0), bezierPoints
+                                        .get(frameNumber).get(1), 0f));
+                                inputHandler.setViewDist(bezierPoints.get(
+                                        frameNumber).get(2));
+                                setScreenshotNeeded(true);
+                            } else {
+                                setScreenshotNeeded(true);
+                            }
+                        }
+
+                        // Forward frame
+                        if (currentState != states.REDRAWING) {
+                            int newFrameNumber;
+                            try {
+                                newFrameNumber = dsManager
+                                        .getNextFrameNumber(frameNumber);
+                                if (sceneStorage.doneWithLastRequest()) {
+                                    updateFrame(newFrameNumber, false);
+                                }
+                            } catch (IOException e) {
+                                stop();
+                                logger.debug("nextFrame returned IOException.");
+                            }
+                        }
+
+                        // Wait for the _rest_ of the timeframe
+                        stopTime = System.currentTimeMillis();
+                        long spentTime = stopTime - startTime;
+
+                        if (spentTime < waittime) {
+                            Thread.sleep(waittime - spentTime);
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    System.err.println("Interrupted while playing.");
+                }
+            } else if (currentState == states.STOPPED) {
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException e) {
+                    System.err.println("Interrupted while stopped.");
+                }
+            } else if (currentState == states.REDRAWING) {
+                currentState = states.STOPPED;
+            } else if (currentState == states.WAITINGONFRAME) {
+                try {
+                    Thread.sleep(settings.getWaitTimeRetry());
+                    currentState = states.PLAYING;
+                } catch (final InterruptedException e) {
+                    System.err.println("Interrupted while waiting.");
+                }
+            }
+        }
+    }
+
+    public synchronized void setFrame(int value, boolean overrideUpdate) {
+        stop();
+
+        updateFrame(dsManager.getFrameNumberOfIndex(value), overrideUpdate);
+    }
+
+    public synchronized void start() {
+        currentState = states.PLAYING;
+    }
+
+    public synchronized void stop() {
+        currentState = states.STOPPED;
+    }
+
+    private synchronized void updateFrame(int newFrameNumber,
+            boolean overrideUpdate) {
+        if (dsManager != null) {
+            if (newFrameNumber != frameNumber || overrideUpdate) {
+
+                frameNumber = newFrameNumber;
+                settings.setCurrentFrameNumber(newFrameNumber);
+
+                this.timeBar.setValue(dsManager
+                        .getIndexOfFrameNumber(newFrameNumber));
+                this.frameCounter.setValue(dsManager
+                        .getIndexOfFrameNumber(newFrameNumber));
+            }
+        }
+    }
+
+    public AmuseSceneStorage getSceneStorage() {
+        return sceneStorage;
+    }
+
+    public int getFrameNumber() {
+        return frameNumber;
+    }
+}
