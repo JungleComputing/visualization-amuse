@@ -4,10 +4,10 @@ import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL3;
 
-import openglCommon.datastructures.GLSLAttrib;
-import openglCommon.datastructures.VBO;
-import openglCommon.exceptions.UninitializedException;
-import openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
+import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.shaders.Program;
 
 public class GasModel {
     protected FloatBuffer vertices;

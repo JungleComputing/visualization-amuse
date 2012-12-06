@@ -1,8 +1,8 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glExt;
 
-import openglCommon.math.Point4;
-import openglCommon.math.VecF3;
-import openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.math.Point4;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
 
 public class GasCube extends GasModel {
     public GasCube(float height, VecF3 center) {

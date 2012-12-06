@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +67,9 @@ public class AmuseDatasetManager {
                             particleData, gasData);
                     CPUJobExecute(builder);
 
+                    LegendTextureBuilder legendBuilder = new LegendTextureBuilder(
+                            sceneStorage, runnable);
+                    CPUJobExecute(legendBuilder);
                 } catch (RuntimeException e) {
                     logger.error("Runtime exception in IOPoolworker", e);
 

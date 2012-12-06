@@ -5,6 +5,7 @@ uniform sampler2D gasTexture;
 uniform sampler2D starTexture;
 uniform sampler2D starHaloTexture;
 uniform sampler2D hudTexture;
+//uniform sampler2D legendTexture;
 
 uniform float starBrightness;
 uniform float starHaloBrightness;

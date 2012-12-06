@@ -37,9 +37,9 @@ import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterp
 import nl.esciencecenter.visualization.amuse.planetformation.util.GoggleSwing;
 import nl.esciencecenter.visualization.amuse.planetformation.util.RangeSlider;
 import nl.esciencecenter.visualization.amuse.planetformation.util.RangeSliderUI;
-import openglCommon.CommonPanel;
-import openglCommon.util.CustomJSlider;
-import openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.CommonPanel;
+import nl.esciencecenter.visualization.openglCommon.util.CustomJSlider;
+import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public class AmusePanel extends CommonPanel {
         super(amuseWindow, InputHandler.getInstance());
         this.amuseWindow = amuseWindow;
 
-        timeBar = new openglCommon.util.CustomJSlider();
+        timeBar = new CustomJSlider();
         timeBar.setValue(0);
         timeBar.setMajorTickSpacing(5);
         timeBar.setMinorTickSpacing(1);

@@ -3,7 +3,7 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 import java.io.IOException;
 
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;

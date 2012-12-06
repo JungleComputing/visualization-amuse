@@ -1,6 +1,6 @@
 package nl.esciencecenter.visualization.amuse.planetformation.data;
 
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import ucar.nc2.NetcdfFile;
 
 public class AmuseDataArray implements Runnable {

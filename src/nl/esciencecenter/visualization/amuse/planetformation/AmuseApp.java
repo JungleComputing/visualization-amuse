@@ -7,7 +7,7 @@ import java.io.File;
 
 import javax.swing.JFrame;
 
-import openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 public class AmuseApp {
     private final static AmuseSettings settings = AmuseSettings.getInstance();
@@ -21,14 +21,20 @@ public class AmuseApp {
                 i++;
                 cmdlnfileName = arguments[i];
                 final File cmdlnfile = new File(cmdlnfileName);
-                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(
+                        0,
+                        cmdlnfile.getPath().length()
+                                - cmdlnfile.getName().length());
             } else if (arguments[i].equals("-resume")) {
                 i++;
-                AmuseApp.settings.setInitial_simulation_frame(Integer.parseInt(arguments[i]));
+                AmuseApp.settings.setInitial_simulation_frame(Integer
+                        .parseInt(arguments[i]));
                 i++;
-                AmuseApp.settings.setInitial_rotation_x(Float.parseFloat(arguments[i]));
+                AmuseApp.settings.setInitial_rotation_x(Float
+                        .parseFloat(arguments[i]));
                 i++;
-                AmuseApp.settings.setInitial_rotation_y(Float.parseFloat(arguments[i]));
+                AmuseApp.settings.setInitial_rotation_y(Float
+                        .parseFloat(arguments[i]));
             } else {
                 cmdlnfileName = null;
                 path = System.getProperty("user.dir");
@@ -36,11 +42,14 @@ public class AmuseApp {
         }
 
         final JFrame frame = new JFrame("Amuse Visualization");
-        frame.setPreferredSize(new Dimension(AmuseApp.settings.getDefaultScreenWidth(), AmuseApp.settings
+        frame.setPreferredSize(new Dimension(AmuseApp.settings
+                .getDefaultScreenWidth(), AmuseApp.settings
                 .getDefaultScreenHeight()));
 
-        final AmuseWindow amuseWindow = new AmuseWindow(InputHandler.getInstance(), true);
-        final AmusePanel amusePanel = new AmusePanel(amuseWindow, path, cmdlnfileName);
+        final AmuseWindow amuseWindow = new AmuseWindow(
+                InputHandler.getInstance(), true);
+        final AmusePanel amusePanel = new AmusePanel(amuseWindow, path,
+                cmdlnfileName);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override

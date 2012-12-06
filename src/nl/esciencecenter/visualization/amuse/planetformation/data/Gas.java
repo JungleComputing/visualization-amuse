@@ -1,8 +1,8 @@
 package nl.esciencecenter.visualization.amuse.planetformation.data;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import openglCommon.exceptions.UninitializedException;
-import openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 
 public class Gas {
     private final static AmuseSettings settings = AmuseSettings.getInstance();

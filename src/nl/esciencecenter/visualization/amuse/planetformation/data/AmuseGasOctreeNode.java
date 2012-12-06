@@ -1,17 +1,19 @@
 package nl.esciencecenter.visualization.amuse.planetformation.data;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasModel;
-import openglCommon.math.MatF4;
-import openglCommon.math.MatrixFMath;
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
-import openglCommon.shaders.Program;
-import openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.math.MatF4;
+import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,6 @@ public class AmuseGasOctreeNode {
     protected boolean                                drawable   = false;
     protected VecF4                                  color;
 
-    private double                                   total_mass;
     private double                                   total_u;
 
     private final AmuseSceneDescription              description;
@@ -68,7 +69,6 @@ public class AmuseGasOctreeNode {
         this.elements = new ArrayList<AmuseGasOctreeElement>();
         this.childCounter = 0;
 
-        total_mass = 0.0;
         total_u = 0.0;
 
         if (settings.isGasRandomCenterOffset()) {
@@ -85,7 +85,6 @@ public class AmuseGasOctreeNode {
     public void addElement(AmuseGasOctreeElement element) {
         final VecF3 location = element.getCenter();
         final double u = element.getEnergy();
-        final double dens = element.getMass();
 
         if ((location.get(0) > (center.get(0) - cubeSize))
                 && (location.get(1) > (center.get(1) - cubeSize))
@@ -101,7 +100,6 @@ public class AmuseGasOctreeNode {
                     if (depth < settings.getMaxOctreeDepth()) {
                         subDiv();
                         total_u = 0.0;
-                        total_mass = 0.0;
                         childCounter = 0;
                     } else {
                         System.out.println("Max division!");
@@ -109,7 +107,6 @@ public class AmuseGasOctreeNode {
                 } else {
                     elements.add(element);
                     total_u += u;
-                    total_mass += dens;
 
                     childCounter++;
                 }
@@ -536,9 +533,29 @@ public class AmuseGasOctreeNode {
         }
     }
 
-    public void draw(GL3 gl, Program gasProgram, MatF4 MVMatrix) {
+    public ArrayList<AmuseGasOctreeNode> greedySelect(
+            ArrayList<AmuseGasOctreeNode> listSoFar, VecF4 color, float offset) {
         if (subdivided) {
-            draw_sorted(gl, gasProgram, MVMatrix);
+            listSoFar = ppp.greedySelect(listSoFar, color, offset);
+            listSoFar = ppn.greedySelect(listSoFar, color, offset);
+            listSoFar = pnp.greedySelect(listSoFar, color, offset);
+            listSoFar = pnn.greedySelect(listSoFar, color, offset);
+            listSoFar = npp.greedySelect(listSoFar, color, offset);
+            listSoFar = npn.greedySelect(listSoFar, color, offset);
+            listSoFar = nnp.greedySelect(listSoFar, color, offset);
+            listSoFar = nnn.greedySelect(listSoFar, color, offset);
+        } else {
+            if (VectorFMath.length(color) < offset) {
+                listSoFar.add(this);
+            }
+        }
+
+        return listSoFar;
+    }
+
+    public void draw(GL3 gl, Program gasProgram) {
+        if (subdivided) {
+            draw_sorted(gl, gasProgram);
         } else {
             if (color.get(3) > 0.1f) {
                 gasProgram.setUniform("node_scale", scale);
@@ -550,116 +567,116 @@ public class AmuseGasOctreeNode {
         }
     }
 
-    protected void draw_unsorted(GL3 gl, Program program, MatF4 MVMatrix) {
-        nnn.draw(gl, program, MVMatrix);
-        pnn.draw(gl, program, MVMatrix);
-        npn.draw(gl, program, MVMatrix);
-        nnp.draw(gl, program, MVMatrix);
-        ppn.draw(gl, program, MVMatrix);
-        npp.draw(gl, program, MVMatrix);
-        pnp.draw(gl, program, MVMatrix);
-        ppp.draw(gl, program, MVMatrix);
+    protected void draw_unsorted(GL3 gl, Program program) {
+        nnn.draw(gl, program);
+        pnn.draw(gl, program);
+        npn.draw(gl, program);
+        nnp.draw(gl, program);
+        ppn.draw(gl, program);
+        npp.draw(gl, program);
+        pnp.draw(gl, program);
+        ppp.draw(gl, program);
     }
 
-    protected void draw_sorted(GL3 gl, Program program, MatF4 MVMatrix) {
+    protected void draw_sorted(GL3 gl, Program program) {
         InputHandler inputHandler = InputHandler.getInstance();
 
         if (inputHandler.getCurrentOctant() == InputHandler.octants.NNN) {
-            ppp.draw(gl, program, MVMatrix);
+            ppp.draw(gl, program);
 
-            npp.draw(gl, program, MVMatrix);
-            pnp.draw(gl, program, MVMatrix);
-            ppn.draw(gl, program, MVMatrix);
+            npp.draw(gl, program);
+            pnp.draw(gl, program);
+            ppn.draw(gl, program);
 
-            nnp.draw(gl, program, MVMatrix);
-            pnn.draw(gl, program, MVMatrix);
-            npn.draw(gl, program, MVMatrix);
+            nnp.draw(gl, program);
+            pnn.draw(gl, program);
+            npn.draw(gl, program);
 
-            nnn.draw(gl, program, MVMatrix);
+            nnn.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NNP) {
-            ppn.draw(gl, program, MVMatrix);
+            ppn.draw(gl, program);
 
-            npn.draw(gl, program, MVMatrix);
-            pnn.draw(gl, program, MVMatrix);
-            ppp.draw(gl, program, MVMatrix);
+            npn.draw(gl, program);
+            pnn.draw(gl, program);
+            ppp.draw(gl, program);
 
-            nnn.draw(gl, program, MVMatrix);
-            pnp.draw(gl, program, MVMatrix);
-            npp.draw(gl, program, MVMatrix);
+            nnn.draw(gl, program);
+            pnp.draw(gl, program);
+            npp.draw(gl, program);
 
-            nnp.draw(gl, program, MVMatrix);
+            nnp.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NPN) {
-            pnp.draw(gl, program, MVMatrix);
+            pnp.draw(gl, program);
 
-            nnp.draw(gl, program, MVMatrix);
-            ppp.draw(gl, program, MVMatrix);
-            pnn.draw(gl, program, MVMatrix);
+            nnp.draw(gl, program);
+            ppp.draw(gl, program);
+            pnn.draw(gl, program);
 
-            npp.draw(gl, program, MVMatrix);
-            ppn.draw(gl, program, MVMatrix);
-            nnn.draw(gl, program, MVMatrix);
+            npp.draw(gl, program);
+            ppn.draw(gl, program);
+            nnn.draw(gl, program);
 
-            npn.draw(gl, program, MVMatrix);
+            npn.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NPP) {
-            pnn.draw(gl, program, MVMatrix);
+            pnn.draw(gl, program);
 
-            nnn.draw(gl, program, MVMatrix);
-            ppn.draw(gl, program, MVMatrix);
-            pnp.draw(gl, program, MVMatrix);
+            nnn.draw(gl, program);
+            ppn.draw(gl, program);
+            pnp.draw(gl, program);
 
-            npn.draw(gl, program, MVMatrix);
-            ppp.draw(gl, program, MVMatrix);
-            nnp.draw(gl, program, MVMatrix);
+            npn.draw(gl, program);
+            ppp.draw(gl, program);
+            nnp.draw(gl, program);
 
-            npp.draw(gl, program, MVMatrix);
+            npp.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PNN) {
-            npp.draw(gl, program, MVMatrix);
+            npp.draw(gl, program);
 
-            ppp.draw(gl, program, MVMatrix);
-            nnp.draw(gl, program, MVMatrix);
-            npn.draw(gl, program, MVMatrix);
+            ppp.draw(gl, program);
+            nnp.draw(gl, program);
+            npn.draw(gl, program);
 
-            pnp.draw(gl, program, MVMatrix);
-            nnn.draw(gl, program, MVMatrix);
-            ppn.draw(gl, program, MVMatrix);
+            pnp.draw(gl, program);
+            nnn.draw(gl, program);
+            ppn.draw(gl, program);
 
-            pnn.draw(gl, program, MVMatrix);
+            pnn.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PNP) {
-            npn.draw(gl, program, MVMatrix);
+            npn.draw(gl, program);
 
-            ppn.draw(gl, program, MVMatrix);
-            nnn.draw(gl, program, MVMatrix);
-            npp.draw(gl, program, MVMatrix);
+            ppn.draw(gl, program);
+            nnn.draw(gl, program);
+            npp.draw(gl, program);
 
-            pnn.draw(gl, program, MVMatrix);
-            nnp.draw(gl, program, MVMatrix);
-            ppp.draw(gl, program, MVMatrix);
+            pnn.draw(gl, program);
+            nnp.draw(gl, program);
+            ppp.draw(gl, program);
 
-            pnp.draw(gl, program, MVMatrix);
+            pnp.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PPN) {
-            nnp.draw(gl, program, MVMatrix);
+            nnp.draw(gl, program);
 
-            pnp.draw(gl, program, MVMatrix);
-            npp.draw(gl, program, MVMatrix);
-            nnn.draw(gl, program, MVMatrix);
+            pnp.draw(gl, program);
+            npp.draw(gl, program);
+            nnn.draw(gl, program);
 
-            ppp.draw(gl, program, MVMatrix);
-            npn.draw(gl, program, MVMatrix);
-            pnn.draw(gl, program, MVMatrix);
+            ppp.draw(gl, program);
+            npn.draw(gl, program);
+            pnn.draw(gl, program);
 
-            ppn.draw(gl, program, MVMatrix);
+            ppn.draw(gl, program);
         } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PPP) {
-            nnn.draw(gl, program, MVMatrix);
+            nnn.draw(gl, program);
 
-            pnn.draw(gl, program, MVMatrix);
-            npn.draw(gl, program, MVMatrix);
-            nnp.draw(gl, program, MVMatrix);
+            pnn.draw(gl, program);
+            npn.draw(gl, program);
+            nnp.draw(gl, program);
 
-            ppn.draw(gl, program, MVMatrix);
-            npp.draw(gl, program, MVMatrix);
-            pnp.draw(gl, program, MVMatrix);
+            ppn.draw(gl, program);
+            npp.draw(gl, program);
+            pnp.draw(gl, program);
 
-            ppp.draw(gl, program, MVMatrix);
+            ppp.draw(gl, program);
         }
     }
 
@@ -679,7 +696,7 @@ public class AmuseGasOctreeNode {
             float particle_density = (childCounter / (cubeSize * cubeSize * cubeSize));
 
             color = Astrophysics.gasColor(description, particle_density,
-                    (float) total_mass, (float) total_u, childCounter);
+                    (float) total_u, childCounter);
 
             drawable = true;
         }
@@ -703,6 +720,42 @@ public class AmuseGasOctreeNode {
             return particle_density;
         } else {
             return current_max;
+        }
+    }
+
+    public FloatBuffer getColor(float[] gasParticle) {
+        if (subdivided) {
+            if (gasParticle[0] < center.get(0)) {
+                if (gasParticle[1] < center.get(1)) {
+                    if (gasParticle[2] < center.get(2)) {
+                        return nnn.getColor(gasParticle);
+                    } else {
+                        return nnp.getColor(gasParticle);
+                    }
+                } else {
+                    if (gasParticle[2] < center.get(2)) {
+                        return npn.getColor(gasParticle);
+                    } else {
+                        return npp.getColor(gasParticle);
+                    }
+                }
+            } else {
+                if (gasParticle[1] < center.get(1)) {
+                    if (gasParticle[2] < center.get(2)) {
+                        return pnn.getColor(gasParticle);
+                    } else {
+                        return pnp.getColor(gasParticle);
+                    }
+                } else {
+                    if (gasParticle[2] < center.get(2)) {
+                        return ppn.getColor(gasParticle);
+                    } else {
+                        return ppp.getColor(gasParticle);
+                    }
+                }
+            }
+        } else {
+            return color.asBuffer();
         }
     }
 }

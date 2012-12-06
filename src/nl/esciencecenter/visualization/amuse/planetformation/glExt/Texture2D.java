@@ -5,8 +5,8 @@ import java.nio.IntBuffer;
 
 import javax.media.opengl.GL3;
 
-import openglCommon.exceptions.UninitializedException;
-import openglCommon.textures.Texture;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.textures.Texture;
 
 import com.jogamp.common.nio.Buffers;
 

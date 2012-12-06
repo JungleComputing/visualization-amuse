@@ -6,9 +6,9 @@ import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter;
 import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Color;
 import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Dimensions;
-import openglCommon.datastructures.Material;
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,15 +85,10 @@ public class Astrophysics {
     }
 
     public static VecF4 gasColor(AmuseSceneDescription description,
-            float particle_density, float total_mass_inNode,
-            float total_u_inNode, int membersOfnode) {
+            float particle_density, float total_u_inNode, int membersOfnode) {
         float u = (float) (Math.sqrt(total_u_inNode / membersOfnode) / 5000.0);
-        float mass = total_mass_inNode / membersOfnode;
         if (Float.isNaN(u)) {
             u = 0f;
-        }
-        if (Float.isNaN(mass)) {
-            mass = 0f;
         }
 
         Color myColor = ColormapInterpreter.getColor(
@@ -104,15 +99,13 @@ public class Astrophysics {
 
         if (Astrophysics.settings.getGasInvertedColor()) {
             return new VecF4(myColor.red, myColor.green, myColor.blue,
-                    (particle_density / settings
-                            .getGasOpacityRatio()));
+                    (particle_density / settings.getGasOpacityRatio()));
             // return new VecF4(0f + u, 0f + u, 1f - u,
             // (particle_density / settings.getMAX_GAS_DENSITY())
             // * settings.getGasOpacityFactor());
         } else {
             return new VecF4(myColor.red, myColor.green, myColor.blue,
-                    (particle_density / settings
-                            .getGasOpacityRatio()));
+                    (particle_density / settings.getGasOpacityRatio()));
             // return new VecF4(1f - u, 0f + u, 0f + u,
             // (particle_density / settings.getMAX_GAS_DENSITY())
             // * settings.getGasOpacityFactor());

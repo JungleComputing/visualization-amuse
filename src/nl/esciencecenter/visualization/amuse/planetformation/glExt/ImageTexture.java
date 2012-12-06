@@ -9,8 +9,6 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
-import openglCommon.textures.Texture2D;
-
 public class ImageTexture extends Texture2D {
     public ImageTexture(String filename, int w_offSet, int h_offSet,
             int glMultiTexUnit) {

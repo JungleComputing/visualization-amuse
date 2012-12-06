@@ -1,8 +1,8 @@
 package nl.esciencecenter.visualization.amuse.planetformation;
 
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
-import openglCommon.util.Settings;
-import openglCommon.util.TypedProperties;
+import nl.esciencecenter.visualization.openglCommon.util.Settings;
+import nl.esciencecenter.visualization.openglCommon.util.TypedProperties;
 
 public class AmuseSettings extends Settings {
 
@@ -38,7 +38,7 @@ public class AmuseSettings extends Settings {
     private float                 POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
     private float                 POSTPROCESSING_STAR_BRIGHTNESS_DEF      = 4f;
 
-    private float                 POSTPROCESSING_HUD_BRIGHTNESS_DEF       = 1f;
+    private float                 POSTPROCESSING_HUD_BRIGHTNESS_DEF       = 3f;
     // Settings for the star-shape blur method (the + shape of stars)
     private int                   STAR_SHAPE_BLUR_SIZE                    = 1;
     private float                 STAR_SHAPE_BLURFILTER_SIZE              = 8f;
@@ -108,8 +108,8 @@ public class AmuseSettings extends Settings {
     private float                 EPSILON                                 = 1.0E-7f;
 
     private float                 GAS_OPACITY_FACTOR_MIN                  = 0f;
-    private float                 GAS_OPACITY_FACTOR_DEF                  = 0.5f;
-    private float                 GAS_OPACITY_FACTOR_MAX                  = 1f;
+    private float                 GAS_OPACITY_FACTOR_DEF                  = 1f;
+    private float                 GAS_OPACITY_FACTOR_MAX                  = 2f;
 
     private static final int      GAS_OPACITY_RATIO_MIN                   = 1;
     private static final int      GAS_OPACITY_RATIO_MAX                   = 300;
@@ -705,6 +705,14 @@ public class AmuseSettings extends Settings {
         float result = (currentMax - min) / diff;
 
         return (int) (result * 100) - 1;
+    }
+
+    public float getMinGasDensity() {
+        return 0;
+    }
+
+    public float getMaxGasDensity() {
+        return MAX_GAS_DENSITY;
     }
 
     public float getGasOpacityRatio() {

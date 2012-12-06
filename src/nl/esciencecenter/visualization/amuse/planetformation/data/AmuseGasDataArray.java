@@ -3,7 +3,7 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 import java.io.IOException;
 
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,12 @@ public class AmuseGasDataArray implements Runnable {
                     .findVariable("particles/0000000001/attributes/z");
             Variable ncdfVar_u = ncFile
                     .findVariable("particles/0000000001/attributes/u");
-            Variable ncdfVar_mass = ncFile
-                    .findVariable("particles/0000000001/attributes/mass");
+            // Variable ncdfVar_mass = ncFile
+            // .findVariable("particles/0000000001/attributes/mass");
 
             size = ncdfVar_x.getShape()[0];
 
-            data = new float[size][5];
+            data = new float[size][4];
 
             logger.debug("Gas data size: " + size);
 
@@ -49,7 +49,7 @@ public class AmuseGasDataArray implements Runnable {
                 Array ncdfArray1D_y = ncdfVar_y.read();
                 Array ncdfArray1D_z = ncdfVar_z.read();
                 Array ncdfArray1D_u = ncdfVar_u.read();
-                Array ncdfArray1D_mass = ncdfVar_mass.read();
+                // Array ncdfArray1D_mass = ncdfVar_mass.read();
 
                 double[] result_x = (double[]) ncdfArray1D_x
                         .get1DJavaArray(double.class);
@@ -59,15 +59,15 @@ public class AmuseGasDataArray implements Runnable {
                         .get1DJavaArray(double.class);
                 double[] result_u = (double[]) ncdfArray1D_u
                         .get1DJavaArray(double.class);
-                double[] result_mass = (double[]) ncdfArray1D_mass
-                        .get1DJavaArray(double.class);
+                // double[] result_mass = (double[]) ncdfArray1D_mass
+                // .get1DJavaArray(double.class);
 
                 for (int i = 0; i < size; i++) {
                     data[i][0] = (float) result_x[i];
                     data[i][1] = (float) result_y[i];
                     data[i][2] = (float) result_z[i];
                     data[i][3] = (float) result_u[i];
-                    data[i][4] = (float) result_mass[i];
+                    // data[i][4] = (float) result_mass[i];
                 }
 
             } catch (IOException e) {

@@ -3,13 +3,13 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import openglCommon.datastructures.Material;
-import openglCommon.math.MatF4;
-import openglCommon.math.MatrixFMath;
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
-import openglCommon.models.Model;
-import openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
+import nl.esciencecenter.visualization.openglCommon.math.MatF4;
+import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.models.Model;
+import nl.esciencecenter.visualization.openglCommon.shaders.Program;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

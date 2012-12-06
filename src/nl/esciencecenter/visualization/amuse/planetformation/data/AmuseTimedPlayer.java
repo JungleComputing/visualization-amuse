@@ -9,10 +9,10 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import openglCommon.math.VecF3;
-import openglCommon.math.VectorFMath;
-import openglCommon.util.CustomJSlider;
-import openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.util.CustomJSlider;
+import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

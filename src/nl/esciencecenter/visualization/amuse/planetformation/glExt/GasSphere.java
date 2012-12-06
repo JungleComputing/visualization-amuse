@@ -3,9 +3,9 @@ package nl.esciencecenter.visualization.amuse.planetformation.glExt;
 import java.util.ArrayList;
 import java.util.List;
 
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
-import openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
 
 public class GasSphere extends GasModel {
     private static float X        = 0.525731112119133606f;

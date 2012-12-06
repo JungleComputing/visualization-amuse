@@ -3,7 +3,7 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 import java.util.ArrayList;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,13 +44,22 @@ public class AmuseSceneBuilder implements Runnable {
                 VecF3 location = Astrophysics.auLocationToScreenCoord(
                         gasElement[0], gasElement[1], gasElement[2]);
                 float energy = gasElement[3];
-                float density = gasElement[4];
 
-                root.addElement(new AmuseGasOctreeElement(location, energy,
-                        density));
+                root.addElement(new AmuseGasOctreeElement(location, energy));
             }
 
             root.finalizeAdding();
+
+            float[][] gasProcessed = new float[gas.length][4];
+            for (int i = 0; i < gas.length; i++) {
+                VecF3 location = Astrophysics.auLocationToScreenCoord(
+                        gas[i][0], gas[i][1], gas[i][2]);
+
+                gasProcessed[i][0] = location.get(0);
+                gasProcessed[i][1] = location.get(1);
+                gasProcessed[i][2] = location.get(2);
+                gasProcessed[i][3] = gas[i][3];
+            }
 
             ArrayList<Star> starList = new ArrayList<Star>();
 
@@ -69,7 +78,9 @@ public class AmuseSceneBuilder implements Runnable {
                 starList.add(s);
             }
 
-            sceneStore.setScene(description, root, starList);
+            // sceneStore.setScene(description, root, starList);
+
+            sceneStore.setScene(description, root, gasProcessed, starList);
 
             initialized = true;
         }
