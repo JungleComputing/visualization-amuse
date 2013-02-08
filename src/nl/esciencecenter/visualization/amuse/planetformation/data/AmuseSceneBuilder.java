@@ -35,20 +35,22 @@ public class AmuseSceneBuilder implements Runnable {
                     .getGasParticlesPerOctreeNode();
             final float edge = settings.getOctreeEdges();
 
-            AmuseGasOctreeNode root = new AmuseGasOctreeNode(description, null,
-                    null, sceneStore.getGasBaseModel(),
-                    gasParticlesPerOctreeNode, 0,
-                    new VecF3(-edge, -edge, -edge), edge);
-
-            for (float[] gasElement : gas) {
-                VecF3 location = Astrophysics.auLocationToScreenCoord(
-                        gasElement[0], gasElement[1], gasElement[2]);
-                float energy = gasElement[3];
-
-                root.addElement(new AmuseGasOctreeElement(location, energy));
-            }
-
-            root.finalizeAdding();
+            // AmuseGasOctreeNode root = new AmuseGasOctreeNode(description,
+            // null,
+            // null, sceneStore.getGasBaseModel(),
+            // gasParticlesPerOctreeNode, 0,
+            // new VecF3(-edge, -edge, -edge), edge);
+            //
+            // for (float[] gasElement : gas) {
+            // VecF3 location = Astrophysics.auLocationToScreenCoord(
+            // gasElement[0], gasElement[1], gasElement[2]);
+            // float energy = gasElement[3];
+            // float rho = gasElement[4];
+            //
+            // root.addElement(new AmuseGasOctreeElement(location, rho));
+            // }
+            //
+            // root.finalizeAdding();
 
             float[][] gasProcessed = new float[gas.length][4];
             for (int i = 0; i < gas.length; i++) {
@@ -58,7 +60,7 @@ public class AmuseSceneBuilder implements Runnable {
                 gasProcessed[i][0] = location.get(0);
                 gasProcessed[i][1] = location.get(1);
                 gasProcessed[i][2] = location.get(2);
-                gasProcessed[i][3] = gas[i][3];
+                gasProcessed[i][3] = gas[i][4];
             }
 
             ArrayList<Star> starList = new ArrayList<Star>();
@@ -80,7 +82,7 @@ public class AmuseSceneBuilder implements Runnable {
 
             // sceneStore.setScene(description, root, starList);
 
-            sceneStore.setScene(description, root, gasProcessed, starList);
+            sceneStore.setScene(description, null, gasProcessed, starList);
 
             initialized = true;
         }

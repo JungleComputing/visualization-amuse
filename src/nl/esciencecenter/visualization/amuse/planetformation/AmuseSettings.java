@@ -15,7 +15,8 @@ public class AmuseSettings extends Settings {
     private final String[]        ACCEPTABLE_EXTENSIONS                   = new String[] {
             "gas", "bin"                                                 };
 
-    private final float           MAX_GAS_DENSITY                         = 100f;
+    private final float           MIN_GAS_DENSITY                         = 0f;
+    private final float           MAX_GAS_DENSITY                         = .1f;
 
     // Minimum and maximum values for the brightness sliders
     private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_MIN   = 0f;
@@ -33,8 +34,8 @@ public class AmuseSettings extends Settings {
     private final float           POSTPROCESSING_HUD_BRIGHTNESS_MAX       = 4f;
     // Settings for the postprocessing shader
     private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_DEF   = 4f;
-    private float                 POSTPROCESSING_AXES_BRIGHTNESS_DEF      = 1f;
-    private float                 POSTPROCESSING_GAS_BRIGHTNESS_DEF       = 3f;
+    private float                 POSTPROCESSING_AXES_BRIGHTNESS_DEF      = 4f;
+    private float                 POSTPROCESSING_GAS_BRIGHTNESS_DEF       = 4f;
     private float                 POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
     private float                 POSTPROCESSING_STAR_BRIGHTNESS_DEF      = 4f;
 
@@ -49,12 +50,12 @@ public class AmuseSettings extends Settings {
     // Settings for the detail levels.
     // private int LEVEL_OF_DETAIL = 0;
 
-    private final int             SLIDER_MIN_BLUR_TYPE                    = 2;
-    private final int             SLIDER_DEF_BLUR_TYPE                    = 2;
+    private final int             SLIDER_MIN_BLUR_TYPE                    = 1;
+    private final int             SLIDER_DEF_BLUR_TYPE                    = 1;
     private final int             SLIDER_MAX_BLUR_TYPE                    = 8;
 
     private final int             SLIDER_MIN_BLUR_PASSES                  = 0;
-    private final int             SLIDER_DEF_BLUR_PASSES                  = 0;
+    private final int             SLIDER_DEF_BLUR_PASSES                  = 1;
     private final int             SLIDER_MAX_BLUR_PASSES                  = 2;
 
     private final int             SLIDER_MIN_BLUR_SIZE                    = 2;
@@ -112,7 +113,7 @@ public class AmuseSettings extends Settings {
     private float                 GAS_OPACITY_FACTOR_MAX                  = 2f;
 
     private static final int      GAS_OPACITY_RATIO_MIN                   = 1;
-    private static final int      GAS_OPACITY_RATIO_MAX                   = 300;
+    private static final int      GAS_OPACITY_RATIO_MAX                   = 100;
 
     private static final boolean  OCTREE_RANDOM_OFFSET                    = false;
 
@@ -125,7 +126,7 @@ public class AmuseSettings extends Settings {
     private int                   blurPassSetting;
     private int                   blurSizeSetting;
 
-    private float                 gasOpacityRatio                         = 100;
+    private float                 gasOpacityRatio                         = 10;
 
     private AmuseSceneDescription currentDescription;
 
@@ -291,7 +292,11 @@ public class AmuseSettings extends Settings {
             System.out.println(e.getMessage());
         }
 
-        currentDescription = new AmuseSceneDescription(0, 0, "default", 0f, 25f);
+        currentDescription = new AmuseSceneDescription(0, 2, "hotres",
+                MIN_GAS_DENSITY, MAX_GAS_DENSITY);
+
+        // currentDescription = new AmuseSceneDescription(0, 0, "default", 0f,
+        // 25f);
 
         blurTypeSetting = SLIDER_DEF_BLUR_TYPE;
         blurPassSetting = SLIDER_DEF_BLUR_PASSES;
@@ -674,7 +679,7 @@ public class AmuseSettings extends Settings {
     }
 
     public void setVariableRange(int sliderLowerValue, int sliderUpperValue) {
-        float diff = MAX_GAS_DENSITY;
+        float diff = MAX_GAS_DENSITY - MIN_GAS_DENSITY;
         float minFloatValue = (sliderLowerValue / 100f) * diff;
         float maxFloatValue = (sliderUpperValue / 100f) * diff;
 
@@ -682,11 +687,10 @@ public class AmuseSettings extends Settings {
         result.setLowerBound(minFloatValue);
         result.setUpperBound(maxFloatValue);
         currentDescription = result;
-
     }
 
     public int getRangeSliderLowerValue() {
-        float min = 0;
+        float min = MIN_GAS_DENSITY;
         float max = MAX_GAS_DENSITY;
         float currentMin = currentDescription.getLowerBound();
 
@@ -697,7 +701,7 @@ public class AmuseSettings extends Settings {
     }
 
     public int getRangeSliderUpperValue() {
-        float min = 0;
+        float min = MIN_GAS_DENSITY;
         float max = MAX_GAS_DENSITY;
         float currentMax = currentDescription.getUpperBound();
 

@@ -68,20 +68,22 @@ public class ColormapInterpreter {
     }
 
     public static class Color {
-        public float              red, green, blue;
-        public static final Color WHITE = new Color(1f, 1f, 1f);
-        public static final Color BLACK = new Color(0f, 0f, 0f);
+        public float              red, green, blue, alpha;
+        public static final Color WHITE = new Color(1f, 1f, 1f, 1f);
+        public static final Color BLACK = new Color(0f, 0f, 0f, 1f);
 
         public Color() {
             this.red = 0f;
             this.green = 0f;
             this.blue = 0f;
+            this.alpha = 0f;
         }
 
-        public Color(float i, float j, float k) {
-            this.red = i;
-            this.green = j;
-            this.blue = k;
+        public Color(float r, float g, float b, float a) {
+            this.red = r;
+            this.green = g;
+            this.blue = b;
+            this.alpha = a;
         }
     }
 
@@ -112,7 +114,7 @@ public class ColormapInterpreter {
                     String[] numbers = str.split(" ");
                     colorMap.add(new Color(Integer.parseInt(numbers[0]) / 255f,
                             Integer.parseInt(numbers[1]) / 255f, Integer
-                                    .parseInt(numbers[2]) / 255f));
+                                    .parseInt(numbers[2]) / 255f, 1f));
                 }
 
                 in.close();
@@ -151,7 +153,7 @@ public class ColormapInterpreter {
         return names;
     }
 
-    public synchronized static Color getColor(String colorMapName,
+    public synchronized static Color getLogColor(String colorMapName,
             Dimensions dim, float var) {
         if (!colorMaps.containsKey(colorMapName)) {
             System.err.println("Unregistered color map requested: "
@@ -166,14 +168,31 @@ public class ColormapInterpreter {
         Color color = null;
 
         float result = (var - dim.min) / dim.getDiff();
-        float rawIndex = result * cmEntries;
+        int resultIndex = (int) Math.ceil(result * 256);
+        if (resultIndex == 256)
+            resultIndex--;
+
+        float rawIndex = (float) ((Math.log(resultIndex) / Math.log(256)) * cmEntries);
+        float alpha;
 
         if (var < -1E33) {
             color = Color.BLACK;
         } else if (var < dim.min) {
+            if (result > -1f) {
+                alpha = 1 - result;
+            } else {
+                alpha = 0f;
+            }
             color = colorMap.get(0);
+            color.alpha = 1f;
         } else if (var > dim.max) {
+            if (result < 2f) {
+                alpha = 1f - (result - 1f);
+            } else {
+                alpha = 0f;
+            }
             color = colorMap.get(cmEntries - 1);
+            color.alpha = 1f;
         } else {
             float red = 0;
             float green = 0;
@@ -206,7 +225,81 @@ public class ColormapInterpreter {
             green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);
             blue = getInterpolatedColor(cHigh.blue, cLow.blue, colorInterval);
 
-            color = new Color(red, green, blue);
+            color = new Color(red, green, blue, 1f);
+        }
+
+        return color;
+    }
+
+    public synchronized static Color getColor(String colorMapName,
+            Dimensions dim, float var) {
+        if (!colorMaps.containsKey(colorMapName)) {
+            System.err.println("Unregistered color map requested: "
+                    + colorMapName);
+            colorMaps.get("default");
+        }
+
+        ArrayList<Color> colorMap = colorMaps.get(colorMapName);
+
+        int cmEntries = colorMap.size();
+
+        Color color = null;
+
+        float result = (var - dim.min) / dim.getDiff();
+        float rawIndex = result * cmEntries;
+        float alpha;
+
+        if (var < -1E33) {
+            color = Color.BLACK;
+        } else if (var < dim.min) {
+            if (result > -1f) {
+                alpha = 1 - result;
+            } else {
+                alpha = 0f;
+            }
+            color = colorMap.get(0);
+            color.alpha = alpha;
+        } else if (var > dim.max) {
+            if (result < 2f) {
+                alpha = 1f - (result - 1f);
+            } else {
+                alpha = 0f;
+            }
+            color = colorMap.get(cmEntries - 1);
+            color.alpha = alpha;
+        } else {
+            float red = 0;
+            float green = 0;
+            float blue = 0;
+
+            int iLow = (int) Math.floor(rawIndex);
+            int iHigh = (int) Math.ceil(rawIndex);
+
+            Color cLow;
+            if (iLow == cmEntries) {
+                cLow = colorMap.get(cmEntries - 1);
+            } else if (iLow < 0) {
+                cLow = colorMap.get(0);
+            } else {
+                cLow = colorMap.get(iLow);
+            }
+
+            Color cHigh;
+            if (iHigh == cmEntries) {
+                cHigh = colorMap.get(cmEntries - 1);
+            } else if (iHigh < 0) {
+                cHigh = colorMap.get(0);
+            } else {
+                cHigh = colorMap.get(iHigh);
+            }
+
+            float colorInterval = rawIndex - iLow;
+
+            red = getInterpolatedColor(cHigh.red, cLow.red, colorInterval);
+            green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);
+            blue = getInterpolatedColor(cHigh.blue, cLow.blue, colorInterval);
+
+            color = new Color(red, green, blue, 1f);
         }
 
         return color;
@@ -356,7 +449,7 @@ public class ColormapInterpreter {
             blue = getInterpolatedColor(cHigh.blue, cLow.blue, colorInterval);
 
             for (int row = 0; row < height; row++) {
-                outBuf[col][row] = new Color(blue, green, red);
+                outBuf[col][row] = new Color(blue, green, red, 1f);
             }
         }
 

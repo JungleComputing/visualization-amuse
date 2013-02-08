@@ -48,7 +48,7 @@ public class NetCDFUtil {
             String s = split[i];
             try {
                 Integer.parseInt(s);
-                if (s.length() > 4) {
+                if (s.length() > 3) {
                     sequenceNumberString = s;
                     if (!foundOne) {
                         foundOne = true;
@@ -470,6 +470,10 @@ public class NetCDFUtil {
         int numberLength = getSequenceNumber(initialFile).length();
 
         String format = "%0" + numberLength + "d";
+
+        System.out.println("prefix: " + prefix);
+        System.out.println("postfix: " + postfix);
+        System.out.println("numberlength: " + numberLength);
 
         for (int i = 0; i < 100000; i++) {
             String number = String.format(format, i);

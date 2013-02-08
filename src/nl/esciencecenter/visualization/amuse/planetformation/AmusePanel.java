@@ -60,7 +60,7 @@ public class AmusePanel extends CommonPanel {
     protected CustomJSlider        timeBar;
 
     protected JFormattedTextField  frameCounter;
-    private TweakState             currentConfigState = TweakState.DATA;
+    private TweakState             currentConfigState = TweakState.MOVIE;
 
     public static AmuseTimedPlayer timer;
 
@@ -164,6 +164,8 @@ public class AmusePanel extends CommonPanel {
             final File cmdlnfile = new File(cmdlnfileName);
             handleFile(cmdlnfile);
         }
+
+        setTweakState(TweakState.MOVIE);
     }
 
     void close() {
@@ -280,7 +282,7 @@ public class AmusePanel extends CommonPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
-                if (source.hasFocus()) {
+                if (!source.getValueIsAdjusting()) {
                     timer.setFrame(timeBar.getValue(), false);
                     playButton.setIcon(playIcon);
                 }

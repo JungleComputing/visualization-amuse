@@ -693,12 +693,101 @@ public class AmuseGasOctreeNode {
             nnp.finalizeAdding();
             nnn.finalizeAdding();
         } else {
-            float particle_density = (childCounter / (cubeSize * cubeSize * cubeSize));
+            float particle_density = (childCounter / (scale * scale * scale));
 
             color = Astrophysics.gasColor(description, particle_density,
                     (float) total_u, childCounter);
 
             drawable = true;
+        }
+    }
+
+    public void gatherPoints(ArrayList<VecF4> points, ArrayList<VecF4> colors) {
+        if (subdivided) {
+            ppp.gatherPoints(points, colors);
+            ppn.gatherPoints(points, colors);
+            pnp.gatherPoints(points, colors);
+            pnn.gatherPoints(points, colors);
+            npp.gatherPoints(points, colors);
+            npn.gatherPoints(points, colors);
+            nnp.gatherPoints(points, colors);
+            nnn.gatherPoints(points, colors);
+        } else {
+            float radius = scale / 2f;
+            VecF4 pointPPP = new VecF4(center.add(new VecF3(radius, radius,
+                    radius)), 1f);
+            VecF4 pointPPN = new VecF4(center.add(new VecF3(radius, radius,
+                    -radius)), 1f);
+            VecF4 pointPNP = new VecF4(center.add(new VecF3(radius, -radius,
+                    radius)), 1f);
+            VecF4 pointPNN = new VecF4(center.add(new VecF3(radius, -radius,
+                    -radius)), 1f);
+            VecF4 pointNPP = new VecF4(center.add(new VecF3(-radius, radius,
+                    radius)), 1f);
+            VecF4 pointNPN = new VecF4(center.add(new VecF3(-radius, radius,
+                    -radius)), 1f);
+            VecF4 pointNNP = new VecF4(center.add(new VecF3(-radius, -radius,
+                    radius)), 1f);
+            VecF4 pointNNN = new VecF4(center.add(new VecF3(-radius, -radius,
+                    -radius)), 1f);
+
+            // FRONT
+            points.add(pointPPP);
+            points.add(pointNPP);
+            points.add(pointNNP);
+
+            points.add(pointNNP);
+            points.add(pointPNP);
+            points.add(pointPPP);
+
+            // RIGHT
+            points.add(pointPPP);
+            points.add(pointPNP);
+            points.add(pointPPN);
+
+            points.add(pointPPN);
+            points.add(pointPNP);
+            points.add(pointPNN);
+
+            // BACK
+            points.add(pointPPN);
+            points.add(pointNPN);
+            points.add(pointNNN);
+
+            points.add(pointNNN);
+            points.add(pointPNN);
+            points.add(pointPPN);
+
+            // LEFT
+            points.add(pointNPN);
+            points.add(pointNPP);
+            points.add(pointNNP);
+
+            points.add(pointNNP);
+            points.add(pointNNN);
+            points.add(pointNPN);
+
+            // TOP
+            points.add(pointNPP);
+            points.add(pointPPP);
+            points.add(pointPPN);
+
+            points.add(pointNPP);
+            points.add(pointPPN);
+            points.add(pointNPN);
+
+            // BOTTOM
+            points.add(pointNNP);
+            points.add(pointNNN);
+            points.add(pointPNP);
+
+            points.add(pointPNP);
+            points.add(pointNNN);
+            points.add(pointPNN);
+
+            for (int i = 0; i < 36; i++) {
+                colors.add(color);
+            }
         }
     }
 

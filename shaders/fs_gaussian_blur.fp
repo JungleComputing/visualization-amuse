@@ -74,6 +74,9 @@ void main() {
 	if (blurType == 0) {
 		sigma = Sigma;
 		numPixelsPerSide = NumPixelsPerSide;
+	} else if (blurType == 1) {
+		sigma = 1.0;
+		numPixelsPerSide = 1.0; // 3x3
 	} else if (blurType == 2) {
 		sigma = 2.0;
 		numPixelsPerSide = 2.0; // 5x5
@@ -83,15 +86,9 @@ void main() {
 	} else if(blurType == 4) {
 		sigma = 3.0;
 		numPixelsPerSide = 4.0; // 9x9
-	} else if(blurType == 5) {
-		sigma = 3.5;
-		numPixelsPerSide = 5.0; // 13x13
 	} else if(blurType == 6) {
 		sigma = 4.0;
 		numPixelsPerSide = 6.0; // 13x13
-	} else if(blurType == 7) {
-		sigma = 5.0;
-		numPixelsPerSide = 7.0; // 13x13
 	} else if(blurType == 8) {
 		sigma = 6.0;
 		numPixelsPerSide = 8.0; // 17x17

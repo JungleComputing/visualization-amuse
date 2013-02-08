@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
+import nl.esciencecenter.visualization.amuse.planetformation.glExt.VBO;
+import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter;
+import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Color;
+import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Dimensions;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
-import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
@@ -73,120 +76,6 @@ public class AmuseScene {
         // gasOctree.draw(gl, gasProgram);
 
         if (!initialized) {
-            logger.debug("initializing VBO");
-
-            // float X = 0.525731112119133606f;
-            // float Z = 0.850650808352039932f;
-            //
-            // FloatBuffer vdata = FloatBuffer.allocate(12 * 3);
-            // vdata.put(-X);
-            // vdata.put(0f);
-            // vdata.put(Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(Z);
-            // vdata.put(-X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(0f);
-            // vdata.put(Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(Z);
-            // vdata.put(-X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(-X);
-            // vdata.put(Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(X);
-            // vdata.put(0f);
-            // vdata.put(Z);
-            // vdata.put(-X);
-            // vdata.put(0f);
-            // vdata.put(-Z);
-            // vdata.put(-X);
-            // vdata.put(0f);
-            //
-            // IntBuffer tindices = IntBuffer.allocate(20 * 3);
-            // tindices.put(1);
-            // tindices.put(4);
-            // tindices.put(0);
-            // tindices.put(4);
-            // tindices.put(9);
-            // tindices.put(0);
-            // tindices.put(4);
-            // tindices.put(5);
-            // tindices.put(9);
-            // tindices.put(8);
-            // tindices.put(5);
-            // tindices.put(4);
-            // tindices.put(1);
-            // tindices.put(8);
-            // tindices.put(4);
-            // tindices.put(1);
-            // tindices.put(10);
-            // tindices.put(8);
-            // tindices.put(10);
-            // tindices.put(3);
-            // tindices.put(8);
-            // tindices.put(8);
-            // tindices.put(3);
-            // tindices.put(5);
-            // tindices.put(3);
-            // tindices.put(2);
-            // tindices.put(5);
-            // tindices.put(3);
-            // tindices.put(7);
-            // tindices.put(2);
-            // tindices.put(3);
-            // tindices.put(10);
-            // tindices.put(7);
-            // tindices.put(10);
-            // tindices.put(6);
-            // tindices.put(7);
-            // tindices.put(6);
-            // tindices.put(11);
-            // tindices.put(7);
-            // tindices.put(6);
-            // tindices.put(0);
-            // tindices.put(11);
-            // tindices.put(6);
-            // tindices.put(1);
-            // tindices.put(0);
-            // tindices.put(10);
-            // tindices.put(1);
-            // tindices.put(6);
-            // tindices.put(11);
-            // tindices.put(0);
-            // tindices.put(9);
-            // tindices.put(2);
-            // tindices.put(11);
-            // tindices.put(9);
-            // tindices.put(5);
-            // tindices.put(2);
-            // tindices.put(9);
-            // tindices.put(11);
-            // tindices.put(2);
-            // tindices.put(7);
-            //
-            // gasProgram.passUniformVecArray(gl, "vdata", vdata, 1, 12 *
-            // 3);
-            // gasProgram.passUniformVecArray(gl, "tindices", tindices, 1,20
-            // * 3);
-            // gasProgram.passUniform(gl, "radius", 20f);
-            // gasProgram.passUniform(gl, "ndiv", 1);
-
-            logger.debug("Particles: " + gasParticles.length);
-
             GLSLAttrib vAttrib = new GLSLAttrib(toBuffer(gasParticles),
                     "MCvertex", GLSLAttrib.SIZE_FLOAT, 4);
 
@@ -196,8 +85,6 @@ public class AmuseScene {
             vbo = new VBO(gl, vAttrib, cAttrib);
             initialized = true;
         }
-
-        // logger.debug("Drawing gas.");
 
         try {
             gasProgram.use(gl);
@@ -212,11 +99,23 @@ public class AmuseScene {
         gl.glDrawArrays(GL3.GL_POINTS, 0, gasParticles.length);
     }
 
+    public synchronized void cleanup(GL3 gl) {
+        vbo.delete(gl);
+    }
+
     FloatBuffer gasColors(float[][] particles, AmuseGasOctreeNode root) {
         FloatBuffer result = FloatBuffer.allocate(particles.length * 4);
 
         for (int i = 0; i < particles.length; i++) {
-            result.put(root.getColor(particles[i]));
+            float rho = particles[i][3];
+            Color myColor = ColormapInterpreter.getColor(description
+                    .getColorMap(), new Dimensions(description.getLowerBound(),
+                    description.getUpperBound()), rho);
+
+            result.put(myColor.red);
+            result.put(myColor.green);
+            result.put(myColor.blue);
+            result.put(1f);
         }
 
         result.rewind();

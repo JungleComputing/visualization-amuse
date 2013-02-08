@@ -91,6 +91,8 @@ public class AmuseWindow extends CommonWindow {
 
     private IntPBO                finalPBO;
 
+    private AmuseScene            oldScene;
+
     public AmuseWindow(InputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
     }
@@ -127,10 +129,16 @@ public class AmuseWindow extends CommonWindow {
                 requestedScene = currentDescription;
             }
 
-            AmuseScene scene = sceneStore.getScene();
-            if (scene != null) {
-                displayContext(scene, starFBO, starHaloFBO, gasFBO, hudFBO,
+            AmuseScene newScene = sceneStore.getScene();
+            if (newScene != null) {
+                displayContext(newScene, starFBO, starHaloFBO, gasFBO, hudFBO,
                         axesFBO);
+
+                if (oldScene != null && oldScene != newScene) {
+                    oldScene.cleanup(gl);
+
+                    oldScene = newScene;
+                }
             } else {
                 logger.debug("Scene is null");
             }
@@ -683,18 +691,22 @@ public class AmuseWindow extends CommonWindow {
 
         // AXES
         final Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
-        final Material axisMaterial = new Material(axisColor, axisColor,
-                axisColor);
-        xAxis = new Axis(axisMaterial, new VecF3(-800f, 0f, 0f), new VecF3(
+        final Material axisMaterial_X = new Material(Color4.red, Color4.red,
+                Color4.red);
+        final Material axisMaterial_Y = new Material(Color4.green,
+                Color4.green, Color4.green);
+        final Material axisMaterial_Z = new Material(Color4.blue, Color4.blue,
+                Color4.blue);
+        xAxis = new Axis(axisMaterial_X, new VecF3(-800f, 0f, 0f), new VecF3(
                 800f, 0f, 0f), Astrophysics.toScreenCoord(1),
                 Astrophysics.toScreenCoord(.2));
         xAxis.init(gl);
-        yAxis = new Axis(axisMaterial, new VecF3(0f, -800f, 0f), new VecF3(0f,
-                800f, 0f), Astrophysics.toScreenCoord(1),
+        yAxis = new Axis(axisMaterial_Y, new VecF3(0f, -800f, 0f), new VecF3(
+                0f, 800f, 0f), Astrophysics.toScreenCoord(1),
                 Astrophysics.toScreenCoord(.2));
         yAxis.init(gl);
-        zAxis = new Axis(axisMaterial, new VecF3(0f, 0f, -800f), new VecF3(0f,
-                0f, 800f), Astrophysics.toScreenCoord(1),
+        zAxis = new Axis(axisMaterial_Z, new VecF3(0f, 0f, -800f), new VecF3(
+                0f, 0f, 800f), Astrophysics.toScreenCoord(1),
                 Astrophysics.toScreenCoord(.2));
         zAxis.init(gl);
 
@@ -702,7 +714,7 @@ public class AmuseWindow extends CommonWindow {
 
         Material textMaterial = new Material(Color4.white, Color4.white,
                 Color4.white);
-        frameNumberText = new MultiColorText(axisMaterial, font);
+        frameNumberText = new MultiColorText(textMaterial, font);
         legendTextmin = new MultiColorText(textMaterial, font);
         legendTextmax = new MultiColorText(textMaterial, font);
 

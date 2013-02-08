@@ -216,6 +216,9 @@ public class AmuseTimedPlayer implements Runnable {
         // bezierPoints.get(0).get(1), 0f));
         // inputHandler.setViewDist(bezierPoints.get(0).get(2));
 
+        int frame = settings.getInitialSimulationFrame();
+        updateFrame(frame, true);
+
         stop();
 
         while (running) {

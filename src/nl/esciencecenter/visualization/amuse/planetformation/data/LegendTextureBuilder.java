@@ -48,7 +48,7 @@ public class LegendTextureBuilder implements Runnable {
                     outBuf.put((byte) (255 * c.red));
                     outBuf.put((byte) (255 * c.green));
                     outBuf.put((byte) (255 * c.blue));
-                    outBuf.put((byte) 1);
+                    outBuf.put((byte) (255 * c.alpha));
                 }
             }
 

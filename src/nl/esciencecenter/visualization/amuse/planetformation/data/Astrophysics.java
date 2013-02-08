@@ -91,21 +91,22 @@ public class Astrophysics {
             u = 0f;
         }
 
+        float diff = description.getUpperBound() - description.getLowerBound();
+
         Color myColor = ColormapInterpreter.getColor(
                 description.getColorMap(),
                 new Dimensions(description.getLowerBound(), description
-                        .getUpperBound()), (particle_density / description
-                        .getUpperBound()));
+                        .getUpperBound()), particle_density);
 
         if (Astrophysics.settings.getGasInvertedColor()) {
             return new VecF4(myColor.red, myColor.green, myColor.blue,
-                    (particle_density / settings.getGasOpacityRatio()));
+                    myColor.alpha);
             // return new VecF4(0f + u, 0f + u, 1f - u,
             // (particle_density / settings.getMAX_GAS_DENSITY())
             // * settings.getGasOpacityFactor());
         } else {
             return new VecF4(myColor.red, myColor.green, myColor.blue,
-                    (particle_density / settings.getGasOpacityRatio()));
+                    myColor.alpha);
             // return new VecF4(1f - u, 0f + u, 0f + u,
             // (particle_density / settings.getMAX_GAS_DENSITY())
             // * settings.getGasOpacityFactor());

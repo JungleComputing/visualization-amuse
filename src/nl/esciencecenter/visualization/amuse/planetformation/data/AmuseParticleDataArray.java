@@ -32,7 +32,7 @@ public class AmuseParticleDataArray implements Runnable {
 
             size = ncdfVar_x.getShape()[0];
 
-            data = new float[size][5];
+            data = new float[size - 1][5];
 
             try {
                 Array ncdfArray1D_x = ncdfVar_x.read();
@@ -49,7 +49,7 @@ public class AmuseParticleDataArray implements Runnable {
                 double[] result_radius = (double[]) ncdfArray1D_radius
                         .get1DJavaArray(double.class);
 
-                for (int i = 0; i < size; i++) {
+                for (int i = 0; i < size - 1; i++) {
                     data[i][0] = (float) result_x[i];
                     data[i][1] = (float) result_y[i];
                     data[i][2] = (float) result_z[i];
