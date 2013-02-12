@@ -1,16 +1,23 @@
 package nl.esciencecenter.visualization.amuse.planetformation;
 
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 
 import javax.swing.JFrame;
 
-import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.NewtWindow;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.util.Settings;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AmuseApp {
-    private final static AmuseSettings settings = AmuseSettings.getInstance();
+    private final static Settings settings = Settings.getInstance();
+    private final static Logger   log      = LoggerFactory
+                                                   .getLogger(AmuseApp.class);
+
+    private static AmusePanel     amusePanel;
+    private static AmuseWindow    amuseWindow;
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -41,42 +48,41 @@ public class AmuseApp {
             }
         }
 
-        final JFrame frame = new JFrame("Amuse Visualization");
-        frame.setPreferredSize(new Dimension(AmuseApp.settings
-                .getDefaultScreenWidth(), AmuseApp.settings
-                .getDefaultScreenHeight()));
+        // Create the Swing interface elements
+        amusePanel = new AmusePanel(path, cmdlnfileName);
 
-        final AmuseWindow amuseWindow = new AmuseWindow(
-                InputHandler.getInstance(), true);
-        final AmusePanel amusePanel = new AmusePanel(amuseWindow, path,
-                cmdlnfileName);
+        // Create the GLEventListener
+        amuseWindow = new AmuseWindow(InputHandler.getInstance());
+
+        NewtWindow window = new NewtWindow(true, amuseWindow.getInputHandler(),
+                amuseWindow, settings.getDefaultScreenWidth(),
+                settings.getDefaultScreenHeight(), "Amuse Visualization");
+
+        // Create the frame
+        final JFrame frame = new JFrame("Amuse Visualization");
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent arg0) {
+                System.exit(0);
+            }
+        });
+
+        frame.setSize(settings.getInterfaceWidth(),
+                settings.getInterfaceHeight());
+
+        frame.setResizable(false);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
                     frame.getContentPane().add(amusePanel);
-
-                    frame.addWindowListener(new WindowAdapter() {
-                        @Override
-                        public void windowClosing(WindowEvent we) {
-                            amusePanel.close();
-                            System.exit(0);
-                        }
-                    });
-
                 } catch (final Exception e) {
                     e.printStackTrace(System.err);
                     System.exit(1);
                 }
             }
         });
-
-        // Display the window.
-        frame.pack();
-
-        // center on screen
-        frame.setLocationRelativeTo(null);
 
         frame.setVisible(true);
     }

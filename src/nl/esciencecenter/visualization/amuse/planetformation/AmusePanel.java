@@ -13,6 +13,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -29,22 +30,21 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseTimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
-import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter;
-import nl.esciencecenter.visualization.amuse.planetformation.util.GoggleSwing;
-import nl.esciencecenter.visualization.amuse.planetformation.util.RangeSlider;
-import nl.esciencecenter.visualization.amuse.planetformation.util.RangeSliderUI;
-import nl.esciencecenter.visualization.openglCommon.CommonPanel;
-import nl.esciencecenter.visualization.openglCommon.util.CustomJSlider;
-import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
+import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
+import nl.esciencecenter.visualization.openglCommon.swing.GoggleSwing;
+import nl.esciencecenter.visualization.openglCommon.swing.RangeSlider;
+import nl.esciencecenter.visualization.openglCommon.swing.RangeSliderUI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AmusePanel extends CommonPanel {
+public class AmusePanel extends JPanel {
     private final static Logger logger = LoggerFactory
                                                .getLogger(AmusePanel.class);
 
@@ -68,13 +68,10 @@ public class AmusePanel extends CommonPanel {
 
     private final JPanel           dataConfig, visualConfig, movieConfig;
 
-    private final AmuseWindow      amuseWindow;
+    public AmusePanel(String path, String cmdlnfileName) {
+        setLayout(new BorderLayout(0, 0));
 
-    public AmusePanel(AmuseWindow amuseWindow, String path, String cmdlnfileName) {
-        super(amuseWindow, InputHandler.getInstance());
-        this.amuseWindow = amuseWindow;
-
-        timeBar = new CustomJSlider();
+        timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
         timeBar.setValue(0);
         timeBar.setMajorTickSpacing(5);
         timeBar.setMinorTickSpacing(1);
@@ -82,10 +79,13 @@ public class AmusePanel extends CommonPanel {
         timeBar.setMinimum(0);
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
+
         timer = new AmuseTimedPlayer(timeBar, frameCounter);
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
+        menuBar.setLayout(new BoxLayout(menuBar, BoxLayout.X_AXIS));
+
         final JMenu file = new JMenu("File");
         final JMenuItem open = new JMenuItem("Open");
         open.addActionListener(new ActionListener() {
@@ -97,27 +97,8 @@ public class AmusePanel extends CommonPanel {
         });
         file.add(open);
         menuBar.add(file);
+
         final JMenu options = new JMenu("Options");
-
-        final JMenuItem showDataTweakPanel = new JMenuItem(
-                "Show data configuration panel.");
-        showDataTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.DATA);
-            }
-        });
-        options.add(showDataTweakPanel);
-
-        final JMenuItem showVisualTweakPanel = new JMenuItem(
-                "Show visual configuration panel.");
-        showVisualTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.VISUAL);
-            }
-        });
-        options.add(showVisualTweakPanel);
 
         final JMenuItem makeMovie = new JMenuItem("Make movie.");
         makeMovie.addActionListener(new ActionListener() {
@@ -128,9 +109,47 @@ public class AmusePanel extends CommonPanel {
         });
         options.add(makeMovie);
 
+        final JMenuItem showDataPanel = new JMenuItem("Show data config panel.");
+        showDataPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.DATA);
+            }
+        });
+        options.add(showDataPanel);
+
+        final JMenuItem showVisualPanel = new JMenuItem(
+                "Show visual config panel.");
+        showVisualPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.VISUAL);
+            }
+        });
+        options.add(showVisualPanel);
         menuBar.add(options);
 
-        add(menuBar, BorderLayout.NORTH);
+        menuBar.add(Box.createHorizontalGlue());
+
+        final JMenuBar menuBar2 = new JMenuBar();
+
+        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
+                "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
+        JLabel nlesclogo = new JLabel(nlescIcon);
+        nlesclogo.setMinimumSize(new Dimension(300, 20));
+        nlesclogo.setMaximumSize(new Dimension(311, 28));
+
+        menuBar2.add(Box.createHorizontalGlue());
+        menuBar2.add(nlesclogo);
+        menuBar2.add(Box.createHorizontalGlue());
+
+        Container menuContainer = new Container();
+        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+
+        menuContainer.add(menuBar);
+        menuContainer.add(menuBar2);
+
+        add(menuContainer, BorderLayout.NORTH);
 
         // Make the "media player" panel
         final JPanel bottomPanel = createBottomPanel();
@@ -165,11 +184,115 @@ public class AmusePanel extends CommonPanel {
             handleFile(cmdlnfile);
         }
 
-        setTweakState(TweakState.MOVIE);
+        setTweakState(TweakState.VISUAL);
+
+        setVisible(true);
     }
 
-    void close() {
-        amuseWindow.dispose(glCanvas);
+    public AmusePanel() {
+        setLayout(new BorderLayout(0, 0));
+
+        timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
+        timeBar.setValue(0);
+        timeBar.setMajorTickSpacing(5);
+        timeBar.setMinorTickSpacing(1);
+        timeBar.setMaximum(0);
+        timeBar.setMinimum(0);
+        timeBar.setPaintTicks(true);
+        timeBar.setSnapToTicks(true);
+
+        timer = new AmuseTimedPlayer(timeBar, frameCounter);
+
+        // Make the menu bar
+        final JMenuBar menuBar = new JMenuBar();
+        menuBar.setLayout(new BoxLayout(menuBar, BoxLayout.X_AXIS));
+
+        final JMenu options = new JMenu("Options");
+
+        final JMenuItem makeMovie = new JMenuItem("Make movie.");
+        makeMovie.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.MOVIE);
+            }
+        });
+        options.add(makeMovie);
+
+        final JMenuItem showDataPanel = new JMenuItem("Show data config panel.");
+        showDataPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.DATA);
+            }
+        });
+        options.add(showDataPanel);
+
+        final JMenuItem showVisualPanel = new JMenuItem(
+                "Show visual config panel.");
+        showVisualPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.VISUAL);
+            }
+        });
+        options.add(showVisualPanel);
+        menuBar.add(options);
+
+        menuBar.add(Box.createHorizontalGlue());
+
+        final JMenuBar menuBar2 = new JMenuBar();
+
+        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
+                "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
+        JLabel nlesclogo = new JLabel(nlescIcon);
+        nlesclogo.setMinimumSize(new Dimension(300, 20));
+        nlesclogo.setMaximumSize(new Dimension(311, 28));
+
+        menuBar2.add(Box.createHorizontalGlue());
+        menuBar2.add(nlesclogo);
+        menuBar2.add(Box.createHorizontalGlue());
+
+        Container menuContainer = new Container();
+        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+
+        menuContainer.add(menuBar);
+        menuContainer.add(menuBar2);
+
+        add(menuContainer, BorderLayout.NORTH);
+
+        // Make the "media player" panel
+        final JPanel bottomPanel = createBottomPanel();
+
+        // Add the tweaks panels
+        configPanel = new JPanel();
+        add(configPanel, BorderLayout.WEST);
+        configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
+        configPanel.setPreferredSize(new Dimension(200, 0));
+        configPanel.setVisible(false);
+
+        dataConfig = new JPanel();
+        dataConfig.setLayout(new BoxLayout(dataConfig, BoxLayout.Y_AXIS));
+        dataConfig.setMinimumSize(configPanel.getPreferredSize());
+        createDataTweakPanel();
+
+        visualConfig = new JPanel();
+        visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
+        visualConfig.setMinimumSize(configPanel.getPreferredSize());
+        createVisualTweakPanel();
+
+        movieConfig = new JPanel();
+        movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
+        movieConfig.setMinimumSize(configPanel.getPreferredSize());
+        createMovieTweakPanel();
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Read command line file information
+        makeTimer();
+
+        setTweakState(TweakState.VISUAL);
+
+        setVisible(true);
     }
 
     private JPanel createBottomPanel() {
@@ -227,12 +350,12 @@ public class AmusePanel extends CommonPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                final InputHandler inputHandler = InputHandler.getInstance();
-                final String fileName = "" + timer.getFrameNumber() + " {"
-                        + inputHandler.getRotation().get(0) + ","
-                        + inputHandler.getRotation().get(1) + " - "
-                        + Float.toString(inputHandler.getViewDist()) + "} ";
-                amuseWindow.makeSnapshot(fileName);
+                // final InputHandler inputHandler = InputHandler.getInstance();
+                // final String fileName = "" + timer.getFrameNumber() + " {"
+                // + inputHandler.getRotation().get(0) + ","
+                // + inputHandler.getRotation().get(1) + " - "
+                // + Float.toString(inputHandler.getViewDist()) + "} ";
+                // amuseWindow.makeSnapshot(fileName);
             }
         });
         bottomPanel.add(screenshotButton);
@@ -399,7 +522,7 @@ public class AmusePanel extends CommonPanel {
                         settings.setCurrentLOD(2);
                         timer.redraw();
                     }
-                } }));
+                } }, "Low"));
 
         final JComboBox comboBoxColorMaps = ColormapInterpreter
                 .getLegendJComboBox(new Dimension(200, 25));
@@ -749,6 +872,16 @@ public class AmusePanel extends CommonPanel {
         } else {
             return fileChooser.getSelectedFile();
         }
+    }
+
+    private void makeTimer() {
+        if (timer.isInitialized()) {
+            timer.close();
+        }
+        timer = new AmuseTimedPlayer(timeBar, frameCounter);
+        timer.init();
+
+        new Thread(timer).start();
     }
 
     // Callback methods for the various ui actions and listeners

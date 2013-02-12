@@ -1,9 +1,9 @@
-#version 140
+#version 150
 
-uniform vec4 AmbientMaterial;
+uniform vec4 Color;
 
 out vec4 fragColor;
 
 void main() {
-    fragColor = AmbientMaterial;
+    fragColor = Color;
 }

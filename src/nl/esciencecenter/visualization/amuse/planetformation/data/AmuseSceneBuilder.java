@@ -31,10 +31,10 @@ public class AmuseSceneBuilder implements Runnable {
     @Override
     public void run() {
         if (!initialized) {
-            final int gasParticlesPerOctreeNode = settings
-                    .getGasParticlesPerOctreeNode();
-            final float edge = settings.getOctreeEdges();
-
+            // final int gasParticlesPerOctreeNode = settings
+            // .getGasParticlesPerOctreeNode();
+            // final float edge = settings.getOctreeEdges();
+            //
             // AmuseGasOctreeNode root = new AmuseGasOctreeNode(description,
             // null,
             // null, sceneStore.getGasBaseModel(),
@@ -75,7 +75,8 @@ public class AmuseSceneBuilder implements Runnable {
                         + location);
 
                 Star s = new Star(sceneStore.getStarBaseModel(), location,
-                        settings.getStarDefaultLuminosity(), radius);
+                        new VecF3(), settings.getStarDefaultLuminosity(),
+                        radius);
 
                 starList.add(s);
             }

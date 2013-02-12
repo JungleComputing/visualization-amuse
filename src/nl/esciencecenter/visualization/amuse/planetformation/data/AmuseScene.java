@@ -6,14 +6,15 @@ import java.util.ArrayList;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import nl.esciencecenter.visualization.amuse.planetformation.glExt.VBO;
-import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter;
-import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Color;
-import nl.esciencecenter.visualization.amuse.planetformation.util.ColormapInterpreter.Dimensions;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
+import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,10 @@ public class AmuseScene {
         this.gasOctree = gasOctree;
 
         this.gasParticles = gasParticles;
+    }
+
+    public AmuseScene(AmuseSceneDescription description, Scene scene) {
+        this.description = description;
     }
 
     public synchronized void drawStars(GL3 gl, Program starProgram,

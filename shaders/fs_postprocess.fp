@@ -5,14 +5,13 @@ uniform sampler2D gasTexture;
 uniform sampler2D starTexture;
 uniform sampler2D starHaloTexture;
 uniform sampler2D hudTexture;
-//uniform sampler2D legendTexture;
 
+uniform float axesBrightness;
+uniform float gasBrightness;
 uniform float starBrightness;
 uniform float starHaloBrightness;
-uniform float gasBrightness;
-uniform float axesBrightness;
-uniform float overallBrightness;
 uniform float hudBrightness;
+uniform float overallBrightness;
 
 uniform int scrWidth;
 uniform int scrHeight;

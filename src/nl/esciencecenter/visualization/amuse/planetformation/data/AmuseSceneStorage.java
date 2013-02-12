@@ -9,10 +9,11 @@ import javax.media.opengl.GL3;
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasCube;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasModel;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
-import nl.esciencecenter.visualization.openglCommon.models.base.Sphere;
+import nl.esciencecenter.visualization.openglCommon.models.Sphere;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,5 +157,9 @@ public class AmuseSceneStorage {
     public void setLegendImage(AmuseSceneDescription description,
             ByteBuffer outBuf) {
         legendStorage.put(description, outBuf);
+    }
+
+    public void setScene(AmuseSceneDescription description, Scene scene) {
+        sceneStorage.put(description, new AmuseScene(description, scene));
     }
 }

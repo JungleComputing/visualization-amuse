@@ -21,6 +21,9 @@ public class AmuseParticleDataArray implements Runnable {
     @Override
     public void run() {
         if (!initialized) {
+            Variable ncdfVar_index = ncFile
+                    .findVariable("particles/0000000001/keys");
+
             Variable ncdfVar_x = ncFile
                     .findVariable("particles/0000000001/attributes/x");
             Variable ncdfVar_y = ncFile
@@ -35,10 +38,15 @@ public class AmuseParticleDataArray implements Runnable {
             data = new float[size - 1][5];
 
             try {
+                Array ncdfArray1D_index = ncdfVar_index.read();
+
                 Array ncdfArray1D_x = ncdfVar_x.read();
                 Array ncdfArray1D_y = ncdfVar_y.read();
                 Array ncdfArray1D_z = ncdfVar_z.read();
                 Array ncdfArray1D_radius = ncdfVar_radius.read();
+
+                int[] result_index = (int[]) ncdfArray1D_index
+                        .get1DJavaArray(int.class);
 
                 double[] result_x = (double[]) ncdfArray1D_x
                         .get1DJavaArray(double.class);
@@ -50,10 +58,15 @@ public class AmuseParticleDataArray implements Runnable {
                         .get1DJavaArray(double.class);
 
                 for (int i = 0; i < size - 1; i++) {
-                    data[i][0] = (float) result_x[i];
-                    data[i][1] = (float) result_y[i];
-                    data[i][2] = (float) result_z[i];
-                    data[i][3] = (float) result_radius[i];
+                    float x = (float) result_x[i];
+                    float y = (float) result_y[i];
+                    float z = (float) result_z[i];
+                    float r = (float) result_radius[i];
+
+                    data[i][0] = x;
+                    data[i][1] = y;
+                    data[i][2] = z;
+                    data[i][3] = r;
                 }
 
             } catch (IOException e) {

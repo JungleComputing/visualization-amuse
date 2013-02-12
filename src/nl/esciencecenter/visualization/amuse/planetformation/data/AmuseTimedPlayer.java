@@ -9,10 +9,11 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
-import nl.esciencecenter.visualization.openglCommon.util.CustomJSlider;
-import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class AmuseTimedPlayer implements Runnable {
 
     private final boolean             running            = true;
     private boolean                   initialized        = false;
+    private boolean                   fileLessMode       = false;
 
     private long                      startTime, stopTime;
 
@@ -116,15 +118,41 @@ public class AmuseTimedPlayer implements Runnable {
         this.dsManager = new AmuseDatasetManager(file_bin, file_gas, 1, 4);
         this.sceneStorage = dsManager.getSceneStorage();
 
-        frameNumber = dsManager.getFrameNumberOfIndex(0);
-        final int initialMaxBar = dsManager.getNumFiles() - 1;
+        try {
+            frameNumber = dsManager.getFrameNumberOfIndex(0);
+            final int initialMaxBar = dsManager.getNumFiles() - 1;
 
-        timeBar.setMaximum(initialMaxBar);
-        timeBar.setMinimum(0);
+            timeBar.setMaximum(initialMaxBar);
+            timeBar.setMinimum(0);
 
-        updateFrame(frameNumber, true);
+            updateFrame(frameNumber, true);
 
-        initialized = true;
+            initialized = true;
+
+        } catch (IndexNotAvailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void init() {
+        this.fileLessMode = true;
+        this.dsManager = new AmuseDatasetManager(1, 4);
+        this.sceneStorage = dsManager.getSceneStorage();
+
+        // try {
+        // frameNumber = dsManager.getFrameNumberOfIndex(0);
+        // final int initialMaxBar = dsManager.getNumFiles() - 1;
+        //
+        // timeBar.setMaximum(initialMaxBar);
+        // timeBar.setMinimum(0);
+        //
+        // updateFrame(frameNumber, true);
+        //
+        // initialized = true;
+        //
+        // } catch (IndexNotAvailableException e) {
+        // e.printStackTrace();
+        // }
     }
 
     public boolean isInitialized() {
@@ -203,7 +231,7 @@ public class AmuseTimedPlayer implements Runnable {
 
     @Override
     public void run() {
-        if (!initialized) {
+        if (!initialized && !fileLessMode) {
             System.err.println("HDFTimer started while not initialized.");
             System.exit(1);
         }
@@ -297,7 +325,11 @@ public class AmuseTimedPlayer implements Runnable {
     public synchronized void setFrame(int value, boolean overrideUpdate) {
         stop();
 
-        updateFrame(dsManager.getFrameNumberOfIndex(value), overrideUpdate);
+        try {
+            updateFrame(dsManager.getFrameNumberOfIndex(value), overrideUpdate);
+        } catch (IndexNotAvailableException e) {
+            e.printStackTrace();
+        }
     }
 
     public synchronized void start() {
@@ -326,6 +358,10 @@ public class AmuseTimedPlayer implements Runnable {
 
     public AmuseSceneStorage getSceneStorage() {
         return sceneStorage;
+    }
+
+    public void addScene(Scene scene) {
+        dsManager.addScene(scene);
     }
 
     public int getFrameNumber() {

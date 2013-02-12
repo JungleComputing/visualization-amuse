@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
@@ -14,8 +16,10 @@ import org.slf4j.LoggerFactory;
 import ucar.nc2.NetcdfFile;
 
 public class AmuseDatasetManager {
-    private final static Logger              logger = LoggerFactory
-                                                            .getLogger(AmuseDatasetManager.class);
+    private final static AmuseSettings       settings = AmuseSettings
+                                                              .getInstance();
+    private final static Logger              logger   = LoggerFactory
+                                                              .getLogger(AmuseDatasetManager.class);
 
     private final ArrayList<Integer>         availableFrameSequenceNumbers;
 
@@ -154,6 +158,31 @@ public class AmuseDatasetManager {
         sceneStorage = new AmuseSceneStorage(this);
     }
 
+    public AmuseDatasetManager(int numIOThreads, int numCPUThreads) {
+        this.file_bin = null;
+        this.file_gas = null;
+
+        ioQueue = new LinkedList<AmuseDataArray>();
+        cpuQueue = new LinkedList<Runnable>();
+
+        ioThreads = new IOPoolWorker[numIOThreads];
+        cpuThreads = new CPUPoolWorker[numCPUThreads];
+
+        for (int i = 0; i < numIOThreads; i++) {
+            ioThreads[i] = new IOPoolWorker();
+            ioThreads[i].setPriority(Thread.MIN_PRIORITY);
+            ioThreads[i].start();
+        }
+        for (int i = 0; i < numIOThreads; i++) {
+            cpuThreads[i] = new CPUPoolWorker();
+            cpuThreads[i].setPriority(Thread.MIN_PRIORITY);
+            cpuThreads[i].start();
+        }
+
+        availableFrameSequenceNumbers = new ArrayList<Integer>();
+        sceneStorage = new AmuseSceneStorage(this);
+    }
+
     public void buildScene(AmuseSceneDescription description) {
         int frameNumber = description.getFrameNumber();
         if (frameNumber < 0
@@ -184,8 +213,13 @@ public class AmuseDatasetManager {
         return sceneStorage;
     }
 
-    public int getFrameNumberOfIndex(int index) {
-        return availableFrameSequenceNumbers.get(index);
+    public int getFrameNumberOfIndex(int index)
+            throws IndexNotAvailableException {
+        if (availableFrameSequenceNumbers.contains(index)) {
+            return availableFrameSequenceNumbers.get(index);
+        } else {
+            throw new IndexNotAvailableException();
+        }
     }
 
     public int getIndexOfFrameNumber(int frameNumber) {
@@ -197,7 +231,12 @@ public class AmuseDatasetManager {
 
         if (nextNumber >= 0
                 && nextNumber < availableFrameSequenceNumbers.size()) {
-            return getFrameNumberOfIndex(nextNumber);
+            try {
+                return getFrameNumberOfIndex(nextNumber);
+            } catch (IndexNotAvailableException e) {
+                throw new IOException("Frame number not available: "
+                        + nextNumber);
+            }
         } else {
             throw new IOException("Frame number not available: " + nextNumber);
         }
@@ -208,7 +247,12 @@ public class AmuseDatasetManager {
 
         if (nextNumber >= 0
                 && nextNumber < availableFrameSequenceNumbers.size()) {
-            return getFrameNumberOfIndex(nextNumber);
+            try {
+                return getFrameNumberOfIndex(nextNumber);
+            } catch (IndexNotAvailableException e) {
+                throw new IOException("Frame number not available: "
+                        + nextNumber);
+            }
         } else {
             throw new IOException("Frame number not available: " + nextNumber);
         }
@@ -216,5 +260,13 @@ public class AmuseDatasetManager {
 
     public int getNumFiles() {
         return availableFrameSequenceNumbers.size();
+    }
+
+    public void addScene(Scene scene) {
+        AmuseSceneDescription description = settings.getCurrentDescription()
+                .clone();
+        description.setFrameNumber(availableFrameSequenceNumbers.size());
+
+        sceneStorage.setScene(description, scene);
     }
 }

@@ -7,13 +7,13 @@ import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasModel;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
-import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
