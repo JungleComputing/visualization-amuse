@@ -164,6 +164,7 @@ public class AmuseDatasetManager {
         }
 
         try {
+            System.err.println(file_bin.getAbsoluteFile());
             NetcdfFile frameFile_bin = NetCDFUtil.open(NetCDFUtil.getSeqFile(
                     file_bin, frameNumber));
             NetcdfFile frameFile_gas = NetCDFUtil.open(NetCDFUtil.getSeqFile(

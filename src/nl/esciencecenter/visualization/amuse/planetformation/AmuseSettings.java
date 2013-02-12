@@ -16,7 +16,7 @@ public class AmuseSettings extends Settings {
             "gas", "bin"                                                 };
 
     private final float           MIN_GAS_DENSITY                         = 0f;
-    private final float           MAX_GAS_DENSITY                         = .1f;
+    private final float           MAX_GAS_DENSITY                         = .0001f;
 
     // Minimum and maximum values for the brightness sliders
     private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_MIN   = 0f;
