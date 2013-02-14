@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
 import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
@@ -60,10 +59,6 @@ public class AmuseScene {
         this.gasOctree = gasOctree;
 
         this.gasParticles = gasParticles;
-    }
-
-    public AmuseScene(AmuseSceneDescription description, Scene scene) {
-        this.description = description;
     }
 
     public synchronized void drawStars(GL3 gl, Program starProgram,

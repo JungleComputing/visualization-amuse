@@ -1,20 +1,20 @@
-package nl.esciencecenter.visualization.amuse.planetformation.data;
+package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import ucar.nc2.NetcdfFile;
 
-public class AmuseDataArray implements Runnable {
+public class GlueDataArray implements Runnable {
     private final NetcdfFile            ncFile_bin, ncFile_gas;
     private boolean                     initialized = false;
 
-    private AmuseParticleDataArray      particles;
+    private GlueParticleArray      particles;
     private AmuseGasDataArray           gasses;
 
-    private final AmuseSceneDescription description;
+    private final GlueSceneDescription description;
     private final Scene                 glueScene;
 
-    public AmuseDataArray(AmuseSceneDescription description,
+    public GlueDataArray(GlueSceneDescription description,
             NetcdfFile frameFile_bin, NetcdfFile frameFile_gas) {
         this.description = description;
         this.ncFile_bin = frameFile_bin;
@@ -22,7 +22,7 @@ public class AmuseDataArray implements Runnable {
         this.glueScene = null;
     }
 
-    public AmuseDataArray(AmuseSceneDescription description, Scene scene) {
+    public GlueDataArray(GlueSceneDescription description, Scene scene) {
         this.description = description;
         this.ncFile_bin = null;
         this.ncFile_gas = null;
@@ -33,7 +33,7 @@ public class AmuseDataArray implements Runnable {
     public void run() {
         if (!initialized && ncFile_bin != null && ncFile_gas != null
                 && glueScene == null) {
-            particles = new AmuseParticleDataArray(ncFile_bin);
+            particles = new GlueParticleArray(ncFile_bin);
             gasses = new AmuseGasDataArray(ncFile_gas);
 
             particles.run();
@@ -41,7 +41,7 @@ public class AmuseDataArray implements Runnable {
 
             initialized = true;
         } else {
-            particles = new AmuseParticleDataArray(glueScene.getStars());
+            particles = new GlueParticleArray(glueScene.getStars());
             gasses = new AmuseGasDataArray(glueScene.getSphGas());
 
             particles.run();
@@ -51,7 +51,7 @@ public class AmuseDataArray implements Runnable {
         }
     }
 
-    public AmuseSceneDescription getDescription() {
+    public GlueSceneDescription getDescription() {
         return description;
     }
 

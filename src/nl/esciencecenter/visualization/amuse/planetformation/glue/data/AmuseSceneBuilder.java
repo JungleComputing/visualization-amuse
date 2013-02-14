@@ -1,4 +1,4 @@
-package nl.esciencecenter.visualization.amuse.planetformation.data;
+package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
 import java.util.ArrayList;
 
@@ -15,12 +15,12 @@ public class AmuseSceneBuilder implements Runnable {
 
     private final AmuseSceneStorage     sceneStore;
 
-    private final AmuseSceneDescription description;
+    private final GlueSceneDescription description;
     private final float[][]             particles, gas;
     private boolean                     initialized;
 
     public AmuseSceneBuilder(AmuseSceneStorage sceneStore,
-            AmuseSceneDescription description, float[][] particles,
+            GlueSceneDescription description, float[][] particles,
             float[][] gas) {
         this.description = description;
         this.sceneStore = sceneStore;
@@ -63,7 +63,7 @@ public class AmuseSceneBuilder implements Runnable {
                 gasProcessed[i][3] = gas[i][4];
             }
 
-            ArrayList<Star> starList = new ArrayList<Star>();
+            ArrayList<StarModel> starList = new ArrayList<StarModel>();
 
             for (float[] particlesElement : particles) {
                 VecF3 location = Astrophysics.auLocationToScreenCoord(
@@ -74,7 +74,7 @@ public class AmuseSceneBuilder implements Runnable {
                 logger.debug("adding star with radius " + radius + " at "
                         + location);
 
-                Star s = new Star(sceneStore.getStarBaseModel(), location,
+                StarModel s = new StarModel(sceneStore.getStarBaseModel(), location,
                         new VecF3(), settings.getStarDefaultLuminosity(),
                         radius);
 
@@ -83,7 +83,7 @@ public class AmuseSceneBuilder implements Runnable {
 
             // sceneStore.setScene(description, root, starList);
 
-            sceneStore.setScene(description, gasProcessed, starList);
+            sceneStore.setScene(description, null, gasProcessed, starList);
 
             initialized = true;
         }

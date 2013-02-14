@@ -2,6 +2,7 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 
 import java.io.IOException;
 
+import nl.esciencecenter.visualization.amuse.planetformation.glue.Particle;
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
@@ -19,14 +20,21 @@ public class AmuseGasDataArray implements Runnable {
     private boolean             initialized = false;
     private float[][]           data;
     private int                 size;
+    private final Particle[]    particles;
 
     public AmuseGasDataArray(NetcdfFile frameFile) {
         this.ncFile = frameFile;
+        this.particles = null;
+    }
+
+    public AmuseGasDataArray(Particle[] particles) {
+        this.ncFile = null;
+        this.particles = particles;
     }
 
     @Override
     public void run() {
-        if (!initialized) {
+        if (!initialized && ncFile != null) {
             Variable ncdfVar_x = ncFile
                     .findVariable("particles/0000000001/attributes/x");
             Variable ncdfVar_y = ncFile
@@ -78,7 +86,24 @@ public class AmuseGasDataArray implements Runnable {
             NetCDFUtil.close(ncFile);
 
             initialized = true;
+        } else {
+            size = particles.length;
 
+            data = new float[size - 1][4];
+
+            for (int i = 0; i < size - 1; i++) {
+                float x = particles[i].getCoordinates()[0];
+                float y = particles[i].getCoordinates()[1];
+                float z = particles[i].getCoordinates()[2];
+                float r = particles[i].getRadius();
+
+                data[i][0] = x;
+                data[i][1] = y;
+                data[i][2] = z;
+                data[i][3] = r;
+            }
+
+            initialized = true;
         }
     }
 

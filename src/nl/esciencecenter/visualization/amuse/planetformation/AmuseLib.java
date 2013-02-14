@@ -59,6 +59,6 @@ public class AmuseLib {
     }
 
     public void addScene(Scene scene) {
-        AmusePanel.getTimer().getDatasetManager().addScene(scene);
+        AmusePanel.getTimer().addScene(scene);
     }
 }
