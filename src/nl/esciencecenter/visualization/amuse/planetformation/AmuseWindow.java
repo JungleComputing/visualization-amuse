@@ -15,11 +15,12 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseScene;
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneStorage;
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseTimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.data.Astrophysics;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneStorage;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.VisualScene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.FBO;
 import nl.esciencecenter.visualization.openglCommon.datastructures.IntPBO;
 import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
@@ -76,13 +77,13 @@ public class AmuseWindow implements GLEventListener {
 
     private AmuseSceneDescription requestedScene = null;
 
-    private AmuseSceneStorage     sceneStore;
+    private SceneStorage          sceneStore;
 
-    private AmuseTimedPlayer      timer;
+    private TimedPlayer           timer;
 
     private IntPBO                finalPBO;
 
-    private AmuseScene            oldScene;
+    private VisualScene           oldScene;
 
     private final InputHandler    inputHandler;
 
@@ -108,7 +109,7 @@ public class AmuseWindow implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        AmuseTimedPlayer timer = AmusePanel.getTimer();
+        TimedPlayer timer = AmusePanel.getTimer();
 
         if (timer.isInitialized()) {
             this.timer = timer;
@@ -138,12 +139,12 @@ public class AmuseWindow implements GLEventListener {
                 requestedScene = currentDescription;
             }
 
-            AmuseScene newScene = sceneStore.getScene();
+            VisualScene newScene = sceneStore.getScene();
             if (newScene != null) {
                 displayContext(newScene);
 
                 if (oldScene != null && oldScene != newScene) {
-                    oldScene.cleanup(gl);
+                    oldScene.dispose(gl);
 
                     oldScene = newScene;
                 }
@@ -211,7 +212,7 @@ public class AmuseWindow implements GLEventListener {
         }
     }
 
-    private synchronized void displayContext(AmuseScene scene) {
+    private synchronized void displayContext(VisualScene newScene) {
         final GL3 gl = GLContext.getCurrentGL().getGL3();
 
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
@@ -245,10 +246,10 @@ public class AmuseWindow implements GLEventListener {
             mv = mv.mul(MatrixFMath
                     .rotationY(inputHandler.getRotation().get(1)));
 
-            renderScene(gl, mv.clone(), scene);
+            renderScene(gl, mv.clone(), newScene);
 
             try {
-                renderHUDText(gl, scene, mv.clone());
+                renderHUDText(gl, newScene, mv.clone());
             } catch (final UninitializedException e) {
                 e.printStackTrace();
             }
@@ -266,10 +267,10 @@ public class AmuseWindow implements GLEventListener {
             mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(
                     1)));
 
-            renderScene(gl, mv2.clone(), scene);
+            renderScene(gl, mv2.clone(), newScene);
 
             try {
-                renderHUDText(gl, scene, mv2.clone());
+                renderHUDText(gl, newScene, mv2.clone());
             } catch (final UninitializedException e) {
                 e.printStackTrace();
             }
@@ -283,10 +284,10 @@ public class AmuseWindow implements GLEventListener {
             mv = mv.mul(MatrixFMath
                     .rotationY(inputHandler.getRotation().get(1)));
 
-            renderScene(gl, mv.clone(), scene);
+            renderScene(gl, mv.clone(), newScene);
 
             try {
-                renderHUDText(gl, scene, mv.clone());
+                renderHUDText(gl, newScene, mv.clone());
             } catch (final UninitializedException e) {
                 e.printStackTrace();
             }
@@ -294,7 +295,7 @@ public class AmuseWindow implements GLEventListener {
         }
     }
 
-    private void renderScene(GL3 gl, MatF4 mv, AmuseScene scene) {
+    private void renderScene(GL3 gl, MatF4 mv, VisualScene newScene) {
         if (settings.getGasInvertedBackgroundColor()) {
             gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         } else {
@@ -303,16 +304,16 @@ public class AmuseWindow implements GLEventListener {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         try {
-            renderGas(gl, mv.clone(), scene);
-            renderStars(gl, mv.clone(), scene);
-            renderStarHalos(gl, mv.clone(), scene);
+            renderGas(gl, mv.clone(), newScene);
+            renderStars(gl, mv.clone(), newScene);
+            renderStarHalos(gl, mv.clone(), newScene);
             renderAxes(gl, mv.clone());
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void renderGas(GL3 gl, MatF4 mv, AmuseScene scene)
+    private void renderGas(GL3 gl, MatF4 mv, VisualScene newScene)
             throws UninitializedException {
         gasFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
@@ -322,7 +323,7 @@ public class AmuseWindow implements GLEventListener {
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
         gasShader.setUniformMatrix("PMatrix", p);
 
-        scene.drawGas(gl, gasShader, mv);
+        newScene.drawGasPointCloud(gl, gasShader, mv);
 
         gl.glEnable(GL.GL_DEPTH_TEST);
 
@@ -339,7 +340,7 @@ public class AmuseWindow implements GLEventListener {
         }
     }
 
-    private void renderStars(GL3 gl, MatF4 mv, AmuseScene scene)
+    private void renderStars(GL3 gl, MatF4 mv, VisualScene newScene)
             throws UninitializedException {
         starFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
@@ -359,12 +360,12 @@ public class AmuseWindow implements GLEventListener {
 
         animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
-        scene.drawStars(gl, animatedTurbulenceShader, mv);
+        newScene.drawStars(gl, animatedTurbulenceShader, mv);
 
         starFBO.unBind(gl);
     }
 
-    private void renderStarHalos(GL3 gl, MatF4 mv, AmuseScene scene)
+    private void renderStarHalos(GL3 gl, MatF4 mv, VisualScene newScene)
             throws UninitializedException {
         starHaloFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
@@ -373,7 +374,7 @@ public class AmuseWindow implements GLEventListener {
         pplShader.setUniformMatrix("PMatrix", p);
         pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2f));
 
-        scene.drawStars(gl, pplShader, mv);
+        newScene.drawStars(gl, pplShader, mv);
 
         starHaloFBO = blur(gl, starHaloFBO, FSQ_blur,
                 settings.getStarHaloBlurPasses(),
@@ -405,13 +406,13 @@ public class AmuseWindow implements GLEventListener {
         axesFBO.unBind(gl);
     }
 
-    private void renderHUDText(GL3 gl, AmuseScene scene, MatF4 mv)
+    private void renderHUDText(GL3 gl, VisualScene newScene, MatF4 mv)
             throws UninitializedException {
 
         final String text = "Frame: " + AmusePanel.getTimer().getFrameNumber();
         frameNumberText.setString(gl, text, Color4.white, fontSize);
 
-        AmuseSceneDescription currentDesc = scene.getDescription();
+        SceneDescription currentDesc = newScene.getDescription();
 
         String min = Float.toString(currentDesc.getLowerBound());
         String max = Float.toString(currentDesc.getUpperBound());
@@ -724,7 +725,7 @@ public class AmuseWindow implements GLEventListener {
         return inputHandler;
     }
 
-    public AmuseTimedPlayer getTimer() {
+    public TimedPlayer getTimer() {
         return timer;
     }
 }

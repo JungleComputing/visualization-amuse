@@ -1,11 +1,10 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue.visual;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.GlueConstants;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
@@ -16,10 +15,14 @@ import nl.esciencecenter.visualization.openglCommon.models.Model;
 import nl.esciencecenter.visualization.openglCommon.scenegraph.OctreeElement;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
 
-public class SPHOctreeNode {
-    private final int MAX_OCTREE_DEPTH = 25;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    private static enum Octant {
+public class SPHOctreeNode {
+    private final static Logger logger = LoggerFactory
+                                               .getLogger(SPHOctreeNode.class);
+
+    public static enum Octant {
         PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
     };
 
@@ -36,38 +39,36 @@ public class SPHOctreeNode {
         }
     }
 
-    protected final int                         maxElements;
-    protected final ArrayList<SPHOctreeElement> elements;
-    protected final VecF3                       center;
-    protected final float                       cubeSize;
-    protected final int                         depth;
-    protected final Model                       baseModel;
-    protected final MatF4                       TMatrix;
-    protected final float                       modelScale;
+    private final ArrayList<SPHOctreeElement> elements;
+    private final VecF3                       center;
+    private final float                       cubeSize;
+    private final int                         depth;
+    private final Model                       baseModel;
+    private final MatF4                       TMatrix;
+    private final float                       modelScale;
 
-    protected SPHOctreeNode                     ppp, ppn, pnp, pnn, npp, npn,
+    private SPHOctreeNode                     ppp, ppn, pnp, npp, pnn, npn,
             nnp, nnn;
-    protected int                               childCounter;
-    protected boolean                           subdivided  = false;
-    protected boolean                           initialized = false;
-    protected VecF4                             color;
+    private int                               childCounter;
+    private boolean                           subdivided  = false;
+    private boolean                           initialized = false;
+    private VecF4                             color;
 
-    private final GlueSceneDescription          description;
-
-    public SPHOctreeNode(GlueSceneDescription description,
-            SPHOctreeNode parent, Octant octant, Model baseModel,
-            int maxElements, int depth, VecF3 corner, float size) {
-        this.description = description;
+    public SPHOctreeNode(Model baseModel, int depth, VecF3 center, float size) {
         this.baseModel = baseModel;
-        this.maxElements = maxElements;
         this.depth = depth;
-        this.center = corner.add(new VecF3(size, size, size));
+        this.center = center;
         this.cubeSize = size;
         this.modelScale = size * 2f;
         this.elements = new ArrayList<SPHOctreeElement>();
         this.childCounter = 0;
 
         this.TMatrix = MatrixFMath.translate(center);
+    }
+
+    public void addElement(VecF3 coordinates, VecF4 color) {
+        SPHOctreeElement element = new SPHOctreeElement(coordinates, color);
+        addElement(element);
     }
 
     public void addElement(SPHOctreeElement element) {
@@ -83,13 +84,12 @@ public class SPHOctreeNode {
             if (subdivided) {
                 addElementSubdivided(element);
             } else {
-                if ((childCounter > maxElements)) {
-                    if (depth < MAX_OCTREE_DEPTH) {
+                if ((childCounter > GlueConstants.MAX_ELEMENTS)) {
+                    if (depth < GlueConstants.MAX_OCTREE_DEPTH) {
                         subDiv();
                         childCounter = 0;
                     } else {
-                        System.out
-                                .println("Octree is maximally divided, please change MAX_OCTREE_DEPTH constant if you are certain.");
+                        logger.warn("Octree is maximally divided, please change MAX_OCTREE_DEPTH constant if you are certain.");
                     }
                 } else {
                     elements.add(element);
@@ -136,30 +136,31 @@ public class SPHOctreeNode {
     protected void subDiv() {
         float childSize = cubeSize / 2f;
 
-        ppp = new SPHOctreeNode(description, this, Octant.PPP, baseModel,
-                maxElements, depth + 1, center.add(new VecF3(0f, 0f, 0f)),
-                childSize);
-        ppn = new SPHOctreeNode(description, this, Octant.PPN, baseModel,
-                maxElements, depth + 1,
-                center.add(new VecF3(0f, 0f, -cubeSize)), childSize);
-        pnp = new SPHOctreeNode(description, this, Octant.PNP, baseModel,
-                maxElements, depth + 1,
-                center.add(new VecF3(0f, -cubeSize, 0f)), childSize);
-        pnn = new SPHOctreeNode(description, this, Octant.PNN, baseModel,
-                maxElements, depth + 1, center.add(new VecF3(0f, -cubeSize,
-                        -cubeSize)), childSize);
-        npp = new SPHOctreeNode(description, this, Octant.NPP, baseModel,
-                maxElements, depth + 1,
-                center.add(new VecF3(-cubeSize, 0f, 0f)), childSize);
-        npn = new SPHOctreeNode(description, this, Octant.NPN, baseModel,
-                maxElements, depth + 1, center.add(new VecF3(-cubeSize, 0f,
-                        -cubeSize)), childSize);
-        nnp = new SPHOctreeNode(description, this, Octant.NNP, baseModel,
-                maxElements, depth + 1, center.add(new VecF3(-cubeSize,
-                        -cubeSize, 0f)), childSize);
-        nnn = new SPHOctreeNode(description, this, Octant.NNN, baseModel,
-                maxElements, depth + 1, center.add(new VecF3(-cubeSize,
-                        -cubeSize, -cubeSize)), childSize);
+        VecF3 pppCenter = center
+                .add(new VecF3(childSize, childSize, childSize));
+        VecF3 ppnCenter = center
+                .add(new VecF3(childSize, childSize, -childSize));
+        VecF3 pnpCenter = center
+                .add(new VecF3(childSize, -childSize, childSize));
+        VecF3 nppCenter = center
+                .add(new VecF3(-childSize, childSize, childSize));
+        VecF3 pnnCenter = center.add(new VecF3(childSize, -childSize,
+                -childSize));
+        VecF3 npnCenter = center.add(new VecF3(-childSize, childSize,
+                -childSize));
+        VecF3 nnpCenter = center.add(new VecF3(-childSize, -childSize,
+                childSize));
+        VecF3 nnnCenter = center.add(new VecF3(-childSize, -childSize,
+                -childSize));
+
+        ppp = new SPHOctreeNode(baseModel, depth + 1, pppCenter, childSize);
+        ppn = new SPHOctreeNode(baseModel, depth + 1, ppnCenter, childSize);
+        pnp = new SPHOctreeNode(baseModel, depth + 1, pnpCenter, childSize);
+        npp = new SPHOctreeNode(baseModel, depth + 1, nppCenter, childSize);
+        pnn = new SPHOctreeNode(baseModel, depth + 1, pnnCenter, childSize);
+        npn = new SPHOctreeNode(baseModel, depth + 1, npnCenter, childSize);
+        nnp = new SPHOctreeNode(baseModel, depth + 1, nnpCenter, childSize);
+        nnn = new SPHOctreeNode(baseModel, depth + 1, nnnCenter, childSize);
 
         for (SPHOctreeElement element : elements) {
             addElementSubdivided(element);
@@ -168,33 +169,6 @@ public class SPHOctreeNode {
         elements.clear();
 
         subdivided = true;
-    }
-
-    protected SPHOctreeNode getChild(Octant octant) {
-        if (subdivided) {
-            switch (octant) {
-            case NNN:
-                return nnn;
-            case NNP:
-                return nnp;
-            case NPN:
-                return npn;
-            case NPP:
-                return npp;
-            case PNN:
-                return pnn;
-            case PNP:
-                return pnp;
-            case PPN:
-                return ppn;
-            case PPP:
-                return ppp;
-            default:
-                return null;
-            }
-        } else {
-            return this;
-        }
     }
 
     public void draw(GL3 gl, Program program) {
@@ -337,15 +311,12 @@ public class SPHOctreeNode {
                 ppp.init();
                 ppn.init();
                 pnp.init();
-                pnn.init();
                 npp.init();
+                pnn.init();
                 npn.init();
                 nnp.init();
                 nnn.init();
             } else {
-                // float particle_density = (childCounter / (scale * scale *
-                // scale));
-
                 VecF4 tmpColor = new VecF4();
                 for (SPHOctreeElement element : elements) {
                     tmpColor.add(element.getColor());
@@ -355,63 +326,6 @@ public class SPHOctreeNode {
 
             elements.clear();
             initialized = true;
-        }
-    }
-
-    public float calcMaxdensity(float current_max) {
-        if (subdivided) {
-            current_max = ppp.calcMaxdensity(current_max);
-            current_max = ppn.calcMaxdensity(current_max);
-            current_max = pnp.calcMaxdensity(current_max);
-            current_max = pnn.calcMaxdensity(current_max);
-            current_max = npp.calcMaxdensity(current_max);
-            current_max = npn.calcMaxdensity(current_max);
-            current_max = nnp.calcMaxdensity(current_max);
-            current_max = nnn.calcMaxdensity(current_max);
-        }
-
-        float particle_density = (childCounter / (cubeSize * cubeSize * cubeSize));
-
-        if (current_max < particle_density) {
-            return particle_density;
-        } else {
-            return current_max;
-        }
-    }
-
-    public FloatBuffer getColor(float[] gasParticle) {
-        if (subdivided) {
-            if (gasParticle[0] < center.get(0)) {
-                if (gasParticle[1] < center.get(1)) {
-                    if (gasParticle[2] < center.get(2)) {
-                        return nnn.getColor(gasParticle);
-                    } else {
-                        return nnp.getColor(gasParticle);
-                    }
-                } else {
-                    if (gasParticle[2] < center.get(2)) {
-                        return npn.getColor(gasParticle);
-                    } else {
-                        return npp.getColor(gasParticle);
-                    }
-                }
-            } else {
-                if (gasParticle[1] < center.get(1)) {
-                    if (gasParticle[2] < center.get(2)) {
-                        return pnn.getColor(gasParticle);
-                    } else {
-                        return pnp.getColor(gasParticle);
-                    }
-                } else {
-                    if (gasParticle[2] < center.get(2)) {
-                        return ppn.getColor(gasParticle);
-                    } else {
-                        return ppp.getColor(gasParticle);
-                    }
-                }
-            }
-        } else {
-            return color.asBuffer();
         }
     }
 }

@@ -34,6 +34,8 @@ import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseTimedPlayer;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueTimedPlayer;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
 import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
@@ -52,21 +54,21 @@ public class AmusePanel extends JPanel {
         NONE, DATA, VISUAL, MOVIE
     }
 
-    private final AmuseSettings    settings           = AmuseSettings
-                                                              .getInstance();
+    private final AmuseSettings   settings           = AmuseSettings
+                                                             .getInstance();
 
-    private static final long      serialVersionUID   = 1L;
+    private static final long     serialVersionUID   = 1L;
 
-    protected CustomJSlider        timeBar;
+    protected CustomJSlider       timeBar;
 
-    protected JFormattedTextField  frameCounter;
-    private TweakState             currentConfigState = TweakState.MOVIE;
+    protected JFormattedTextField frameCounter;
+    private TweakState            currentConfigState = TweakState.MOVIE;
 
-    public static AmuseTimedPlayer timer;
+    public static TimedPlayer     timer;
 
-    private final JPanel           configPanel;
+    private final JPanel          configPanel;
 
-    private final JPanel           dataConfig, visualConfig, movieConfig;
+    private final JPanel          dataConfig, visualConfig, movieConfig;
 
     public AmusePanel(String path, String cmdlnfileName) {
         setLayout(new BorderLayout(0, 0));
@@ -201,7 +203,7 @@ public class AmusePanel extends JPanel {
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
 
-        timer = new AmuseTimedPlayer(timeBar, frameCounter);
+        timer = new GlueTimedPlayer(timeBar, frameCounter);
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -405,7 +407,7 @@ public class AmusePanel extends JPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
-                if (!source.getValueIsAdjusting()) {
+                if (source.isFocusOwner() && !source.getValueIsAdjusting()) {
                     timer.setFrame(timeBar.getValue(), false);
                     playButton.setIcon(playIcon);
                 }
@@ -834,9 +836,11 @@ public class AmusePanel extends JPanel {
             timer = new AmuseTimedPlayer(timeBar, frameCounter);
 
             if (file.getAbsolutePath().endsWith("bin")) {
-                timer.init(file, NetCDFUtil.getAlternativeExtFile(file, "gas"));
+                ((AmuseTimedPlayer) timer).init(file,
+                        NetCDFUtil.getAlternativeExtFile(file, "gas"));
             } else if (file.getAbsolutePath().endsWith("gas")) {
-                timer.init(NetCDFUtil.getAlternativeExtFile(file, "bin"), file);
+                ((AmuseTimedPlayer) timer).init(
+                        NetCDFUtil.getAlternativeExtFile(file, "bin"), file);
             } else {
                 logger.error("File is wrong " + file.getAbsolutePath() + ":P");
                 System.exit(1);
@@ -878,8 +882,8 @@ public class AmusePanel extends JPanel {
         if (timer.isInitialized()) {
             timer.close();
         }
-        timer = new AmuseTimedPlayer(timeBar, frameCounter);
-        timer.init();
+        timer = new GlueTimedPlayer(timeBar, frameCounter);
+        ((GlueTimedPlayer) timer).init();
 
         new Thread(timer).start();
     }
@@ -906,7 +910,7 @@ public class AmusePanel extends JPanel {
         }
     }
 
-    public static AmuseTimedPlayer getTimer() {
+    public static TimedPlayer getTimer() {
         return timer;
     }
 }

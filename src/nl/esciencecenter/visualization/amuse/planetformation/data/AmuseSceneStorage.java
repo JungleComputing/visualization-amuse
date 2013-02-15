@@ -9,7 +9,9 @@ import javax.media.opengl.GL3;
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasCube;
 import nl.esciencecenter.visualization.amuse.planetformation.glExt.GasModel;
-import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneStorage;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.VisualScene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
@@ -20,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.jogamp.common.nio.Buffers;
 
-public class AmuseSceneStorage {
+public class AmuseSceneStorage implements SceneStorage {
     private final static Logger                              logger      = LoggerFactory
                                                                                  .getLogger(AmuseSceneStorage.class);
     private final AmuseSettings                              settings    = AmuseSettings
@@ -55,6 +57,7 @@ public class AmuseSceneStorage {
         this.manager = manager;
     }
 
+    @Override
     public void init(GL3 gl) {
         if (!initialized) {
             starBaseModel.init(gl);
@@ -64,6 +67,7 @@ public class AmuseSceneStorage {
         }
     }
 
+    @Override
     public synchronized ByteBuffer getLegendImage() {
         ByteBuffer result = null;
         if (legendStorage.containsKey(newScene)) {
@@ -81,7 +85,8 @@ public class AmuseSceneStorage {
         }
     }
 
-    public synchronized AmuseScene getScene() {
+    @Override
+    public synchronized VisualScene getScene() {
         AmuseScene result = null;
 
         if (sceneStorage.containsKey(newScene)) {
@@ -95,8 +100,9 @@ public class AmuseSceneStorage {
         return result;
     }
 
+    @Override
     public synchronized void requestNewConfiguration(
-            AmuseSceneDescription newDescription) {
+            SceneDescription newDescription) {
         HashMap<AmuseSceneDescription, AmuseScene> newSceneStore = new HashMap<AmuseSceneDescription, AmuseScene>();
 
         for (AmuseSceneDescription description : sceneStorage.keySet()) {
@@ -107,7 +113,7 @@ public class AmuseSceneStorage {
         sceneStorage = newSceneStore;
 
         oldScene = newScene;
-        newScene = newDescription;
+        newScene = (AmuseSceneDescription) newDescription;
         if (!sceneStorage.containsValue(newScene)) {
             manager.buildScene(newScene);
         }
@@ -159,7 +165,7 @@ public class AmuseSceneStorage {
         legendStorage.put(description, outBuf);
     }
 
-    public void setScene(AmuseSceneDescription description, Scene scene) {
-        sceneStorage.put(description, new AmuseScene(description, scene));
-    }
+    // public void setScene(AmuseSceneDescription description, Scene scene) {
+    // sceneStorage.put(description, new AmuseScene(description, scene));
+    // }
 }

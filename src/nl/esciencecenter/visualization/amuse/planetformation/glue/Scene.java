@@ -1,14 +1,18 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue;
 
-public class Scene {
-    private final double     time;
-    private final Sphere[]   spheres;
+import java.io.Serializable;
 
-    private final Star[]     stars;
-    private final Planet[]   planets;
+public class Scene implements Serializable {
+    private static final long serialVersionUID = 4342001313150488429L;
 
-    private final SPHGas[]   sphGas;
-    private final PointGas[] pointGas;
+    private final double      time;
+    private final Sphere[]    spheres;
+
+    private final Star[]      stars;
+    private final Planet[]    planets;
+
+    private final SPHGas[]    sphGas;
+    private final PointGas[]  pointGas;
 
     public Scene(double time, Sphere[] spheres, Star[] stars, Planet[] planets,
             SPHGas[] sphGas, PointGas[] pointGas) {
@@ -43,5 +47,4 @@ public class Scene {
     public PointGas[] getPointGas() {
         return pointGas;
     }
-
 }

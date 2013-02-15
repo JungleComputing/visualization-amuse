@@ -105,7 +105,7 @@ public class AmuseSettings extends Settings {
     private boolean               STAR_COLORS_EXAGGERATED                 = true;
 
     private long                  WAITTIME_FOR_RETRY                      = 10000;
-    private long                  WAITTIME_FOR_MOVIE                      = 100;
+    private long                  WAITTIME_FOR_MOVIE                      = 200;
     private float                 EPSILON                                 = 1.0E-7f;
 
     private float                 GAS_OPACITY_FACTOR_MIN                  = 0f;

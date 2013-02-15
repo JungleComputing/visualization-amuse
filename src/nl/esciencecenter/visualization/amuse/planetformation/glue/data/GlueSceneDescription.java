@@ -1,9 +1,11 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GlueSceneDescription {
+public class GlueSceneDescription implements SceneDescription {
     private final static Logger logger = LoggerFactory
                                                .getLogger(GlueSceneDescription.class);
 

@@ -3,6 +3,7 @@ package nl.esciencecenter.visualization.amuse.planetformation;
 import javax.swing.JFrame;
 
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueTimedPlayer;
 import nl.esciencecenter.visualization.openglCommon.NewtWindow;
 import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.util.Settings;
@@ -59,6 +60,6 @@ public class AmuseLib {
     }
 
     public void addScene(Scene scene) {
-        AmusePanel.getTimer().addScene(scene);
+        ((GlueTimedPlayer) AmusePanel.getTimer()).addScene(scene);
     }
 }

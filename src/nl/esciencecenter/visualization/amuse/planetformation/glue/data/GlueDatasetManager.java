@@ -1,79 +1,82 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
-import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GlueDatasetManager {
-    private final static Logger              logger = LoggerFactory
-                                                            .getLogger(GlueDatasetManager.class);
+    private final static Logger           logger = LoggerFactory
+                                                         .getLogger(GlueDatasetManager.class);
 
-    private final IOPoolWorker[]             ioThreads;
-    private final CPUPoolWorker[]            cpuThreads;
-    private final LinkedList<Runnable>       cpuQueue;
-    private final LinkedList<GlueDataArray> ioQueue;
+    // private final IOPoolWorker[] ioThreads;
+    private final CPUPoolWorker[]         cpuThreads;
+    private final LinkedList<Runnable>    cpuQueue;
+    // private final LinkedList<GlueDataArray> ioQueue;
 
-    private final ArrayList<Integer>         availableFrameSequenceNumbers;
-    private final HashMap<Integer, Scene>    glueSceneStorage;
-    private final AmuseSceneStorage          sceneStorage;
+    private final ArrayList<Integer>      availableFrameSequenceNumbers;
+    private final HashMap<Integer, Scene> glueSceneStorage;
+    private final GlueSceneStorage        sceneStorage;
 
-    public void IOJobExecute(GlueDataArray r) {
-        synchronized (ioQueue) {
-            ioQueue.addLast(r);
-            ioQueue.notify();
-        }
-    }
+    // public void IOJobExecute(GlueDataArray r) {
+    // synchronized (ioQueue) {
+    // ioQueue.addLast(r);
+    // ioQueue.notify();
+    // }
+    // }
 
     private class IOPoolWorker extends Thread {
-        @Override
-        public void run() {
-            GlueDataArray runnable;
-
-            while (true) {
-                synchronized (ioQueue) {
-                    while (ioQueue.isEmpty()) {
-                        try {
-                            ioQueue.wait();
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-
-                    runnable = ioQueue.removeFirst();
-                }
-
-                // If we don't catch RuntimeException,
-                // the pool could leak threads
-                try {
-                    runnable.run();
-                    float[][] particleData = runnable.getParticleData();
-                    float[][] gasData = runnable.getGasData();
-
-                    logger.debug("Particles: " + particleData.length);
-                    logger.debug("Gasses   : " + gasData.length);
-
-                    AmuseSceneBuilder builder = new AmuseSceneBuilder(
-                            sceneStorage, runnable.getDescription(),
-                            particleData, gasData);
-                    CPUJobExecute(builder);
-
-                    LegendTextureBuilder legendBuilder = new LegendTextureBuilder(
-                            sceneStorage, runnable);
-                    CPUJobExecute(legendBuilder);
-                } catch (RuntimeException e) {
-                    logger.error("Runtime exception in IOPoolworker", e);
-
-                } catch (UninitializedException e) {
-                    logger.error("Uninitialized exception in IOPoolWorker", e);
-                }
-            }
-        }
+        // @Override
+        // public void run() {
+        // GlueDataArray runnable;
+        //
+        // while (true) {
+        // synchronized (ioQueue) {
+        // while (ioQueue.isEmpty()) {
+        // try {
+        // ioQueue.wait();
+        // } catch (InterruptedException ignored) {
+        // }
+        // }
+        //
+        // runnable = ioQueue.removeFirst();
+        // }
+        //
+        // // If we don't catch RuntimeException,
+        // // the pool could leak threads
+        // try {
+        // runnable.run();
+        // float[][] particleData = runnable.getParticleData();
+        // float[][] gasData = runnable.getGasData();
+        //
+        // logger.debug("Particles: " + particleData.length);
+        // logger.debug("Gasses   : " + gasData.length);
+        //
+        // AmuseSceneBuilder builder = new AmuseSceneBuilder(
+        // sceneStorage, runnable.getDescription(),
+        // particleData, gasData);
+        // CPUJobExecute(builder);
+        //
+        // LegendTextureBuilder legendBuilder = new LegendTextureBuilder(
+        // sceneStorage, runnable);
+        // CPUJobExecute(legendBuilder);
+        // } catch (RuntimeException e) {
+        // logger.error("Runtime exception in IOPoolworker", e);
+        //
+        // } catch (UninitializedException e) {
+        // logger.error("Uninitialized exception in IOPoolWorker", e);
+        // }
+        // }
+        // }
     }
 
     public void CPUJobExecute(Runnable r) {
@@ -112,17 +115,17 @@ public class GlueDatasetManager {
     }
 
     public GlueDatasetManager(int numIOThreads, int numCPUThreads) {
-        ioQueue = new LinkedList<GlueDataArray>();
+        // ioQueue = new LinkedList<GlueDataArray>();
         cpuQueue = new LinkedList<Runnable>();
 
-        ioThreads = new IOPoolWorker[numIOThreads];
+        // ioThreads = new IOPoolWorker[numIOThreads];
         cpuThreads = new CPUPoolWorker[numCPUThreads];
 
-        for (int i = 0; i < numIOThreads; i++) {
-            ioThreads[i] = new IOPoolWorker();
-            ioThreads[i].setPriority(Thread.MIN_PRIORITY);
-            ioThreads[i].start();
-        }
+        // for (int i = 0; i < numIOThreads; i++) {
+        // ioThreads[i] = new IOPoolWorker();
+        // ioThreads[i].setPriority(Thread.MIN_PRIORITY);
+        // ioThreads[i].start();
+        // }
         for (int i = 0; i < numIOThreads; i++) {
             cpuThreads[i] = new CPUPoolWorker();
             cpuThreads[i].setPriority(Thread.MIN_PRIORITY);
@@ -130,7 +133,7 @@ public class GlueDatasetManager {
         }
 
         availableFrameSequenceNumbers = new ArrayList<Integer>();
-        sceneStorage = new AmuseSceneStorage(this);
+        sceneStorage = new GlueSceneStorage(this);
         glueSceneStorage = new HashMap<Integer, Scene>();
     }
 
@@ -143,11 +146,11 @@ public class GlueDatasetManager {
                     + " out of range.");
         }
 
-        IOJobExecute(new GlueDataArray(description,
+        CPUJobExecute(new GlueScene(sceneStorage, description,
                 glueSceneStorage.get(frameNumber)));
     }
 
-    public AmuseSceneStorage getSceneStorage() {
+    public GlueSceneStorage getSceneStorage() {
         return sceneStorage;
     }
 
@@ -203,5 +206,22 @@ public class GlueDatasetManager {
     public void addScene(Scene scene) {
         glueSceneStorage.put(availableFrameSequenceNumbers.size(), scene);
         availableFrameSequenceNumbers.add(availableFrameSequenceNumbers.size());
+
+        String filename = "bla";
+        try {
+            File myFile = new File(filename);
+            myFile.createNewFile();
+
+            FileOutputStream fos = new FileOutputStream(myFile);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(scene);
+            oos.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

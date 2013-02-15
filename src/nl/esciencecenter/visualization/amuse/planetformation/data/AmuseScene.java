@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.VisualScene;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
 import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
@@ -18,7 +20,7 @@ import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Di
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AmuseScene {
+public class AmuseScene implements VisualScene {
     private final static AmuseSettings  settings    = AmuseSettings
                                                             .getInstance();
     private final static Logger         logger      = LoggerFactory
@@ -61,6 +63,7 @@ public class AmuseScene {
         this.gasParticles = gasParticles;
     }
 
+    @Override
     public synchronized void drawStars(GL3 gl, Program starProgram,
             MatF4 MVMatrix) {
         for (Star s : stars) {
@@ -68,7 +71,9 @@ public class AmuseScene {
         }
     }
 
-    public synchronized void drawGas(GL3 gl, Program gasProgram, MatF4 MVMatrix) {
+    @Override
+    public synchronized void drawGasPointCloud(GL3 gl, Program gasProgram,
+            MatF4 MVMatrix) {
         gasProgram.setUniformMatrix("global_MVMatrix", MVMatrix);
         gasProgram.setUniform("gas_opacity_factor",
                 settings.getGasOpacityFactor());
@@ -99,7 +104,8 @@ public class AmuseScene {
         gl.glDrawArrays(GL3.GL_POINTS, 0, gasParticles.length);
     }
 
-    public synchronized void cleanup(GL3 gl) {
+    @Override
+    public synchronized void dispose(GL3 gl) {
         vbo.delete(gl);
     }
 
@@ -137,7 +143,8 @@ public class AmuseScene {
         return result;
     }
 
-    public AmuseSceneDescription getDescription() {
+    @Override
+    public SceneDescription getDescription() {
         return description;
     }
 }

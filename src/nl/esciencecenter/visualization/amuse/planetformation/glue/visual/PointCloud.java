@@ -6,8 +6,6 @@ import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
 import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
-import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
-import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
 
 public class PointCloud {
@@ -38,19 +36,19 @@ public class PointCloud {
         }
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
-        program.setUniformMatrix("MVMatrix", MVMatrix);
-
-        try {
-            program.use(gl);
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
-
+    public void draw(GL3 gl, Program program) {
         vbo.bind(gl);
 
         program.linkAttribs(gl, vbo.getAttribs());
 
         gl.glDrawArrays(GL3.GL_POINTS, 0, numParticles);
+    }
+
+    public void dispose(GL3 gl) {
+        vbo.delete(gl);
+    }
+
+    public int getSize() {
+        return numParticles;
     }
 }

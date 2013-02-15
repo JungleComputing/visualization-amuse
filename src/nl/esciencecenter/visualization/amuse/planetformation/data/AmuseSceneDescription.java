@@ -1,9 +1,11 @@
 package nl.esciencecenter.visualization.amuse.planetformation.data;
 
+import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AmuseSceneDescription {
+public class AmuseSceneDescription implements SceneDescription {
     private final static Logger logger = LoggerFactory
                                                .getLogger(AmuseSceneDescription.class);
 
@@ -66,10 +68,12 @@ public class AmuseSceneDescription {
         return colorMap;
     }
 
+    @Override
     public float getLowerBound() {
         return lowerBound;
     }
 
+    @Override
     public float getUpperBound() {
         return upperBound;
     }

@@ -3,13 +3,10 @@ package nl.esciencecenter.visualization.amuse.planetformation.data;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
-import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
-import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
-import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.io.netcdf.NetCDFUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,23 +14,20 @@ import org.slf4j.LoggerFactory;
 import ucar.nc2.NetcdfFile;
 
 public class AmuseDatasetManager {
-    private final static AmuseSettings       settings = AmuseSettings
-                                                              .getInstance();
-    private final static Logger              logger   = LoggerFactory
-                                                              .getLogger(AmuseDatasetManager.class);
-
-    private final ArrayList<Integer>         availableFrameSequenceNumbers;
+    private final static Logger              logger = LoggerFactory
+                                                            .getLogger(AmuseDatasetManager.class);
 
     private final IOPoolWorker[]             ioThreads;
     private final CPUPoolWorker[]            cpuThreads;
     private final LinkedList<Runnable>       cpuQueue;
     private final LinkedList<AmuseDataArray> ioQueue;
 
-    private final File                       file_bin, file_gas;
-
+    private final ArrayList<Integer>         availableFrameSequenceNumbers;
     private final AmuseSceneStorage          sceneStorage;
 
-    private final HashMap<Integer, Scene>    glueSceneStorage;
+    private final File                       initial_file_bin;
+
+    private final File                       initial_file_gas;
 
     public void IOJobExecute(AmuseDataArray r) {
         synchronized (ioQueue) {
@@ -124,47 +118,8 @@ public class AmuseDatasetManager {
 
     public AmuseDatasetManager(File file_bin, File file_gas, int numIOThreads,
             int numCPUThreads) {
-        logger.debug("Opening dataset with initial files: "
-                + file_bin.getAbsolutePath() + " and "
-                + file_gas.getAbsolutePath());
-
-        this.file_bin = file_bin;
-        this.file_gas = file_gas;
-
-        ioQueue = new LinkedList<AmuseDataArray>();
-        cpuQueue = new LinkedList<Runnable>();
-
-        ioThreads = new IOPoolWorker[numIOThreads];
-        cpuThreads = new CPUPoolWorker[numCPUThreads];
-
-        for (int i = 0; i < numIOThreads; i++) {
-            ioThreads[i] = new IOPoolWorker();
-            ioThreads[i].setPriority(Thread.MIN_PRIORITY);
-            ioThreads[i].start();
-        }
-        for (int i = 0; i < numIOThreads; i++) {
-            cpuThreads[i] = new CPUPoolWorker();
-            cpuThreads[i].setPriority(Thread.MIN_PRIORITY);
-            cpuThreads[i].start();
-        }
-
-        availableFrameSequenceNumbers = new ArrayList<Integer>();
-
-        File currentFile = NetCDFUtil.getSeqLowestFile(file_bin);
-        while (currentFile != null) {
-            int nr = NetCDFUtil.getFrameNumber(currentFile);
-            availableFrameSequenceNumbers.add(nr);
-
-            currentFile = NetCDFUtil.getSeqNextFile(currentFile);
-        }
-
-        sceneStorage = new AmuseSceneStorage(this);
-        glueSceneStorage = null;
-    }
-
-    public AmuseDatasetManager(int numIOThreads, int numCPUThreads) {
-        this.file_bin = null;
-        this.file_gas = null;
+        this.initial_file_bin = file_bin;
+        this.initial_file_gas = file_gas;
 
         ioQueue = new LinkedList<AmuseDataArray>();
         cpuQueue = new LinkedList<Runnable>();
@@ -185,7 +140,20 @@ public class AmuseDatasetManager {
 
         availableFrameSequenceNumbers = new ArrayList<Integer>();
         sceneStorage = new AmuseSceneStorage(this);
-        glueSceneStorage = new HashMap<Integer, Scene>();
+
+        try {
+            while (file_bin != null) {
+                int nr = NetCDFUtil.getFrameNumber(file_bin);
+                if (NetCDFUtil.getSeqFile(initial_file_gas, nr) != null) {
+                    availableFrameSequenceNumbers.add(nr);
+                }
+
+                file_bin = NetCDFUtil.getSeqNextFile(file_bin);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public void buildScene(AmuseSceneDescription description) {
@@ -198,21 +166,16 @@ public class AmuseDatasetManager {
         }
 
         try {
-            if (glueSceneStorage == null) {
-                NetcdfFile frameFile_bin = NetCDFUtil.open(NetCDFUtil
-                        .getSeqFile(file_bin, frameNumber));
-                NetcdfFile frameFile_gas = NetCDFUtil.open(NetCDFUtil
-                        .getSeqFile(file_gas, frameNumber));
+            File file_bin = NetCDFUtil
+                    .getSeqFile(initial_file_bin, frameNumber);
+            File file_gas = NetCDFUtil
+                    .getSeqFile(initial_file_gas, frameNumber);
 
-                IOJobExecute(new AmuseDataArray(description, frameFile_bin,
-                        frameFile_gas));
-            } else {
-                IOJobExecute(new AmuseDataArray(description,
-                        glueSceneStorage.get(frameNumber)));
-            }
+            NetcdfFile ncFileBin = NetCDFUtil.open(file_bin);
+            NetcdfFile ncFileGas = NetCDFUtil.open(file_gas);
+
+            IOJobExecute(new AmuseDataArray(description, ncFileBin, ncFileGas));
         } catch (IOException e) {
-            logger.error("buildImages : Requested frameNumber " + frameNumber
-                    + " resulted in IOException.");
             e.printStackTrace();
         }
     }
@@ -221,13 +184,8 @@ public class AmuseDatasetManager {
         return sceneStorage;
     }
 
-    public int getFrameNumberOfIndex(int index)
-            throws IndexNotAvailableException {
-        if (availableFrameSequenceNumbers.contains(index)) {
-            return availableFrameSequenceNumbers.get(index);
-        } else {
-            throw new IndexNotAvailableException();
-        }
+    public int getFrameNumberOfIndex(int index) {
+        return availableFrameSequenceNumbers.get(index);
     }
 
     public int getIndexOfFrameNumber(int frameNumber) {
@@ -239,12 +197,7 @@ public class AmuseDatasetManager {
 
         if (nextNumber >= 0
                 && nextNumber < availableFrameSequenceNumbers.size()) {
-            try {
-                return getFrameNumberOfIndex(nextNumber);
-            } catch (IndexNotAvailableException e) {
-                throw new IOException("Frame number not available: "
-                        + nextNumber);
-            }
+            return getFrameNumberOfIndex(nextNumber);
         } else {
             throw new IOException("Frame number not available: " + nextNumber);
         }
@@ -255,23 +208,13 @@ public class AmuseDatasetManager {
 
         if (nextNumber >= 0
                 && nextNumber < availableFrameSequenceNumbers.size()) {
-            try {
-                return getFrameNumberOfIndex(nextNumber);
-            } catch (IndexNotAvailableException e) {
-                throw new IOException("Frame number not available: "
-                        + nextNumber);
-            }
+            return getFrameNumberOfIndex(nextNumber);
         } else {
             throw new IOException("Frame number not available: " + nextNumber);
         }
     }
 
-    public int getNumFiles() {
+    public int getNumFrames() {
         return availableFrameSequenceNumbers.size();
-    }
-
-    public void addScene(Scene scene) {
-        glueSceneStorage.put(availableFrameSequenceNumbers.size(), scene);
-        availableFrameSequenceNumbers.add(availableFrameSequenceNumbers.size());
     }
 }
