@@ -138,8 +138,8 @@ public class AmusePanel extends JPanel {
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
                 "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
         JLabel nlesclogo = new JLabel(nlescIcon);
-        nlesclogo.setMinimumSize(new Dimension(300, 20));
-        nlesclogo.setMaximumSize(new Dimension(311, 28));
+        // nlesclogo.setMinimumSize(new Dimension(300, 20));
+        // nlesclogo.setMaximumSize(new Dimension(311, 28));
 
         menuBar2.add(Box.createHorizontalGlue());
         menuBar2.add(nlesclogo);
@@ -247,8 +247,8 @@ public class AmusePanel extends JPanel {
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
                 "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
         JLabel nlesclogo = new JLabel(nlescIcon);
-        nlesclogo.setMinimumSize(new Dimension(300, 20));
-        nlesclogo.setMaximumSize(new Dimension(311, 28));
+        // nlesclogo.setMinimumSize(new Dimension(300, 20));
+        // nlesclogo.setMaximumSize(new Dimension(311, 28));
 
         menuBar2.add(Box.createHorizontalGlue());
         menuBar2.add(nlesclogo);
@@ -346,21 +346,26 @@ public class AmusePanel extends JPanel {
         final ImageIcon stopIcon = GoggleSwing.createImageIcon(
                 "images/media-playback-stop.png", "Start");
 
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        final JPanel bottomPanel1 = new JPanel();
+        final JPanel bottomPanel2 = new JPanel();
+        bottomPanel1.setLayout(new BoxLayout(bottomPanel1, BoxLayout.X_AXIS));
+        bottomPanel2.setLayout(new BoxLayout(bottomPanel2, BoxLayout.X_AXIS));
 
         screenshotButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                // final InputHandler inputHandler = InputHandler.getInstance();
-                // final String fileName = "" + timer.getFrameNumber() + " {"
+                // final ImauInputHandler inputHandler = ImauInputHandler
+                // .getInstance();
+                // final String fileName = "screenshot: " + "{"
                 // + inputHandler.getRotation().get(0) + ","
                 // + inputHandler.getRotation().get(1) + " - "
                 // + Float.toString(inputHandler.getViewDist()) + "} ";
-                // amuseWindow.makeSnapshot(fileName);
+                timer.setScreenshotNeeded(true);
             }
         });
-        bottomPanel.add(screenshotButton);
+        bottomPanel1.add(screenshotButton);
 
         rewindButton.addActionListener(new ActionListener() {
             @Override
@@ -369,7 +374,7 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(rewindButton);
+        bottomPanel1.add(rewindButton);
 
         oneBackButton.addActionListener(new ActionListener() {
             @Override
@@ -378,7 +383,7 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(oneBackButton);
+        bottomPanel1.add(oneBackButton);
 
         playButton.addActionListener(new ActionListener() {
             @Override
@@ -392,7 +397,7 @@ public class AmusePanel extends JPanel {
                 }
             }
         });
-        bottomPanel.add(playButton);
+        bottomPanel1.add(playButton);
 
         oneForwardButton.addActionListener(new ActionListener() {
             @Override
@@ -401,19 +406,7 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(oneForwardButton);
-
-        timeBar.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                final JSlider source = (JSlider) e.getSource();
-                if (source.isFocusOwner() && !source.getValueIsAdjusting()) {
-                    timer.setFrame(timeBar.getValue(), false);
-                    playButton.setIcon(playIcon);
-                }
-            }
-        });
-        bottomPanel.add(timeBar);
+        bottomPanel1.add(oneForwardButton);
 
         frameCounter = new JFormattedTextField();
         frameCounter.setValue(new Integer(1));
@@ -428,8 +421,10 @@ public class AmusePanel extends JPanel {
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (timer.isInitialized()) {
-                            timer.setFrame(((Number) frameCounter.getValue())
-                                    .intValue(), false);
+                            timer.setFrame(
+                                    ((Number) frameCounter.getValue())
+                                            .intValue() - timeBar.getMinimum(),
+                                    false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -437,7 +432,22 @@ public class AmusePanel extends JPanel {
             }
         });
 
-        bottomPanel.add(frameCounter);
+        bottomPanel1.add(frameCounter);
+
+        timeBar.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.isFocusOwner() && !source.getValueIsAdjusting()) {
+                    timer.setFrame(timeBar.getValue(), false);
+                    playButton.setIcon(playIcon);
+                }
+            }
+        });
+        bottomPanel2.add(timeBar);
+
+        bottomPanel.add(bottomPanel1);
+        bottomPanel.add(bottomPanel2);
 
         return bottomPanel;
     }
