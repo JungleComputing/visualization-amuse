@@ -160,7 +160,7 @@ public class AmusePanel extends JPanel {
         configPanel = new JPanel();
         add(configPanel, BorderLayout.WEST);
         configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
-        configPanel.setPreferredSize(new Dimension(200, 0));
+        configPanel.setPreferredSize(new Dimension(240, 0));
         configPanel.setVisible(false);
 
         dataConfig = new JPanel();
