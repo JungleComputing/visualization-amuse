@@ -19,7 +19,7 @@ public class AmuseLib {
     private static AmusePanel     amusePanel;
     private static AmuseWindow    amuseWindow;
 
-    public static void main(String[] arguments) {
+    public AmuseLib() {
         // Create the Swing interface elements
         amusePanel = new AmusePanel();
 

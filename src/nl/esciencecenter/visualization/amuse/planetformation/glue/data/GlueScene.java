@@ -57,62 +57,72 @@ public class GlueScene implements Runnable, VisualScene {
     public void run() {
         Star[] glueStars = scene.getStars();
         Model starBaseModel = sceneStore.getStarBaseModel();
-        this.stars = new ArrayList<StarModel>();
-        for (Star glueStar : glueStars) {
-            StarModel starModel = new StarModel(starBaseModel, glueStar);
-            stars.add(starModel);
+        if (glueStars != null) {
+            this.stars = new ArrayList<StarModel>();
+            for (Star glueStar : glueStars) {
+                StarModel starModel = new StarModel(starBaseModel, glueStar);
+                stars.add(starModel);
+            }
         }
 
         Planet[] gluePlanets = scene.getPlanets();
         Model planetBaseModel = sceneStore.getPlanetBaseModel();
-        this.planets = new ArrayList<PlanetModel>();
-        for (Planet gluePlanet : gluePlanets) {
-            PlanetModel planetModel = new PlanetModel(planetBaseModel,
-                    gluePlanet);
-            planets.add(planetModel);
+        if (gluePlanets != null) {
+            this.planets = new ArrayList<PlanetModel>();
+            for (Planet gluePlanet : gluePlanets) {
+                PlanetModel planetModel = new PlanetModel(planetBaseModel,
+                        gluePlanet);
+                planets.add(planetModel);
+            }
         }
 
         Sphere[] glueSpheres = scene.getSpheres();
         Model sphereBaseModel = sceneStore.getSphereBaseModel();
-        this.spheres = new ArrayList<SphereModel>();
-        for (Sphere glueSphere : glueSpheres) {
-            SphereModel sphereModel = new SphereModel(sphereBaseModel,
-                    glueSphere);
-            spheres.add(sphereModel);
+        if (glueSpheres != null) {
+            this.spheres = new ArrayList<SphereModel>();
+            for (Sphere glueSphere : glueSpheres) {
+                SphereModel sphereModel = new SphereModel(sphereBaseModel,
+                        glueSphere);
+                spheres.add(sphereModel);
+            }
         }
 
         PointGas[] pointGasses = scene.getPointGas();
-        int numPointGasParticles = pointGasses.length;
-        FloatBuffer pointGasCoords = Buffers
-                .newDirectFloatBuffer(numPointGasParticles * 3);
-        FloatBuffer pointGasColors = Buffers
-                .newDirectFloatBuffer(numPointGasParticles * 4);
-        for (PointGas gluePointGas : pointGasses) {
-            float[] coords = gluePointGas.getCoordinates();
-            float[] color = gluePointGas.getColor();
+        if (pointGasses != null) {
+            int numPointGasParticles = pointGasses.length;
+            FloatBuffer pointGasCoords = Buffers
+                    .newDirectFloatBuffer(numPointGasParticles * 3);
+            FloatBuffer pointGasColors = Buffers
+                    .newDirectFloatBuffer(numPointGasParticles * 4);
+            for (PointGas gluePointGas : pointGasses) {
+                float[] coords = gluePointGas.getCoordinates();
+                float[] color = gluePointGas.getColor();
 
-            for (int i = 0; i < 3; i++) {
-                pointGasCoords.put(coords[i]);
-            }
+                for (int i = 0; i < 3; i++) {
+                    pointGasCoords.put(coords[i]);
+                }
 
-            for (int i = 0; i < 4; i++) {
-                pointGasColors.put(color[i]);
+                for (int i = 0; i < 4; i++) {
+                    pointGasColors.put(color[i]);
+                }
             }
+            gasParticles = new PointCloud(numPointGasParticles, pointGasCoords,
+                    pointGasColors);
         }
-        gasParticles = new PointCloud(numPointGasParticles, pointGasCoords,
-                pointGasColors);
 
         SPHGas[] sphGasses = scene.getSphGas();
-        Model octreeBaseModel = sceneStore.getSPHOctreeBaseModel();
-        this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(),
-                GlueConstants.INITIAL_OCTREE_SIZE);
-        for (SPHGas glueSPHGas : sphGasses) {
-            float[] rawCoords = glueSPHGas.getCoordinates();
-            float[] rawColor = glueSPHGas.getColor();
-            VecF3 coords = new VecF3(rawCoords[0], rawCoords[1], rawCoords[2]);
-            VecF4 color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
-                    rawColor[4]);
-            this.gasOctree.addElement(coords, color);
+        if (sphGasses != null) {
+            Model octreeBaseModel = sceneStore.getSPHOctreeBaseModel();
+            this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(),
+                    GlueConstants.INITIAL_OCTREE_SIZE);
+            for (SPHGas glueSPHGas : sphGasses) {
+                float[] rawCoords = glueSPHGas.getCoordinates();
+                float[] rawColor = glueSPHGas.getColor();
+                VecF3 coords = new VecF3(rawCoords[0], rawCoords[1], rawCoords[2]);
+                VecF4 color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
+                        rawColor[4]);
+                this.gasOctree.addElement(coords, color);
+            }
         }
 
         sceneStore.setScene(description, this);
@@ -137,6 +147,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
+    @Override
     public synchronized void drawGasPointCloud(GL3 gl, Program program,
             MatF4 MVMatrix) {
         program.setUniformMatrix("MVMatrix", MVMatrix);
@@ -198,6 +209,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
+    @Override
     public void dispose(GL3 gl) {
         gasParticles.dispose(gl);
 
