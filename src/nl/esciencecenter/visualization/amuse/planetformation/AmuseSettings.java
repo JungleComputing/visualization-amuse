@@ -1,6 +1,6 @@
 package nl.esciencecenter.visualization.amuse.planetformation;
 
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
 import nl.esciencecenter.visualization.openglCommon.util.Settings;
 import nl.esciencecenter.visualization.openglCommon.util.TypedProperties;
 
@@ -12,123 +12,123 @@ public class AmuseSettings extends Settings {
         public final static AmuseSettings instance = new AmuseSettings();
     }
 
-    private final String[]        ACCEPTABLE_EXTENSIONS                   = new String[] {
-            "gas", "bin"                                                 };
+    private final String[]       ACCEPTABLE_EXTENSIONS                   = new String[] {
+                                                                         "gas", "bin" };
 
-    private final float           MIN_GAS_DENSITY                         = 0f;
-    private final float           MAX_GAS_DENSITY                         = .0001f;
+    private final float          MIN_GAS_DENSITY                         = 0f;
+    private final float          MAX_GAS_DENSITY                         = .0001f;
 
     // Minimum and maximum values for the brightness sliders
-    private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_MIN   = 0f;
-    private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_MAX   = 10f;
-    private float                 POSTPROCESSING_AXES_BRIGHTNESS_MIN      = 0f;
-    private float                 POSTPROCESSING_AXES_BRIGHTNESS_MAX      = 4f;
-    private float                 POSTPROCESSING_GAS_BRIGHTNESS_MIN       = 0f;
-    private float                 POSTPROCESSING_GAS_BRIGHTNESS_MAX       = 4f;
-    private float                 POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN = 0f;
-    private float                 POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = 4f;
-    private float                 POSTPROCESSING_STAR_BRIGHTNESS_MIN      = 0f;
-    private float                 POSTPROCESSING_STAR_BRIGHTNESS_MAX      = 4f;
-    private final float           POSTPROCESSING_HUD_BRIGHTNESS_MIN       = 0f;
+    private float                POSTPROCESSING_OVERALL_BRIGHTNESS_MIN   = 0f;
+    private float                POSTPROCESSING_OVERALL_BRIGHTNESS_MAX   = 10f;
+    private float                POSTPROCESSING_AXES_BRIGHTNESS_MIN      = 0f;
+    private float                POSTPROCESSING_AXES_BRIGHTNESS_MAX      = 4f;
+    private float                POSTPROCESSING_GAS_BRIGHTNESS_MIN       = 0f;
+    private float                POSTPROCESSING_GAS_BRIGHTNESS_MAX       = 4f;
+    private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN = 0f;
+    private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = 4f;
+    private float                POSTPROCESSING_STAR_BRIGHTNESS_MIN      = 0f;
+    private float                POSTPROCESSING_STAR_BRIGHTNESS_MAX      = 4f;
+    private final float          POSTPROCESSING_HUD_BRIGHTNESS_MIN       = 0f;
 
-    private final float           POSTPROCESSING_HUD_BRIGHTNESS_MAX       = 4f;
+    private final float          POSTPROCESSING_HUD_BRIGHTNESS_MAX       = 4f;
     // Settings for the postprocessing shader
-    private float                 POSTPROCESSING_OVERALL_BRIGHTNESS_DEF   = 4f;
-    private float                 POSTPROCESSING_AXES_BRIGHTNESS_DEF      = 4f;
-    private float                 POSTPROCESSING_GAS_BRIGHTNESS_DEF       = 4f;
-    private float                 POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
-    private float                 POSTPROCESSING_STAR_BRIGHTNESS_DEF      = 4f;
+    private float                POSTPROCESSING_OVERALL_BRIGHTNESS_DEF   = 4f;
+    private float                POSTPROCESSING_AXES_BRIGHTNESS_DEF      = 4f;
+    private float                POSTPROCESSING_GAS_BRIGHTNESS_DEF       = 4f;
+    private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
+    private float                POSTPROCESSING_STAR_BRIGHTNESS_DEF      = 4f;
 
-    private float                 POSTPROCESSING_HUD_BRIGHTNESS_DEF       = 3f;
+    private float                POSTPROCESSING_HUD_BRIGHTNESS_DEF       = 3f;
     // Settings for the star-shape blur method (the + shape of stars)
-    private int                   STAR_SHAPE_BLUR_SIZE                    = 1;
-    private float                 STAR_SHAPE_BLURFILTER_SIZE              = 8f;
-    private float                 STAR_SHAPE_SIGMA                        = 100f;
-    private float                 STAR_SHAPE_ALPHA                        = 0.5f;
+    private int                  STAR_SHAPE_BLUR_SIZE                    = 1;
+    private float                STAR_SHAPE_BLURFILTER_SIZE              = 8f;
+    private float                STAR_SHAPE_SIGMA                        = 100f;
+    private float                STAR_SHAPE_ALPHA                        = 0.5f;
 
-    private int                   STAR_SHAPE_BLUR_TYPE                    = 0;
+    private int                  STAR_SHAPE_BLUR_TYPE                    = 0;
     // Settings for the detail levels.
     // private int LEVEL_OF_DETAIL = 0;
 
-    private final int             SLIDER_MIN_BLUR_TYPE                    = 1;
-    private final int             SLIDER_DEF_BLUR_TYPE                    = 1;
-    private final int             SLIDER_MAX_BLUR_TYPE                    = 8;
+    private final int            SLIDER_MIN_BLUR_TYPE                    = 1;
+    private final int            SLIDER_DEF_BLUR_TYPE                    = 1;
+    private final int            SLIDER_MAX_BLUR_TYPE                    = 8;
 
-    private final int             SLIDER_MIN_BLUR_PASSES                  = 0;
-    private final int             SLIDER_DEF_BLUR_PASSES                  = 1;
-    private final int             SLIDER_MAX_BLUR_PASSES                  = 2;
+    private final int            SLIDER_MIN_BLUR_PASSES                  = 0;
+    private final int            SLIDER_DEF_BLUR_PASSES                  = 1;
+    private final int            SLIDER_MAX_BLUR_PASSES                  = 2;
 
-    private final int             SLIDER_MIN_BLUR_SIZE                    = 2;
-    private final int             SLIDER_DEF_BLUR_SIZE                    = 2;
-    private final int             SLIDER_MAX_BLUR_SIZE                    = 8;
+    private final int            SLIDER_MIN_BLUR_SIZE                    = 2;
+    private final int            SLIDER_DEF_BLUR_SIZE                    = 2;
+    private final int            SLIDER_MAX_BLUR_SIZE                    = 8;
 
-    private int                   LOW_STAR_HALO_BLUR_PASSES               = 1;
-    private float                 LOW_STAR_HALO_BLUR_SIZE                 = 1;
-    private int                   LOW_STAR_HALO_BLUR_TYPE                 = 6;
+    private int                  LOW_STAR_HALO_BLUR_PASSES               = 1;
+    private float                LOW_STAR_HALO_BLUR_SIZE                 = 1;
+    private int                  LOW_STAR_HALO_BLUR_TYPE                 = 6;
 
-    private int                   LOW_GAS_SUBDIVISION                     = 0;
-    private int                   LOW_STAR_SUBDIVISION                    = 1;
+    private int                  LOW_GAS_SUBDIVISION                     = 0;
+    private int                  LOW_STAR_SUBDIVISION                    = 1;
 
-    private int                   LOW_GAS_PARTICLES_PER_OCTREE_NODE       = 100;
+    private int                  LOW_GAS_PARTICLES_PER_OCTREE_NODE       = 100;
 
-    private int                   MEDIUM_STAR_HALO_BLUR_PASSES            = 1;
-    private float                 MEDIUM_STAR_HALO_BLUR_SIZE              = 1;
-    private int                   MEDIUM_STAR_HALO_BLUR_TYPE              = 6;
+    private int                  MEDIUM_STAR_HALO_BLUR_PASSES            = 1;
+    private float                MEDIUM_STAR_HALO_BLUR_SIZE              = 1;
+    private int                  MEDIUM_STAR_HALO_BLUR_TYPE              = 6;
 
-    private int                   MEDIUM_GAS_SUBDIVISION                  = 1;
-    private int                   MEDIUM_STAR_SUBDIVISION                 = 2;
+    private int                  MEDIUM_GAS_SUBDIVISION                  = 1;
+    private int                  MEDIUM_STAR_SUBDIVISION                 = 2;
 
-    private int                   MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE    = 25;
+    private int                  MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE    = 25;
 
-    private int                   HIGH_STAR_HALO_BLUR_PASSES              = 2;
-    private float                 HIGH_STAR_HALO_BLUR_SIZE                = 1;
-    private int                   HIGH_STAR_HALO_BLUR_TYPE                = 6;
+    private int                  HIGH_STAR_HALO_BLUR_PASSES              = 2;
+    private float                HIGH_STAR_HALO_BLUR_SIZE                = 1;
+    private int                  HIGH_STAR_HALO_BLUR_TYPE                = 6;
 
-    private int                   HIGH_GAS_SUBDIVISION                    = 1;
-    private int                   HIGH_STAR_SUBDIVISION                   = 3;
+    private int                  HIGH_GAS_SUBDIVISION                    = 1;
+    private int                  HIGH_STAR_SUBDIVISION                   = 3;
 
-    private int                   HIGH_GAS_PARTICLES_PER_OCTREE_NODE      = 5;
+    private int                  HIGH_GAS_PARTICLES_PER_OCTREE_NODE      = 5;
     // Snaphots have different settings, since they are rendered at extremely
     // high resolutions pixels
-    private int                   SNAPSHOT_GAS_BLUR_PASSES                = 2;      // 2
-    private float                 SNAPSHOT_GAS_BLUR_SIZE                  = 2;      // 6
-    private int                   SNAPSHOT_GAS_BLUR_TYPE                  = 8;      // 10
+    private int                  SNAPSHOT_GAS_BLUR_PASSES                = 2;           // 2
+    private float                SNAPSHOT_GAS_BLUR_SIZE                  = 2;           // 6
+    private int                  SNAPSHOT_GAS_BLUR_TYPE                  = 8;           // 10
 
-    private int                   SNAPSHOT_STAR_HALO_BLUR_PASSES          = 2;      // 2
-    private float                 SNAPSHOT_STAR_HALO_BLUR_SIZE            = 1;      // 1
-    private int                   SNAPSHOT_STAR_HALO_BLUR_TYPE            = 6;      // 6
+    private int                  SNAPSHOT_STAR_HALO_BLUR_PASSES          = 2;           // 2
+    private float                SNAPSHOT_STAR_HALO_BLUR_SIZE            = 1;           // 1
+    private int                  SNAPSHOT_STAR_HALO_BLUR_TYPE            = 6;           // 6
 
-    private boolean               GAS_COLOR_INVERTED                      = false;
-    private boolean               GAS_COLOR_BACKGROUND_INVERTED           = false;
-    private boolean               GAS_COLOR_FROM_STARS                    = false;
+    private boolean              GAS_COLOR_INVERTED                      = false;
+    private boolean              GAS_COLOR_BACKGROUND_INVERTED           = false;
+    private boolean              GAS_COLOR_FROM_STARS                    = false;
 
-    private boolean               STAR_COLORS_EXAGGERATED                 = true;
+    private boolean              STAR_COLORS_EXAGGERATED                 = true;
 
-    private long                  WAITTIME_FOR_RETRY                      = 10000;
-    private long                  WAITTIME_FOR_MOVIE                      = 200;
-    private float                 EPSILON                                 = 1.0E-7f;
+    private long                 WAITTIME_FOR_RETRY                      = 10000;
+    private long                 WAITTIME_FOR_MOVIE                      = 200;
+    private float                EPSILON                                 = 1.0E-7f;
 
-    private float                 GAS_OPACITY_FACTOR_MIN                  = 0f;
-    private float                 GAS_OPACITY_FACTOR_DEF                  = 1f;
-    private float                 GAS_OPACITY_FACTOR_MAX                  = 2f;
+    private float                GAS_OPACITY_FACTOR_MIN                  = 0f;
+    private float                GAS_OPACITY_FACTOR_DEF                  = 1f;
+    private float                GAS_OPACITY_FACTOR_MAX                  = 2f;
 
-    private static final int      GAS_OPACITY_RATIO_MIN                   = 1;
-    private static final int      GAS_OPACITY_RATIO_MAX                   = 100;
+    private static final int     GAS_OPACITY_RATIO_MIN                   = 1;
+    private static final int     GAS_OPACITY_RATIO_MAX                   = 100;
 
-    private static final boolean  OCTREE_RANDOM_OFFSET                    = false;
+    private static final boolean OCTREE_RANDOM_OFFSET                    = false;
 
-    private boolean               BEZIER_INTERPOLATION                    = false;
-    private int                   BEZIER_INTERPOLATION_STEPS              = 10;
+    private boolean              BEZIER_INTERPOLATION                    = false;
+    private int                  BEZIER_INTERPOLATION_STEPS              = 10;
 
-    private int                   PREPROCESSING_AMOUNT                    = 5;
+    private int                  PREPROCESSING_AMOUNT                    = 5;
 
-    private int                   blurTypeSetting;
-    private int                   blurPassSetting;
-    private int                   blurSizeSetting;
+    private int                  blurTypeSetting;
+    private int                  blurPassSetting;
+    private int                  blurSizeSetting;
 
-    private float                 gasOpacityRatio                         = 10;
+    private float                gasOpacityRatio                         = 10;
 
-    private AmuseSceneDescription currentDescription;
+    private GlueSceneDescription currentDescription;
 
     public static AmuseSettings getInstance() {
         return SingletonHolder.instance;
@@ -292,10 +292,10 @@ public class AmuseSettings extends Settings {
             System.out.println(e.getMessage());
         }
 
-        currentDescription = new AmuseSceneDescription(0, 2, "hotres",
+        currentDescription = new GlueSceneDescription(0, 2, "hotres",
                 MIN_GAS_DENSITY, MAX_GAS_DENSITY);
 
-        // currentDescription = new AmuseSceneDescription(0, 0, "default", 0f,
+        // currentDescription = new GlueSceneDescription(0, 0, "default", 0f,
         // 25f);
 
         blurTypeSetting = SLIDER_DEF_BLUR_TYPE;
@@ -303,40 +303,40 @@ public class AmuseSettings extends Settings {
         blurSizeSetting = SLIDER_DEF_BLUR_SIZE;
     }
 
-    public AmuseSceneDescription getCurrentDescription() {
+    public GlueSceneDescription getCurrentDescription() {
         return currentDescription;
     }
 
     public void setCurrentFrameNumber(int value) {
-        AmuseSceneDescription tempDesc = currentDescription.clone();
+        GlueSceneDescription tempDesc = currentDescription.clone();
         tempDesc.setFrameNumber(value);
 
         currentDescription = tempDesc;
     }
 
     public void setCurrentLOD(int value) {
-        AmuseSceneDescription tempDesc = currentDescription.clone();
+        GlueSceneDescription tempDesc = currentDescription.clone();
         tempDesc.setLevelOfDetail(value);
 
         currentDescription = tempDesc;
     }
 
     public void setCurrentColorMap(String value) {
-        AmuseSceneDescription tempDesc = currentDescription.clone();
+        GlueSceneDescription tempDesc = currentDescription.clone();
         tempDesc.setColorMap(value);
 
         currentDescription = tempDesc;
     }
 
     public void setCurrentLowerBound(float value) {
-        AmuseSceneDescription tempDesc = currentDescription.clone();
+        GlueSceneDescription tempDesc = currentDescription.clone();
         tempDesc.setLowerBound(value);
 
         currentDescription = tempDesc;
     }
 
     public void setCurrentUpperBound(float value) {
-        AmuseSceneDescription tempDesc = currentDescription.clone();
+        GlueSceneDescription tempDesc = currentDescription.clone();
         tempDesc.setUpperBound(value);
 
         currentDescription = tempDesc;
@@ -683,7 +683,7 @@ public class AmuseSettings extends Settings {
         float minFloatValue = (sliderLowerValue / 100f) * diff;
         float maxFloatValue = (sliderUpperValue / 100f) * diff;
 
-        AmuseSceneDescription result = currentDescription.clone();
+        GlueSceneDescription result = currentDescription.clone();
         result.setLowerBound(minFloatValue);
         result.setUpperBound(maxFloatValue);
         currentDescription = result;

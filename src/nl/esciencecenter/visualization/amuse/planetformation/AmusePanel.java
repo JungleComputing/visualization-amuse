@@ -11,32 +11,26 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseTimedPlayer;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueTimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
-import nl.esciencecenter.visualization.amuse.planetformation.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
 import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
 import nl.esciencecenter.visualization.openglCommon.swing.GoggleSwing;
@@ -69,127 +63,6 @@ public class AmusePanel extends JPanel {
     private final JPanel          configPanel;
 
     private final JPanel          dataConfig, visualConfig, movieConfig;
-
-    public AmusePanel(String path, String cmdlnfileName) {
-        setLayout(new BorderLayout(0, 0));
-
-        timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
-        timeBar.setValue(0);
-        timeBar.setMajorTickSpacing(5);
-        timeBar.setMinorTickSpacing(1);
-        timeBar.setMaximum(0);
-        timeBar.setMinimum(0);
-        timeBar.setPaintTicks(true);
-        timeBar.setSnapToTicks(true);
-
-        timer = new AmuseTimedPlayer(timeBar, frameCounter);
-
-        // Make the menu bar
-        final JMenuBar menuBar = new JMenuBar();
-        menuBar.setLayout(new BoxLayout(menuBar, BoxLayout.X_AXIS));
-
-        final JMenu file = new JMenu("File");
-        final JMenuItem open = new JMenuItem("Open");
-        open.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                handleFile(file);
-            }
-        });
-        file.add(open);
-        menuBar.add(file);
-
-        final JMenu options = new JMenu("Options");
-
-        final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        makeMovie.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.MOVIE);
-            }
-        });
-        options.add(makeMovie);
-
-        final JMenuItem showDataPanel = new JMenuItem("Show data config panel.");
-        showDataPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.DATA);
-            }
-        });
-        options.add(showDataPanel);
-
-        final JMenuItem showVisualPanel = new JMenuItem(
-                "Show visual config panel.");
-        showVisualPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.VISUAL);
-            }
-        });
-        options.add(showVisualPanel);
-        menuBar.add(options);
-
-        menuBar.add(Box.createHorizontalGlue());
-
-        final JMenuBar menuBar2 = new JMenuBar();
-
-        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
-                "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
-        JLabel nlesclogo = new JLabel(nlescIcon);
-        // nlesclogo.setMinimumSize(new Dimension(300, 20));
-        // nlesclogo.setMaximumSize(new Dimension(311, 28));
-
-        menuBar2.add(Box.createHorizontalGlue());
-        menuBar2.add(nlesclogo);
-        menuBar2.add(Box.createHorizontalGlue());
-
-        Container menuContainer = new Container();
-        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
-
-        menuContainer.add(menuBar);
-        menuContainer.add(menuBar2);
-
-        add(menuContainer, BorderLayout.NORTH);
-
-        // Make the "media player" panel
-        final JPanel bottomPanel = createBottomPanel();
-
-        // Add the tweaks panels
-        configPanel = new JPanel();
-        add(configPanel, BorderLayout.WEST);
-        configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
-        configPanel.setPreferredSize(new Dimension(240, 0));
-        configPanel.setVisible(false);
-
-        dataConfig = new JPanel();
-        dataConfig.setLayout(new BoxLayout(dataConfig, BoxLayout.Y_AXIS));
-        dataConfig.setMinimumSize(configPanel.getPreferredSize());
-        createDataTweakPanel();
-
-        visualConfig = new JPanel();
-        visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
-        visualConfig.setMinimumSize(configPanel.getPreferredSize());
-        createVisualTweakPanel();
-
-        movieConfig = new JPanel();
-        movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
-        movieConfig.setMinimumSize(configPanel.getPreferredSize());
-        createMovieTweakPanel();
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
-        // Read command line file information
-        if (cmdlnfileName != null) {
-            final File cmdlnfile = new File(cmdlnfileName);
-            handleFile(cmdlnfile);
-        }
-
-        setTweakState(TweakState.VISUAL);
-
-        setVisible(true);
-    }
 
     public AmusePanel() {
         setLayout(new BorderLayout(0, 0));
@@ -539,7 +412,7 @@ public class AmusePanel extends JPanel {
         final JComboBox comboBoxColorMaps = ColormapInterpreter
                 .getLegendJComboBox(new Dimension(200, 25));
 
-        AmuseSceneDescription description = settings.getCurrentDescription();
+        GlueSceneDescription description = settings.getCurrentDescription();
 
         comboBoxColorMaps.setSelectedItem(ColormapInterpreter
                 .getIndexOfColormap(description.getColorMap()));
@@ -836,56 +709,6 @@ public class AmusePanel extends JPanel {
                 settings.getBlurSizeMin(), settings.getBlurSizeMax(), 1,
                 settings.getBlurSizeSetting(), new JLabel("")));
 
-    }
-
-    protected void handleFile(File file) {
-        if (file != null && NetCDFUtil.isAcceptableFile(file)) {
-            if (timer.isInitialized()) {
-                timer.close();
-            }
-            timer = new AmuseTimedPlayer(timeBar, frameCounter);
-
-            if (file.getAbsolutePath().endsWith("bin")) {
-                ((AmuseTimedPlayer) timer).init(file,
-                        NetCDFUtil.getAlternativeExtFile(file, "gas"));
-            } else if (file.getAbsolutePath().endsWith("gas")) {
-                ((AmuseTimedPlayer) timer).init(
-                        NetCDFUtil.getAlternativeExtFile(file, "bin"), file);
-            } else {
-                logger.error("File is wrong " + file.getAbsolutePath() + ":P");
-                System.exit(1);
-            }
-
-            new Thread(timer).start();
-
-            final String path = NetCDFUtil.getPath(file) + "screenshots/";
-
-            settings.setScreenshotPath(path);
-        } else {
-            if (null != file) {
-                final JOptionPane pane = new JOptionPane();
-                pane.setMessage("Tried to open invalid file type.");
-                final JDialog dialog = pane.createDialog("Alert");
-                dialog.setVisible(true);
-            } else {
-                logger.error("File is null");
-                System.exit(1);
-            }
-        }
-    }
-
-    private File openFile() {
-        final JFileChooser fileChooser = new JFileChooser();
-
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        final int result = fileChooser.showOpenDialog(this);
-
-        // user clicked Cancel button on dialog
-        if (result == JFileChooser.CANCEL_OPTION) {
-            return null;
-        } else {
-            return fileChooser.getSelectedFile();
-        }
     }
 
     private void makeTimer() {

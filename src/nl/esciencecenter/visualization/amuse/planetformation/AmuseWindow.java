@@ -15,8 +15,7 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseSceneDescription;
-import nl.esciencecenter.visualization.amuse.planetformation.data.Astrophysics;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneStorage;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
@@ -55,11 +54,11 @@ public class AmuseWindow implements GLEventListener {
     private MultiColorText        legendTextmin, legendTextmax;
 
     private Program               animatedTurbulenceShader, pplShader,
-            axesShader, gasShader, postprocessShader, gaussianBlurShader,
-            textShader, legendProgram;
+                                  axesShader, gasShader, postprocessShader, gaussianBlurShader,
+                                  textShader, legendProgram;
 
     private FBO                   starHaloFBO, gasFBO, starFBO, axesFBO,
-            hudFBO, legendTextureFBO;
+                                  hudFBO, legendTextureFBO;
 
     private Quad                  FSQ_postprocess, FSQ_blur;
     private Model                 xAxis, yAxis, zAxis;
@@ -75,7 +74,7 @@ public class AmuseWindow implements GLEventListener {
 
     private final AmuseSettings   settings       = AmuseSettings.getInstance();
 
-    private AmuseSceneDescription requestedScene = null;
+    private GlueSceneDescription  requestedScene = null;
 
     private SceneStorage          sceneStore;
 
@@ -128,7 +127,7 @@ public class AmuseWindow implements GLEventListener {
             final GL3 gl = drawable.getContext().getGL().getGL3();
             gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-            AmuseSceneDescription currentDescription = settings
+            GlueSceneDescription currentDescription = settings
                     .getCurrentDescription();
 
             sceneStore = timer.getSceneStorage();
@@ -662,17 +661,11 @@ public class AmuseWindow implements GLEventListener {
         final Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
         final Material axisMaterial = new Material(axisColor, axisColor,
                 axisColor);
-        xAxis = new Axis(axisMaterial, new VecF3(-800f, 0f, 0f), new VecF3(
-                800f, 0f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        xAxis = new Axis(axisMaterial, new VecF3(-1f, 0f, 0f), new VecF3(1f, 0f, 0f), 1f, .02f);
         xAxis.init(gl);
-        yAxis = new Axis(axisMaterial, new VecF3(0f, -800f, 0f), new VecF3(0f,
-                800f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        yAxis = new Axis(axisMaterial, new VecF3(0f, -1f, 0f), new VecF3(0f, 1f, 0f), 1f, .02f);
         yAxis.init(gl);
-        zAxis = new Axis(axisMaterial, new VecF3(0f, 0f, -800f), new VecF3(0f,
-                0f, 800f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        zAxis = new Axis(axisMaterial, new VecF3(0f, 0f, -1f), new VecF3(0f, 0f, 1f), 1f, .02f);
         zAxis.init(gl);
 
         // TEXT
