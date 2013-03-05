@@ -24,16 +24,24 @@ public class PointCloud {
     }
 
     public void init(GL3 gl) {
+        System.out.println("pre vbo creation");
+
         if (!initialized) {
             GLSLAttrib vAttrib = new GLSLAttrib(coordinates, "MCvertex",
-                    GLSLAttrib.SIZE_FLOAT, 4);
+                    GLSLAttrib.SIZE_FLOAT, 3);
+
+            System.out.println("post MCvertex creation");
 
             GLSLAttrib cAttrib = new GLSLAttrib(colors, "MCcolor",
                     GLSLAttrib.SIZE_FLOAT, 4);
 
+            System.out.println("post MCcolor creation");
+
             vbo = new VBO(gl, vAttrib, cAttrib);
             initialized = true;
         }
+
+        System.out.println("post vbo creation");
     }
 
     public void draw(GL3 gl, Program program) {

@@ -100,6 +100,7 @@ public class GlueSceneStorage implements SceneStorage {
     @Override
     public synchronized void requestNewConfiguration(
             SceneDescription newDescription) {
+        System.out.println("New config request");
         HashMap<GlueSceneDescription, GlueScene> newSceneStore = new HashMap<GlueSceneDescription, GlueScene>();
 
         for (GlueSceneDescription description : sceneStorage.keySet()) {

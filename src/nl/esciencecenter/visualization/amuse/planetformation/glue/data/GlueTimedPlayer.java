@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GlueTimedPlayer implements TimedPlayer {
-    private GlueDatasetManager        dsManager;
-    private GlueSceneStorage          sceneStorage;
+    private final GlueDatasetManager  dsManager;
+    private final GlueSceneStorage    sceneStorage;
 
     private states                    currentState       = states.UNOPENED;
     private final static Logger       logger             = LoggerFactory
@@ -50,6 +50,8 @@ public class GlueTimedPlayer implements TimedPlayer {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
         this.inputHandler = InputHandler.getInstance();
+        this.dsManager = new GlueDatasetManager(1, 4);
+        this.sceneStorage = dsManager.getSceneStorage();
     }
 
     // public void init(File file_bin, File file_gas) {
@@ -72,10 +74,9 @@ public class GlueTimedPlayer implements TimedPlayer {
     // }
     // }
 
+    @Override
     public void init() {
         this.fileLessMode = true;
-        this.dsManager = new GlueDatasetManager(1, 4);
-        this.sceneStorage = dsManager.getSceneStorage();
 
         // try {
         // frameNumber = dsManager.getFrameNumberOfIndex(0);
@@ -86,7 +87,7 @@ public class GlueTimedPlayer implements TimedPlayer {
         //
         // updateFrame(frameNumber, true);
         //
-        // initialized = true;
+        initialized = true;
         //
         // } catch (IndexNotAvailableException e) {
         // e.printStackTrace();

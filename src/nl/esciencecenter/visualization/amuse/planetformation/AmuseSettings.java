@@ -292,7 +292,7 @@ public class AmuseSettings extends Settings {
             System.out.println(e.getMessage());
         }
 
-        currentDescription = new GlueSceneDescription(0, 2, "hotres",
+        currentDescription = new GlueSceneDescription(0, 0, "hotres",
                 MIN_GAS_DENSITY, MAX_GAS_DENSITY);
 
         // currentDescription = new GlueSceneDescription(0, 0, "default", 0f,

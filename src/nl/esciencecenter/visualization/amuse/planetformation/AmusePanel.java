@@ -716,9 +716,7 @@ public class AmusePanel extends JPanel {
             timer.close();
         }
         timer = new GlueTimedPlayer(timeBar, frameCounter);
-        ((GlueTimedPlayer) timer).init();
 
-        new Thread(timer).start();
     }
 
     // Callback methods for the various ui actions and listeners

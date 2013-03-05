@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import nl.esciencecenter.visualization.amuse.planetformation.data.AmuseGasOctreeNode;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.GlueConstants;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Planet;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.PointGas;
@@ -90,10 +89,12 @@ public class GlueScene implements Runnable, VisualScene {
         PointGas[] pointGasses = scene.getPointGas();
         if (pointGasses != null) {
             int numPointGasParticles = pointGasses.length;
+
             FloatBuffer pointGasCoords = Buffers
                     .newDirectFloatBuffer(numPointGasParticles * 3);
             FloatBuffer pointGasColors = Buffers
                     .newDirectFloatBuffer(numPointGasParticles * 4);
+
             for (PointGas gluePointGas : pointGasses) {
                 float[] coords = gluePointGas.getCoordinates();
                 float[] color = gluePointGas.getColor();
@@ -130,44 +131,54 @@ public class GlueScene implements Runnable, VisualScene {
 
     @Override
     public synchronized void drawStars(GL3 gl, Program program, MatF4 MVMatrix) {
-        for (StarModel s : stars) {
-            s.draw(gl, program, MVMatrix);
+        if (stars != null) {
+            for (StarModel s : stars) {
+                s.draw(gl, program, MVMatrix);
+            }
         }
     }
 
     public synchronized void drawPlanets(GL3 gl, Program program, MatF4 MVMatrix) {
-        for (PlanetModel p : planets) {
-            p.draw(gl, program, MVMatrix);
+        if (planets != null) {
+            for (PlanetModel p : planets) {
+                p.draw(gl, program, MVMatrix);
+            }
         }
     }
 
     public synchronized void drawSpheres(GL3 gl, Program program, MatF4 MVMatrix) {
-        for (SphereModel s : spheres) {
-            s.draw(gl, program, MVMatrix);
+        if (spheres != null) {
+            for (SphereModel s : spheres) {
+                s.draw(gl, program, MVMatrix);
+            }
         }
     }
 
     @Override
     public synchronized void drawGasPointCloud(GL3 gl, Program program,
             MatF4 MVMatrix) {
-        program.setUniformMatrix("MVMatrix", MVMatrix);
+        if (gasParticles != null) {
+            program.setUniformMatrix("MVMatrix", MVMatrix);
 
-        try {
-            program.use(gl);
-        } catch (UninitializedException e) {
-            e.printStackTrace();
+            try {
+                program.use(gl);
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
+
+            gasParticles.draw(gl, program);
         }
-
-        gasParticles.draw(gl, program);
     }
 
     public synchronized void drawGasOctree(GL3 gl, Program program,
             MatF4 MVMatrix) {
-        program.setUniformMatrix("MVMatrix", MVMatrix);
-        gasOctree.draw(gl, program);
+        if (gasOctree != null) {
+            program.setUniformMatrix("MVMatrix", MVMatrix);
+            gasOctree.draw(gl, program);
+        }
     }
 
-    FloatBuffer gasColors(float[][] particles, AmuseGasOctreeNode root) {
+    private FloatBuffer gasColors(float[][] particles, SPHOctreeNode root) {
         FloatBuffer result = FloatBuffer.allocate(particles.length * 4);
 
         for (int i = 0; i < particles.length; i++) {
@@ -189,21 +200,31 @@ public class GlueScene implements Runnable, VisualScene {
 
     public void init(GL3 gl) {
         if (!initialized) {
-            for (StarModel s : stars) {
-                s.init();
+            if (stars != null) {
+                for (StarModel s : stars) {
+                    s.init();
+                }
             }
 
-            for (PlanetModel p : planets) {
-                p.init();
+            if (planets != null) {
+                for (PlanetModel p : planets) {
+                    p.init();
+                }
             }
 
-            for (SphereModel s : spheres) {
-                s.init();
+            if (spheres != null) {
+                for (SphereModel s : spheres) {
+                    s.init();
+                }
             }
 
-            gasParticles.init(gl);
+            if (gasParticles != null) {
+                gasParticles.init(gl);
+            }
 
-            gasOctree.init();
+            if (gasOctree != null) {
+                gasOctree.init();
+            }
 
             initialized = true;
         }

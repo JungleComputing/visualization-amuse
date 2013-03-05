@@ -1,6 +1,6 @@
 //Copyright 2010 JogAmp Community. All rights reserved.
 
-#version 150
+#version 140
 #extension GL_OES_standard_derivatives : enable
 
 uniform vec3    ColorStatic;

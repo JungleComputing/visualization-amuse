@@ -1,13 +1,13 @@
 #version 140
 
-uniform vec4 HaloColor;
+uniform vec4 Color;
 
 out vec4 fragColor;
 
 void main() {	
-	fragColor = HaloColor;
+	fragColor = Color;
 	
-	if (HaloColor.a > 1.0) {
-		fragColor.rgb = HaloColor.rgb * HaloColor.a;
+	if (Color.a > 1.0) {
+		fragColor.rgb = Color.rgb * Color.a;
 	}
 }

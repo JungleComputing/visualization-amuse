@@ -1,4 +1,4 @@
-#version 150
+#version 140
 
 in vec4 MCvertex;
 in vec4 MCvertexColor;

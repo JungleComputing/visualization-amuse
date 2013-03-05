@@ -1,12 +1,12 @@
-#version 150
+#version 140
 
-in vec4 MCvertex;
+in vec3 MCvertex;
 in vec4 MCcolor;
 
 out vec4 pColor;
 
 uniform mat4 PMatrix;
-uniform mat4 global_MVMatrix;
+uniform mat4 MVMatrix;
 
 //uniform mat4 node_MVmatrix;
 //uniform float node_scale;
@@ -18,5 +18,5 @@ void main() {
     pColor = MCcolor;
     
     gl_PointSize = 2.0;
-    gl_Position = PMatrix * global_MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);    
+    gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);    
 }

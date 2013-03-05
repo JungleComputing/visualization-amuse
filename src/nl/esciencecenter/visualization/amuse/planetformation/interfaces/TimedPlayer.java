@@ -41,4 +41,6 @@ public interface TimedPlayer extends Runnable {
 
     public int getFrameNumber();
 
+    public void init();
+
 }

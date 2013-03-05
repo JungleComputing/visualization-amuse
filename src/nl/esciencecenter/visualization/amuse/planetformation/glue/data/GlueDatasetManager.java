@@ -1,10 +1,6 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -207,21 +203,21 @@ public class GlueDatasetManager {
         glueSceneStorage.put(availableFrameSequenceNumbers.size(), scene);
         availableFrameSequenceNumbers.add(availableFrameSequenceNumbers.size());
 
-        String filename = "bla";
-        try {
-            File myFile = new File(filename);
-            myFile.createNewFile();
-
-            FileOutputStream fos = new FileOutputStream(myFile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(scene);
-            oos.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // String filename = "bla";
+        // try {
+        // File myFile = new File(filename);
+        // myFile.createNewFile();
+        //
+        // FileOutputStream fos = new FileOutputStream(myFile);
+        // ObjectOutputStream oos = new ObjectOutputStream(fos);
+        // oos.writeObject(scene);
+        // oos.close();
+        //
+        // } catch (FileNotFoundException e) {
+        // e.printStackTrace();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
 
     }
 }

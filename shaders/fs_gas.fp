@@ -1,4 +1,4 @@
-#version 150
+#version 140
 
 //uniform float gas_opacity_factor;
 //uniform vec4 node_color;
