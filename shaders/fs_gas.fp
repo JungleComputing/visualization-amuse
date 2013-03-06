@@ -10,5 +10,7 @@ out vec4 fragColor;
 void main() {
 	//fragColor = node_color * gas_opacity_factor;
 	
-	fragColor = pColor; vec4(1.0, 1.0, 1.0, 1.0);
+	fragColor = pColor; 
+	
+	//vec4(1.0, 1.0, 1.0, 1.0);
 }

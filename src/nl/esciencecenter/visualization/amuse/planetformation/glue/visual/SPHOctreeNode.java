@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
+import nl.esciencecenter.visualization.amuse.planetformation.AmuseSettings;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.GlueConstants;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
@@ -12,26 +14,34 @@ import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
-import nl.esciencecenter.visualization.openglCommon.scenegraph.OctreeElement;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SPHOctreeNode {
-    private final static Logger logger = LoggerFactory
-                                               .getLogger(SPHOctreeNode.class);
+    private final static AmuseSettings settings = AmuseSettings.getInstance();
+    private final static Logger        logger   = LoggerFactory
+                                                        .getLogger(SPHOctreeNode.class);
 
     public static enum Octant {
         PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
     };
 
-    private class SPHOctreeElement extends OctreeElement {
+    private class SPHOctreeElement {
+        private final VecF3 center;
         private final VecF4 color;
 
         public SPHOctreeElement(VecF3 center, VecF4 color) {
-            super(center);
+            this.center = center;
             this.color = color;
+        }
+
+        public VecF3 getCenter() {
+            return center;
         }
 
         public VecF4 getColor() {
@@ -48,13 +58,16 @@ public class SPHOctreeNode {
     private final float                       modelScale;
 
     private SPHOctreeNode                     ppp, ppn, pnp, npp, pnn, npn,
-            nnp, nnn;
+                                              nnp, nnn;
     private int                               childCounter;
     private boolean                           subdivided  = false;
     private boolean                           initialized = false;
     private VecF4                             color;
 
-    public SPHOctreeNode(Model baseModel, int depth, VecF3 center, float size) {
+    private final GlueSceneDescription        description;
+    private float                             density;
+
+    public SPHOctreeNode(Model baseModel, int depth, VecF3 center, float size, GlueSceneDescription description) {
         this.baseModel = baseModel;
         this.depth = depth;
         this.center = center;
@@ -62,6 +75,7 @@ public class SPHOctreeNode {
         this.modelScale = size * 2f;
         this.elements = new ArrayList<SPHOctreeElement>();
         this.childCounter = 0;
+        this.description = description;
 
         this.TMatrix = MatrixFMath.translate(center);
     }
@@ -153,14 +167,14 @@ public class SPHOctreeNode {
         VecF3 nnnCenter = center.add(new VecF3(-childSize, -childSize,
                 -childSize));
 
-        ppp = new SPHOctreeNode(baseModel, depth + 1, pppCenter, childSize);
-        ppn = new SPHOctreeNode(baseModel, depth + 1, ppnCenter, childSize);
-        pnp = new SPHOctreeNode(baseModel, depth + 1, pnpCenter, childSize);
-        npp = new SPHOctreeNode(baseModel, depth + 1, nppCenter, childSize);
-        pnn = new SPHOctreeNode(baseModel, depth + 1, pnnCenter, childSize);
-        npn = new SPHOctreeNode(baseModel, depth + 1, npnCenter, childSize);
-        nnp = new SPHOctreeNode(baseModel, depth + 1, nnpCenter, childSize);
-        nnn = new SPHOctreeNode(baseModel, depth + 1, nnnCenter, childSize);
+        ppp = new SPHOctreeNode(baseModel, depth + 1, pppCenter, childSize, description);
+        ppn = new SPHOctreeNode(baseModel, depth + 1, ppnCenter, childSize, description);
+        pnp = new SPHOctreeNode(baseModel, depth + 1, pnpCenter, childSize, description);
+        npp = new SPHOctreeNode(baseModel, depth + 1, nppCenter, childSize, description);
+        pnn = new SPHOctreeNode(baseModel, depth + 1, pnnCenter, childSize, description);
+        npn = new SPHOctreeNode(baseModel, depth + 1, npnCenter, childSize, description);
+        nnp = new SPHOctreeNode(baseModel, depth + 1, nnpCenter, childSize, description);
+        nnn = new SPHOctreeNode(baseModel, depth + 1, nnnCenter, childSize, description);
 
         for (SPHOctreeElement element : elements) {
             addElementSubdivided(element);
@@ -175,10 +189,28 @@ public class SPHOctreeNode {
         if (subdivided) {
             draw_sorted(gl, program);
         } else {
-            float alpha = color.get(3);
+
+            float delta = description.getUpperBound() -
+                    description.getLowerBound();
+
+            float alpha = 0f;
+            if (density > description.getLowerBound() && density <
+                    description.getUpperBound()) {
+                alpha = density / delta;
+            } else if (density >= description.getUpperBound()) {
+                alpha = 1f;
+            }
+
+            Dimensions d = new Dimensions(description.getLowerBound(), description.getUpperBound());
+
+            Color c = ColormapInterpreter.getColor(description.getColorMap(), d, density);
+
+            VecF4 newColor = new VecF4(c.red, c.green, c.blue, alpha);
+
+            // System.err.println("alpha " + alpha);
             if (alpha > 0.01f) {
                 program.setUniform("node_scale", modelScale);
-                program.setUniformVector("node_color", color);
+                program.setUniformVector("Color", newColor);
                 program.setUniformMatrix("node_MVmatrix", TMatrix);
 
                 try {
@@ -319,9 +351,12 @@ public class SPHOctreeNode {
             } else {
                 VecF4 tmpColor = new VecF4();
                 for (SPHOctreeElement element : elements) {
-                    tmpColor.add(element.getColor());
+                    tmpColor = tmpColor.add(element.getColor());
                 }
                 color = tmpColor.div(elements.size());
+                density = (elements.size() / (cubeSize * cubeSize * cubeSize)) / 100000;
+
+                System.err.println("density " + density);
             }
 
             elements.clear();

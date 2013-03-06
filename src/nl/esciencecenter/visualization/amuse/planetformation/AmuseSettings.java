@@ -16,7 +16,7 @@ public class AmuseSettings extends Settings {
                                                                          "gas", "bin" };
 
     private final float          MIN_GAS_DENSITY                         = 0f;
-    private final float          MAX_GAS_DENSITY                         = .0001f;
+    private final float          MAX_GAS_DENSITY                         = 100f;
 
     // Minimum and maximum values for the brightness sliders
     private float                POSTPROCESSING_OVERALL_BRIGHTNESS_MIN   = 0f;
@@ -29,15 +29,18 @@ public class AmuseSettings extends Settings {
     private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = 4f;
     private float                POSTPROCESSING_STAR_BRIGHTNESS_MIN      = 0f;
     private float                POSTPROCESSING_STAR_BRIGHTNESS_MAX      = 4f;
-    private final float          POSTPROCESSING_HUD_BRIGHTNESS_MIN       = 0f;
+    private float                POSTPROCESSING_SPHERE_BRIGHTNESS_MIN    = 0f;
+    private float                POSTPROCESSING_SPHERE_BRIGHTNESS_MAX    = 4f;
 
-    private final float          POSTPROCESSING_HUD_BRIGHTNESS_MAX       = 4f;
+    private float                POSTPROCESSING_HUD_BRIGHTNESS_MIN       = 0f;
+    private float                POSTPROCESSING_HUD_BRIGHTNESS_MAX       = 4f;
     // Settings for the postprocessing shader
     private float                POSTPROCESSING_OVERALL_BRIGHTNESS_DEF   = 4f;
     private float                POSTPROCESSING_AXES_BRIGHTNESS_DEF      = 4f;
     private float                POSTPROCESSING_GAS_BRIGHTNESS_DEF       = 4f;
-    private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
+    private float                POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 1f;
     private float                POSTPROCESSING_STAR_BRIGHTNESS_DEF      = 4f;
+    private float                POSTPROCESSING_SPHERE_BRIGHTNESS_DEF    = 4f;
 
     private float                POSTPROCESSING_HUD_BRIGHTNESS_DEF       = 3f;
     // Settings for the star-shape blur method (the + shape of stars)
@@ -165,6 +168,15 @@ public class AmuseSettings extends Settings {
                     .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MIN");
             POSTPROCESSING_STAR_BRIGHTNESS_MAX = props
                     .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MAX");
+            POSTPROCESSING_SPHERE_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_SPHERE_BRIGHTNESS_MIN");
+            POSTPROCESSING_SPHERE_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_SPHERE_BRIGHTNESS_MAX");
+
+            POSTPROCESSING_HUD_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_HUD_BRIGHTNESS_MIN");
+            POSTPROCESSING_HUD_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_HUD_BRIGHTNESS_MAX");
 
             // Settings for the postprocessing shader
             POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = props
@@ -177,6 +189,8 @@ public class AmuseSettings extends Settings {
                     .getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF");
             POSTPROCESSING_STAR_BRIGHTNESS_DEF = props
                     .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_DEF");
+            POSTPROCESSING_SPHERE_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_SPHERE_BRIGHTNESS_DEF");
 
             // Settings for the star-shape blur method (the + shape of stars)
             STAR_SHAPE_BLUR_SIZE = props.getIntProperty("STAR_SHAPE_BLUR_SIZE");
@@ -293,7 +307,7 @@ public class AmuseSettings extends Settings {
         }
 
         currentDescription = new GlueSceneDescription(0, 0, "hotres",
-                MIN_GAS_DENSITY, MAX_GAS_DENSITY);
+                MIN_GAS_DENSITY, 50f);
 
         // currentDescription = new GlueSceneDescription(0, 0, "default", 0f,
         // 25f);
@@ -454,6 +468,18 @@ public class AmuseSettings extends Settings {
         return POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN;
     }
 
+    public float getPostprocessingSphereBrightnessMin() {
+        return POSTPROCESSING_SPHERE_BRIGHTNESS_MIN;
+    }
+
+    public float getPostprocessingSphereBrightnessMax() {
+        return POSTPROCESSING_SPHERE_BRIGHTNESS_MAX;
+    }
+
+    public float getPostprocessingSphereBrightness() {
+        return POSTPROCESSING_SPHERE_BRIGHTNESS_DEF;
+    }
+
     public int getSnapshotGasBlurPasses() {
         return SNAPSHOT_GAS_BLUR_PASSES;
     }
@@ -590,6 +616,10 @@ public class AmuseSettings extends Settings {
 
     public void setPostprocessingOverallBrightness(float value) {
         POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = value;
+    }
+
+    public void setPostprocessingSphereBrightness(float value) {
+        POSTPROCESSING_SPHERE_BRIGHTNESS_DEF = value;
     }
 
     public void setPostprocessingStarBrightness(float value) {

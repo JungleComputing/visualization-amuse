@@ -115,13 +115,14 @@ public class GlueScene implements Runnable, VisualScene {
         if (sphGasses != null) {
             Model octreeBaseModel = sceneStore.getSPHOctreeBaseModel();
             this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(),
-                    GlueConstants.INITIAL_OCTREE_SIZE);
+                    GlueConstants.INITIAL_OCTREE_SIZE, description);
             for (SPHGas glueSPHGas : sphGasses) {
                 float[] rawCoords = glueSPHGas.getCoordinates();
                 float[] rawColor = glueSPHGas.getColor();
+
                 VecF3 coords = new VecF3(rawCoords[0], rawCoords[1], rawCoords[2]);
-                VecF4 color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
-                        rawColor[4]);
+                VecF4 color = new VecF4(rawColor[0], rawColor[1], rawColor[2], rawColor[3]);
+
                 this.gasOctree.addElement(coords, color);
             }
         }
@@ -146,6 +147,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
+    @Override
     public synchronized void drawSpheres(GL3 gl, Program program, MatF4 MVMatrix) {
         if (spheres != null) {
             for (SphereModel s : spheres) {
@@ -170,6 +172,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
+    @Override
     public synchronized void drawGasOctree(GL3 gl, Program program,
             MatF4 MVMatrix) {
         if (gasOctree != null) {

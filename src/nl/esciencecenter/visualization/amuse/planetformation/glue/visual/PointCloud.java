@@ -4,9 +4,11 @@ import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL3;
 
+import nl.esciencecenter.visualization.amuse.planetformation.glExt.VBO;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
-import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+
+import com.jogamp.common.nio.Buffers;
 
 public class PointCloud {
     private VBO               vbo;
@@ -24,18 +26,15 @@ public class PointCloud {
     }
 
     public void init(GL3 gl) {
-        System.out.println("pre vbo creation");
+        System.out.println("coordinates buffer size " + coordinates.capacity());
+        System.out.println("colors buffer size " + colors.capacity());
 
         if (!initialized) {
             GLSLAttrib vAttrib = new GLSLAttrib(coordinates, "MCvertex",
-                    GLSLAttrib.SIZE_FLOAT, 3);
-
-            System.out.println("post MCvertex creation");
+                    Buffers.SIZEOF_FLOAT, 3);
 
             GLSLAttrib cAttrib = new GLSLAttrib(colors, "MCcolor",
-                    GLSLAttrib.SIZE_FLOAT, 4);
-
-            System.out.println("post MCcolor creation");
+                    Buffers.SIZEOF_FLOAT, 4);
 
             vbo = new VBO(gl, vAttrib, cAttrib);
             initialized = true;

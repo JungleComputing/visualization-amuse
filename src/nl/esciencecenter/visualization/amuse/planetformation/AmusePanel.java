@@ -142,7 +142,7 @@ public class AmusePanel extends JPanel {
         configPanel = new JPanel();
         add(configPanel, BorderLayout.WEST);
         configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
-        configPanel.setPreferredSize(new Dimension(200, 0));
+        configPanel.setPreferredSize(new Dimension(240, 0));
         configPanel.setVisible(false);
 
         dataConfig = new JPanel();
@@ -417,7 +417,7 @@ public class AmusePanel extends JPanel {
         comboBoxColorMaps.setSelectedItem(ColormapInterpreter
                 .getIndexOfColormap(description.getColorMap()));
 
-        comboBoxColorMaps.setMinimumSize(new Dimension(100, 25));
+        comboBoxColorMaps.setMinimumSize(new Dimension(200, 25));
         comboBoxColorMaps.setMaximumSize(new Dimension(200, 25));
         dataConfig.add(comboBoxColorMaps);
 
@@ -498,20 +498,6 @@ public class AmusePanel extends JPanel {
                 timer.redraw();
             }
         };
-        final ItemListener cblGasColorInfluencedByStars = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setStarInfluencedGasColor(e.getStateChange());
-                timer.redraw();
-            }
-        };
-        final ItemListener cblExaggerateStarColors = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setStarColorsExaggerated(e.getStateChange());
-                timer.redraw();
-            }
-        };
         final ItemListener cblStereo = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -534,12 +520,6 @@ public class AmusePanel extends JPanel {
                         new GoggleSwing.CheckBoxItem("White background",
                                 settings.getGasInvertedBackgroundColor(),
                                 cblInvertedBackground),
-                        new GoggleSwing.CheckBoxItem("Color gas by stars",
-                                settings.getGasStarInfluencedColor(),
-                                cblGasColorInfluencedByStars),
-                        new GoggleSwing.CheckBoxItem("Exaggerate star colors",
-                                settings.getStarColorsExaggerated(),
-                                cblExaggerateStarColors),
                         new GoggleSwing.CheckBoxItem("Stereo view", settings
                                 .getStereo(), cblStereo),
                         new GoggleSwing.CheckBoxItem(
@@ -652,6 +632,26 @@ public class AmusePanel extends JPanel {
                         .getPostprocessingStarBrightnessMax()), 1,
                 (int) (settings.getPostprocessingStarBrightness()), new JLabel(
                         "")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
+
+        final ChangeListener sphereBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setPostprocessingSphereBrightness(source.getValue());
+                }
+            }
+        };
+        visualConfig.add(GoggleSwing.sliderBox("Sphere Brightness",
+                sphereBrightnessSliderListener, (int) (settings
+                        .getPostprocessingSphereBrightnessMin()), (int) (settings
+                        .getPostprocessingSphereBrightnessMax()), 1,
+                (int) (settings.getPostprocessingSphereBrightness()), new JLabel(
+                        "")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
 
         final ChangeListener stereoOcularDistanceListener = new ChangeListener() {
             @Override

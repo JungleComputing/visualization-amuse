@@ -144,6 +144,7 @@ public class GlueDatasetManager {
 
         CPUJobExecute(new GlueScene(sceneStorage, description,
                 glueSceneStorage.get(frameNumber)));
+        CPUJobExecute(new LegendTextureBuilder(sceneStorage, description));
     }
 
     public GlueSceneStorage getSceneStorage() {

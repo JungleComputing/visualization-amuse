@@ -9,9 +9,13 @@ public interface VisualScene {
 
     void dispose(GL3 gl);
 
-    void drawGasPointCloud(GL3 gl, Program gasShader, MatF4 mv);
+    void drawGasPointCloud(GL3 gl, Program program, MatF4 mv);
 
-    void drawStars(GL3 gl, Program animatedTurbulenceShader, MatF4 mv);
+    void drawSpheres(GL3 gl, Program program, MatF4 mv);
+
+    void drawStars(GL3 gl, Program program, MatF4 mv);
+
+    void drawGasOctree(GL3 gl, Program program, MatF4 mv);
 
     SceneDescription getDescription();
 
