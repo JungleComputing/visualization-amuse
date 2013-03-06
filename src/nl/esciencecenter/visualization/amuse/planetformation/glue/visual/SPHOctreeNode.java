@@ -14,7 +14,7 @@ import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
-import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
@@ -185,7 +185,7 @@ public class SPHOctreeNode {
         subdivided = true;
     }
 
-    public void draw(GL3 gl, Program program) {
+    public void draw(GL3 gl, ShaderProgram program) {
         if (subdivided) {
             draw_sorted(gl, program);
         } else {
@@ -224,7 +224,7 @@ public class SPHOctreeNode {
         }
     }
 
-    protected void draw_unsorted(GL3 gl, Program program) {
+    protected void draw_unsorted(GL3 gl, ShaderProgram program) {
         nnn.draw(gl, program);
         pnn.draw(gl, program);
         npn.draw(gl, program);
@@ -235,10 +235,10 @@ public class SPHOctreeNode {
         ppp.draw(gl, program);
     }
 
-    protected void draw_sorted(GL3 gl, Program program) {
+    protected void draw_sorted(GL3 gl, ShaderProgram program) {
         InputHandler inputHandler = InputHandler.getInstance();
 
-        if (inputHandler.getCurrentOctant() == InputHandler.octants.NNN) {
+        if (inputHandler.getCurrentViewOctant() == InputHandler.octants.NNN) {
             ppp.draw(gl, program);
 
             npp.draw(gl, program);
@@ -250,7 +250,7 @@ public class SPHOctreeNode {
             npn.draw(gl, program);
 
             nnn.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NNP) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.NNP) {
             ppn.draw(gl, program);
 
             npn.draw(gl, program);
@@ -262,7 +262,7 @@ public class SPHOctreeNode {
             npp.draw(gl, program);
 
             nnp.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NPN) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.NPN) {
             pnp.draw(gl, program);
 
             nnp.draw(gl, program);
@@ -274,7 +274,7 @@ public class SPHOctreeNode {
             nnn.draw(gl, program);
 
             npn.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.NPP) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.NPP) {
             pnn.draw(gl, program);
 
             nnn.draw(gl, program);
@@ -286,7 +286,7 @@ public class SPHOctreeNode {
             nnp.draw(gl, program);
 
             npp.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PNN) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.PNN) {
             npp.draw(gl, program);
 
             ppp.draw(gl, program);
@@ -298,7 +298,7 @@ public class SPHOctreeNode {
             ppn.draw(gl, program);
 
             pnn.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PNP) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.PNP) {
             npn.draw(gl, program);
 
             ppn.draw(gl, program);
@@ -310,7 +310,7 @@ public class SPHOctreeNode {
             ppp.draw(gl, program);
 
             pnp.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PPN) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.PPN) {
             nnp.draw(gl, program);
 
             pnp.draw(gl, program);
@@ -322,7 +322,7 @@ public class SPHOctreeNode {
             pnn.draw(gl, program);
 
             ppn.draw(gl, program);
-        } else if (inputHandler.getCurrentOctant() == InputHandler.octants.PPP) {
+        } else if (inputHandler.getCurrentViewOctant() == InputHandler.octants.PPP) {
             nnn.draw(gl, program);
 
             pnn.draw(gl, program);
@@ -356,7 +356,7 @@ public class SPHOctreeNode {
                 color = tmpColor.div(elements.size());
                 density = (elements.size() / (cubeSize * cubeSize * cubeSize)) / 100000;
 
-                System.err.println("density " + density);
+                // System.err.println("density " + density);
             }
 
             elements.clear();

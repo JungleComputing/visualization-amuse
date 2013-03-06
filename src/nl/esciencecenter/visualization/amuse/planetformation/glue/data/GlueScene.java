@@ -24,7 +24,7 @@ import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
-import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
 import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
@@ -107,6 +107,7 @@ public class GlueScene implements Runnable, VisualScene {
                     pointGasColors.put(color[i]);
                 }
             }
+
             gasParticles = new PointCloud(numPointGasParticles, pointGasCoords,
                     pointGasColors);
         }
@@ -131,7 +132,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawStars(GL3 gl, Program program, MatF4 MVMatrix) {
+    public synchronized void drawStars(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (stars != null) {
             for (StarModel s : stars) {
                 s.draw(gl, program, MVMatrix);
@@ -139,7 +140,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
-    public synchronized void drawPlanets(GL3 gl, Program program, MatF4 MVMatrix) {
+    public synchronized void drawPlanets(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (planets != null) {
             for (PlanetModel p : planets) {
                 p.draw(gl, program, MVMatrix);
@@ -148,7 +149,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawSpheres(GL3 gl, Program program, MatF4 MVMatrix) {
+    public synchronized void drawSpheres(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (spheres != null) {
             for (SphereModel s : spheres) {
                 s.draw(gl, program, MVMatrix);
@@ -157,7 +158,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawGasPointCloud(GL3 gl, Program program,
+    public synchronized void drawGasPointCloud(GL3 gl, ShaderProgram program,
             MatF4 MVMatrix) {
         if (gasParticles != null) {
             program.setUniformMatrix("MVMatrix", MVMatrix);
@@ -173,7 +174,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawGasOctree(GL3 gl, Program program,
+    public synchronized void drawGasOctree(GL3 gl, ShaderProgram program,
             MatF4 MVMatrix) {
         if (gasOctree != null) {
             program.setUniformMatrix("MVMatrix", MVMatrix);

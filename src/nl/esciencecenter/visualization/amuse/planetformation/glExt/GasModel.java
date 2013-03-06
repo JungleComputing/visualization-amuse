@@ -7,7 +7,7 @@ import javax.media.opengl.GL3;
 import nl.esciencecenter.visualization.openglCommon.datastructures.GLSLAttrib;
 import nl.esciencecenter.visualization.openglCommon.datastructures.VBO;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
-import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
 
 public class GasModel {
     protected FloatBuffer vertices;
@@ -47,7 +47,7 @@ public class GasModel {
         return numVertices;
     }
 
-    public void draw(GL3 gl, Program program) {
+    public void draw(GL3 gl, ShaderProgram program) {
         try {
             program.use(gl);
         } catch (UninitializedException e) {

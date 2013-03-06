@@ -10,7 +10,7 @@ import nl.esciencecenter.visualization.amuse.planetformation.glue.Star;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueTimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.input.AmuseInputHandler;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
-import nl.esciencecenter.visualization.openglCommon.NewtWindow;
+import nl.esciencecenter.visualization.openglCommon.CommonNewtWindow;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class AmuseLib {
         // Create the GLEventListener
         amuseWindow = new AmuseWindow(AmuseInputHandler.getInstance());
 
-        NewtWindow window = new NewtWindow(true, amuseWindow.getInputHandler(),
+        CommonNewtWindow window = new CommonNewtWindow(true, amuseWindow.getInputHandler(),
                 amuseWindow, settings.getDefaultScreenWidth(),
                 settings.getDefaultScreenHeight(), "Amuse Visualization");
 
@@ -105,11 +105,14 @@ public class AmuseLib {
                     (float) Math.random(), (float) Math.random(), (float) Math.random()
             };
             float[] color = new float[] {
-                    (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random()
+                    // 1f, 1f, 1f, 1f
+                    (float) Math.random(), (float) Math.random(), (float)
+                    Math.random(), (float) Math.random()
             };
             pGas1[i] = new PointGas(i, coordinates, color);
         }
 
+        // Scene scene1 = new Scene(0, spheres1, stars1, null, sphGas1, null);
         Scene scene1 = new Scene(0, spheres1, stars1, null, null, pGas1);
 
         lib.addScene(scene1);

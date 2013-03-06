@@ -9,7 +9,7 @@ import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
-import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
 
 public class PlanetModel {
     private final Model  baseModel;
@@ -42,7 +42,7 @@ public class PlanetModel {
         }
     }
 
-    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
+    public void draw(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (!initialized) {
             init();
         }

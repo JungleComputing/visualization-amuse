@@ -581,20 +581,22 @@ public class AmusePanel extends JPanel {
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
-        final ChangeListener gasOpacityFactorSliderListener = new ChangeListener() {
+        final ChangeListener gasBrightnessSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setGasOpacityFactor(source.getValue() / 100f);
+                    settings.setPostprocessingGasBrightness(source
+                            .getValue());
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Gas Opacity Factor",
-                gasOpacityFactorSliderListener,
-                (int) (settings.getGasOpacityFactorMin() * 100),
-                (int) (settings.getGasOpacityFactorMax() * 100), 1,
-                (int) (settings.getGasOpacityFactor()), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Gas Brightness",
+                gasBrightnessSliderListener,
+                (int) (settings.getPostprocessingGasBrightnessMin()),
+                (int) (settings.getPostprocessingGasBrightnessMax()), 1,
+                (int) (settings.getPostprocessingGasBrightness()),
+                new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 

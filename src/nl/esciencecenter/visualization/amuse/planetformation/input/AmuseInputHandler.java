@@ -19,14 +19,6 @@ import com.jogamp.newt.event.MouseListener;
 public class AmuseInputHandler extends InputHandler implements MouseListener,
         KeyListener {
 
-    /**
-     * Octants are used to define a direction from which the viewer is looking
-     * at the scene, these are useful in Octrees.
-     */
-    public static enum octants {
-        PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
-    }
-
     /** Initial value for the rotation in the X direction */
     protected float rotationXorigin     = 0;
     /**
@@ -251,6 +243,7 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
     /**
      * @return the current_view_octant (mainly used for octrees)
      */
+    @Override
     public octants getCurrentViewOctant() {
         return current_view_octant;
     }
