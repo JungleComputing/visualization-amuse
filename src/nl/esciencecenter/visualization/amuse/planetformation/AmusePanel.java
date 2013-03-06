@@ -118,7 +118,7 @@ public class AmusePanel extends JPanel {
         final JMenuBar menuBar2 = new JMenuBar();
 
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
-                "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
+                "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 200, 20);
         JLabel nlesclogo = new JLabel(nlescIcon);
         // nlesclogo.setMinimumSize(new Dimension(300, 20));
         // nlesclogo.setMaximumSize(new Dimension(311, 28));

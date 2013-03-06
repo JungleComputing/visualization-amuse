@@ -111,53 +111,56 @@ public class AmuseLib {
             };
             pGas1[i] = new PointGas(i, coordinates, color);
         }
-
-        // Scene scene1 = new Scene(0, spheres1, stars1, null, sphGas1, null);
-        Scene scene1 = new Scene(0, spheres1, stars1, null, null, pGas1);
-
+        Scene scene1 = new Scene(0, null, stars1, null, null, null);
         lib.addScene(scene1);
 
-        // Sphere[] spheres2 = new Sphere[10];
-        // for (int i = 0; i < spheres2.length; i++) {
-        // float[] coordinates = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random()
-        // };
-        // float[] color = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random(),
-        // 1f
-        // };
-        // spheres2[i] = new Sphere(i, coordinates, (float) Math.random() *
-        // 0.2f, color);
-        // }
-        //
-        // Star[] stars2 = new Star[10];
-        // for (int i = 0; i < stars2.length; i++) {
-        // float[] coordinates = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random()
-        // };
-        // float[] color = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random(),
-        // 1f
-        // };
-        // stars2[i] = new Star(i, coordinates, (float) Math.random() * 0.2f,
-        // color);
-        // }
-        //
-        // PointGas[] pGas2 = new PointGas[10000];
-        // for (int i = 0; i < pGas2.length; i++) {
-        // float[] coordinates = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random()
-        // };
-        // float[] color = new float[] {
-        // (float) Math.random(), (float) Math.random(), (float) Math.random(),
-        // 1f
-        // };
-        // pGas2[i] = new PointGas(i, coordinates, color);
-        // }
-        //
-        // Scene scene2 = new Scene(1, spheres2, stars2, null, null, pGas2);
-        //
-        // lib.addScene(scene2);
+        Sphere[] spheres2 = new Sphere[10];
+        for (int i = 0; i < spheres2.length; i++) {
+            float[] coordinates = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random()
+            };
+            float[] color = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random(), 1f
+            };
+            spheres2[i] = new Sphere(i, coordinates, (float) Math.random() * 0.2f, color);
+        }
+
+        Star[] stars2 = new Star[10];
+        for (int i = 0; i < stars2.length; i++) {
+            float[] coordinates = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random()
+            };
+            float[] color = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random(), 1f
+            };
+            stars2[i] = new Star(i, coordinates, (float) Math.random() * 0.2f, color);
+        }
+
+        SPHGas[] sphGas2 = new SPHGas[10000];
+        for (int i = 0; i < sphGas2.length; i++) {
+            float[] coordinates = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random()
+            };
+            float[] color = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random()
+            };
+            sphGas2[i] = new SPHGas(i, coordinates, color);
+        }
+
+        PointGas[] pGas2 = new PointGas[10000];
+        for (int i = 0; i < pGas2.length; i++) {
+            float[] coordinates = new float[] {
+                    (float) Math.random(), (float) Math.random(), (float) Math.random()
+            };
+            float[] color = new float[] {
+                    // 1f, 1f, 1f, 1f
+                    (float) Math.random(), (float) Math.random(), (float)
+                    Math.random(), (float) Math.random()
+            };
+            pGas2[i] = new PointGas(i, coordinates, color);
+        }
+        Scene scene2 = new Scene(1, spheres2, stars2, null, sphGas2, pGas2);
+        lib.addScene(scene2);
 
     }
 
