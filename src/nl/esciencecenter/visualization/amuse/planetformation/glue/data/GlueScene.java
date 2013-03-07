@@ -2,6 +2,7 @@ package nl.esciencecenter.visualization.amuse.planetformation.glue.data;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.media.opengl.GL3;
 
@@ -12,6 +13,7 @@ import nl.esciencecenter.visualization.amuse.planetformation.glue.SPHGas;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Sphere;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Star;
+import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.DistanceComparator;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.PlanetModel;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.PointCloud;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.SPHOctreeNode;
@@ -19,8 +21,10 @@ import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.SphereM
 import nl.esciencecenter.visualization.amuse.planetformation.glue.visual.StarModel;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.VisualScene;
+import nl.esciencecenter.visualization.openglCommon.exceptions.InverseNotAvailableException;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
+import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
@@ -133,6 +137,16 @@ public class GlueScene implements Runnable, VisualScene {
 
     @Override
     public synchronized void drawStars(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
+        MatF4 viewModel;
+        try {
+            viewModel = MatrixFMath.inverse(MVMatrix);
+            VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
+                    viewModel.get(11));
+            Collections.sort(stars, new DistanceComparator(cameraPos));
+        } catch (InverseNotAvailableException e) {
+            e.printStackTrace();
+        }
+
         if (stars != null) {
             for (StarModel s : stars) {
                 s.draw(gl, program, MVMatrix);

@@ -54,9 +54,9 @@ public class AmuseWindow implements GLEventListener {
 
     private MultiColorText              legendTextmin, legendTextmax;
 
-    private ShaderProgram               animatedTurbulenceShader, pplShader,
-                                        axesShader, pointGasShader, octreeGasShader, postprocessShader, gaussianBlurShader,
-                                        textShader, legendProgram;
+    private ShaderProgram               animatedTurbulenceShader, pplShader, starHaloShader,
+                                        axesShader, pointGasShader, octreeGasShader, starGlowShader,
+                                        postprocessShader, gaussianBlurShader, textShader, legendProgram;
 
     private FBO                         starHaloFBO, pointGasFBO, octreeGasFBO, sphereFBO, starFBO, axesFBO,
                                         hudFBO, legendTextureFBO;
@@ -403,12 +403,14 @@ public class AmuseWindow implements GLEventListener {
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
-        pplShader.setUniformMatrix("PMatrix", p);
-        pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2f));
+        starHaloShader.setUniformMatrix("PMatrix", p);
+        starHaloShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2f));
+        starHaloShader.setUniformMatrix("NormalMatrix",
+                MatrixFMath.getNormalMatrix(mv));
 
-        newScene.drawStars(gl, pplShader, mv);
+        newScene.drawStars(gl, starHaloShader, mv);
 
-        starHaloFBO = blur(gl, starHaloFBO, FSQ_blur,
+        starHaloFBO = starGlow(gl, starHaloFBO, FSQ_blur,
                 settings.getStarHaloBlurPasses(),
                 settings.getStarHaloBlurType(), settings.getStarHaloBlurSize());
 
@@ -574,6 +576,33 @@ public class AmuseWindow implements GLEventListener {
         sphereFBO.init(gl);
     }
 
+    private FBO starGlow(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
+            int blurType, float blurSize) {
+        starGlowShader.setUniform("Texture", target.getTexture()
+                .getMultitexNumber());
+
+        starGlowShader.setUniformMatrix("PMatrix", new MatF4());
+        starGlowShader.setUniformMatrix("MVMatrix", new MatF4());
+
+        starGlowShader.setUniform("scrWidth", target.getTexture()
+                .getWidth());
+        starGlowShader.setUniform("scrHeight", target.getTexture()
+                .getHeight());
+
+        try {
+            target.bind(gl);
+
+            starGlowShader.use(gl);
+            fullScreenQuad.draw(gl, starGlowShader);
+
+            target.unBind(gl);
+        } catch (final UninitializedException e) {
+            e.printStackTrace();
+        }
+
+        return target;
+    }
+
     private FBO blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
             int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getTexture()
@@ -682,6 +711,8 @@ public class AmuseWindow implements GLEventListener {
                     new File("shaders/fs_animatedTurbulence.fp"));
             pplShader = loader.createProgram(gl, "ppl", new File(
                     "shaders/vs_ppl.vp"), new File("shaders/fs_ppl.fp"));
+            starHaloShader = loader.createProgram(gl, "starHalo", new File(
+                    "shaders/vs_starHalo.vp"), new File("shaders/fs_starHalo.fp"));
             axesShader = loader.createProgram(gl, "axes", new File(
                     "shaders/vs_axes.vp"), new File("shaders/fs_axes.fp"));
             pointGasShader = loader.createProgram(gl, "gas", new File(
@@ -699,6 +730,9 @@ public class AmuseWindow implements GLEventListener {
             postprocessShader = loader.createProgram(gl, "postprocess",
                     new File("shaders/vs_postprocess.vp"), new File(
                             "shaders/fs_postprocess.fp"));
+            starGlowShader = loader.createProgram(gl, "starGlow",
+                    new File("shaders/vs_postprocess.vp"), new File(
+                            "shaders/fs_starGlow.fp"));
             gaussianBlurShader = loader.createProgram(gl, "gaussianBlur",
                     new File("shaders/vs_postprocess.vp"), new File(
                             "shaders/fs_gaussian_blur.fp"));

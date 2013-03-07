@@ -111,7 +111,7 @@ public class AmuseLib {
             };
             pGas1[i] = new PointGas(i, coordinates, color);
         }
-        Scene scene1 = new Scene(0, null, stars1, null, null, null);
+        Scene scene1 = new Scene(0, null, stars1, null, null, pGas1);
         lib.addScene(scene1);
 
         Sphere[] spheres2 = new Sphere[10];
