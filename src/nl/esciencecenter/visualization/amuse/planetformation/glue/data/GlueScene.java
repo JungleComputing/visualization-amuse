@@ -7,7 +7,6 @@ import java.util.Collections;
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.glue.GlueConstants;
-import nl.esciencecenter.visualization.amuse.planetformation.glue.Planet;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.PointGas;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.SPHGas;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Scene;
@@ -36,21 +35,20 @@ import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Di
 import com.jogamp.common.nio.Buffers;
 
 public class GlueScene implements Runnable, VisualScene {
-    private final GlueSceneStorage     sceneStore;
+    private final GlueSceneStorage sceneStore;
     private final GlueSceneDescription description;
-    private final Scene                scene;
+    private final Scene scene;
 
-    private ArrayList<StarModel>       stars;
-    private ArrayList<PlanetModel>     planets;
-    private ArrayList<SphereModel>     spheres;
+    private ArrayList<StarModel> stars;
+    private ArrayList<PlanetModel> planets;
+    private ArrayList<SphereModel> spheres;
 
-    private PointCloud                 gasParticles;
-    private SPHOctreeNode              gasOctree;
+    private PointCloud gasParticles;
+    private SPHOctreeNode gasOctree;
 
-    private boolean                    initialized = false;
+    private boolean initialized = false;
 
-    public GlueScene(GlueSceneStorage sceneStore,
-            GlueSceneDescription description, Scene scene) {
+    public GlueScene(GlueSceneStorage sceneStore, GlueSceneDescription description, Scene scene) {
         this.sceneStore = sceneStore;
         this.description = description;
         this.scene = scene;
@@ -58,6 +56,7 @@ public class GlueScene implements Runnable, VisualScene {
 
     @Override
     public void run() {
+
         Star[] glueStars = scene.getStars();
         Model starBaseModel = sceneStore.getStarBaseModel();
         if (glueStars != null) {
@@ -68,24 +67,23 @@ public class GlueScene implements Runnable, VisualScene {
             }
         }
 
-        Planet[] gluePlanets = scene.getPlanets();
-        Model planetBaseModel = sceneStore.getPlanetBaseModel();
-        if (gluePlanets != null) {
-            this.planets = new ArrayList<PlanetModel>();
-            for (Planet gluePlanet : gluePlanets) {
-                PlanetModel planetModel = new PlanetModel(planetBaseModel,
-                        gluePlanet);
-                planets.add(planetModel);
-            }
-        }
+        // Planet[] gluePlanets = scene.getPlanets();
+        // Model planetBaseModel = sceneStore.getPlanetBaseModel();
+        // if (gluePlanets != null) {
+        // this.planets = new ArrayList<PlanetModel>();
+        // for (Planet gluePlanet : gluePlanets) {
+        // PlanetModel planetModel = new PlanetModel(planetBaseModel,
+        // gluePlanet);
+        // planets.add(planetModel);
+        // }
+        // }
 
         Sphere[] glueSpheres = scene.getSpheres();
         Model sphereBaseModel = sceneStore.getSphereBaseModel();
         if (glueSpheres != null) {
             this.spheres = new ArrayList<SphereModel>();
             for (Sphere glueSphere : glueSpheres) {
-                SphereModel sphereModel = new SphereModel(sphereBaseModel,
-                        glueSphere);
+                SphereModel sphereModel = new SphereModel(sphereBaseModel, glueSphere);
                 spheres.add(sphereModel);
             }
         }
@@ -94,10 +92,8 @@ public class GlueScene implements Runnable, VisualScene {
         if (pointGasses != null) {
             int numPointGasParticles = pointGasses.length;
 
-            FloatBuffer pointGasCoords = Buffers
-                    .newDirectFloatBuffer(numPointGasParticles * 3);
-            FloatBuffer pointGasColors = Buffers
-                    .newDirectFloatBuffer(numPointGasParticles * 4);
+            FloatBuffer pointGasCoords = Buffers.newDirectFloatBuffer(numPointGasParticles * 3);
+            FloatBuffer pointGasColors = Buffers.newDirectFloatBuffer(numPointGasParticles * 4);
 
             for (PointGas gluePointGas : pointGasses) {
                 float[] coords = gluePointGas.getCoordinates();
@@ -112,15 +108,14 @@ public class GlueScene implements Runnable, VisualScene {
                 }
             }
 
-            gasParticles = new PointCloud(numPointGasParticles, pointGasCoords,
-                    pointGasColors);
+            gasParticles = new PointCloud(numPointGasParticles, pointGasCoords, pointGasColors);
         }
 
         SPHGas[] sphGasses = scene.getSphGas();
         if (sphGasses != null) {
             Model octreeBaseModel = sceneStore.getSPHOctreeBaseModel();
-            this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(),
-                    GlueConstants.INITIAL_OCTREE_SIZE, description);
+            this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(), GlueConstants.INITIAL_OCTREE_SIZE,
+                    description);
             for (SPHGas glueSPHGas : sphGasses) {
                 float[] rawCoords = glueSPHGas.getCoordinates();
                 float[] rawColor = glueSPHGas.getColor();
@@ -140,8 +135,7 @@ public class GlueScene implements Runnable, VisualScene {
         MatF4 viewModel;
         try {
             viewModel = MatrixFMath.inverse(MVMatrix);
-            VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
-                    viewModel.get(11));
+            VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7), viewModel.get(11));
             Collections.sort(stars, new DistanceComparator(cameraPos));
         } catch (InverseNotAvailableException e) {
             e.printStackTrace();
@@ -172,8 +166,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawGasPointCloud(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawGasPointCloud(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (gasParticles != null) {
             program.setUniformMatrix("MVMatrix", MVMatrix);
 
@@ -188,8 +181,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawGasOctree(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawGasOctree(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (gasOctree != null) {
             program.setUniformMatrix("MVMatrix", MVMatrix);
             gasOctree.draw(gl, program);
@@ -201,9 +193,8 @@ public class GlueScene implements Runnable, VisualScene {
 
         for (int i = 0; i < particles.length; i++) {
             float rho = particles[i][3];
-            Color myColor = ColormapInterpreter.getColor(description
-                    .getColorMap(), new Dimensions(description.getLowerBound(),
-                    description.getUpperBound()), rho);
+            Color myColor = ColormapInterpreter.getColor(description.getColorMap(),
+                    new Dimensions(description.getLowerBound(), description.getUpperBound()), rho);
 
             result.put(myColor.red);
             result.put(myColor.green);
@@ -258,5 +249,9 @@ public class GlueScene implements Runnable, VisualScene {
     @Override
     public SceneDescription getDescription() {
         return description;
+    }
+
+    public String getDescriptionString() {
+        return scene.getSceneDecriptionString();
     }
 }

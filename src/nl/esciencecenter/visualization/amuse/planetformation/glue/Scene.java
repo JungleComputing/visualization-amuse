@@ -5,27 +5,21 @@ import java.io.Serializable;
 public class Scene implements Serializable {
     private static final long serialVersionUID = 4342001313150488429L;
 
-    private final double      time;
-    private final Sphere[]    spheres;
+    private final Sphere[] spheres;
 
-    private final Star[]      stars;
-    private final Planet[]    planets;
+    private final Star[] stars;
 
-    private final SPHGas[]    sphGas;
-    private final PointGas[]  pointGas;
+    private final SPHGas[] sphGas;
+    private final PointGas[] pointGas;
 
-    public Scene(double time, Sphere[] spheres, Star[] stars, Planet[] planets,
-            SPHGas[] sphGas, PointGas[] pointGas) {
-        this.time = time;
+    private final String decription;
+
+    public Scene(String decription, Sphere[] spheres, Star[] stars, SPHGas[] sphGas, PointGas[] pointGas) {
         this.spheres = spheres;
         this.stars = stars;
-        this.planets = planets;
         this.sphGas = sphGas;
         this.pointGas = pointGas;
-    }
-
-    public double getTime() {
-        return time;
+        this.decription = decription;
     }
 
     public Sphere[] getSpheres() {
@@ -36,15 +30,15 @@ public class Scene implements Serializable {
         return stars;
     }
 
-    public Planet[] getPlanets() {
-        return planets;
-    }
-
     public SPHGas[] getSphGas() {
         return sphGas;
     }
 
     public PointGas[] getPointGas() {
         return pointGas;
+    }
+
+    public String getSceneDecriptionString() {
+        return decription;
     }
 }

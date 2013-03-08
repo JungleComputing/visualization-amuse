@@ -11,17 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GlueDatasetManager {
-    private final static Logger           logger = LoggerFactory
-                                                         .getLogger(GlueDatasetManager.class);
+    private final static Logger logger = LoggerFactory.getLogger(GlueDatasetManager.class);
 
     // private final IOPoolWorker[] ioThreads;
-    private final CPUPoolWorker[]         cpuThreads;
-    private final LinkedList<Runnable>    cpuQueue;
+    private final CPUPoolWorker[] cpuThreads;
+    private final LinkedList<Runnable> cpuQueue;
     // private final LinkedList<GlueDataArray> ioQueue;
 
-    private final ArrayList<Integer>      availableFrameSequenceNumbers;
+    private final ArrayList<Integer> availableFrameSequenceNumbers;
     private final HashMap<Integer, Scene> glueSceneStorage;
-    private final GlueSceneStorage        sceneStorage;
+    private final GlueSceneStorage sceneStorage;
 
     // public void IOJobExecute(GlueDataArray r) {
     // synchronized (ioQueue) {
@@ -136,23 +135,19 @@ public class GlueDatasetManager {
     public void buildScene(GlueSceneDescription description) {
         int frameNumber = description.getFrameNumber();
         if (frameNumber < 0
-                || frameNumber >= availableFrameSequenceNumbers
-                        .get(availableFrameSequenceNumbers.size() - 1)) {
-            logger.warn("buildImages : Requested frameNumber  " + frameNumber
-                    + " out of range.");
+                || frameNumber >= availableFrameSequenceNumbers.get(availableFrameSequenceNumbers.size() - 1)) {
+            logger.warn("buildImages : Requested frameNumber  " + frameNumber + " out of range.");
         }
 
-        CPUJobExecute(new GlueScene(sceneStorage, description,
-                glueSceneStorage.get(frameNumber)));
-        CPUJobExecute(new LegendTextureBuilder(sceneStorage, description));
+        CPUJobExecute(new GlueScene(sceneStorage, description, glueSceneStorage.get(frameNumber)));
+        // CPUJobExecute(new LegendTextureBuilder(sceneStorage, description));
     }
 
     public GlueSceneStorage getSceneStorage() {
         return sceneStorage;
     }
 
-    public int getFrameNumberOfIndex(int index)
-            throws IndexNotAvailableException {
+    public int getFrameNumberOfIndex(int index) throws IndexNotAvailableException {
         if (availableFrameSequenceNumbers.contains(index)) {
             return availableFrameSequenceNumbers.get(index);
         } else {
@@ -167,13 +162,11 @@ public class GlueDatasetManager {
     public int getPreviousFrameNumber(int frameNumber) throws IOException {
         int nextNumber = getIndexOfFrameNumber(frameNumber) - 1;
 
-        if (nextNumber >= 0
-                && nextNumber < availableFrameSequenceNumbers.size()) {
+        if (nextNumber >= 0 && nextNumber < availableFrameSequenceNumbers.size()) {
             try {
                 return getFrameNumberOfIndex(nextNumber);
             } catch (IndexNotAvailableException e) {
-                throw new IOException("Frame number not available: "
-                        + nextNumber);
+                throw new IOException("Frame number not available: " + nextNumber);
             }
         } else {
             throw new IOException("Frame number not available: " + nextNumber);
@@ -183,13 +176,11 @@ public class GlueDatasetManager {
     public int getNextFrameNumber(int frameNumber) throws IOException {
         int nextNumber = getIndexOfFrameNumber(frameNumber) + 1;
 
-        if (nextNumber >= 0
-                && nextNumber < availableFrameSequenceNumbers.size()) {
+        if (nextNumber >= 0 && nextNumber < availableFrameSequenceNumbers.size()) {
             try {
                 return getFrameNumberOfIndex(nextNumber);
             } catch (IndexNotAvailableException e) {
-                throw new IOException("Frame number not available: "
-                        + nextNumber);
+                throw new IOException("Frame number not available: " + nextNumber);
             }
         } else {
             throw new IOException("Frame number not available: " + nextNumber);

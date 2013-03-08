@@ -19,4 +19,6 @@ public interface VisualScene {
 
     SceneDescription getDescription();
 
+    String getDescriptionString();
+
 }

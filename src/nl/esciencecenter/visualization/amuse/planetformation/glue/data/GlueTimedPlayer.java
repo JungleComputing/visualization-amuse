@@ -17,36 +17,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GlueTimedPlayer implements TimedPlayer {
-    private final GlueDatasetManager  dsManager;
-    private final GlueSceneStorage    sceneStorage;
+    private final GlueDatasetManager dsManager;
+    private final GlueSceneStorage sceneStorage;
 
-    private states                    currentState       = states.UNOPENED;
-    private final static Logger       logger             = LoggerFactory
-                                                                 .getLogger(GlueTimedPlayer.class);
+    private states currentState = states.UNOPENED;
+    private final static Logger logger = LoggerFactory.getLogger(GlueTimedPlayer.class);
 
-    private final AmuseSettings       settings           = AmuseSettings
-                                                                 .getInstance();
-    private int                       frameNumber;
+    private final AmuseSettings settings = AmuseSettings.getInstance();
+    private int frameNumber;
 
-    private final boolean             running            = true;
-    private boolean                   initialized        = false;
-    private boolean                   fileLessMode       = false;
+    private final boolean running = true;
+    private boolean initialized = false;
+    private boolean fileLessMode = false;
 
-    private long                      startTime, stopTime;
+    private long startTime, stopTime;
 
-    private final CustomJSlider       timeBar;
+    private final CustomJSlider timeBar;
     private final JFormattedTextField frameCounter;
 
-    private final InputHandler        inputHandler;
+    private final InputHandler inputHandler;
 
-    private boolean                   needsScreenshot    = false;
-    private String                    screenshotFilename = "";
+    private boolean needsScreenshot = false;
+    private String screenshotFilename = "";
 
-    private final long                waittime           = settings
-                                                                 .getWaitTimeMovie();
+    private final long waittime = settings.getWaitTimeMovie();
 
-    public GlueTimedPlayer(CustomJSlider timeBar2,
-            JFormattedTextField frameCounter) {
+    public GlueTimedPlayer(CustomJSlider timeBar2, JFormattedTextField frameCounter) {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
         this.inputHandler = InputHandler.getInstance();
@@ -101,8 +97,7 @@ public class GlueTimedPlayer implements TimedPlayer {
             System.exit(1);
         }
 
-        inputHandler.setRotation(new VecF3(settings.getInitialRotationX(),
-                settings.getInitialRotationY(), 0f));
+        inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
         // inputHandler.setRotation(new VecF3(bezierPoints.get(0).get(0),
@@ -115,8 +110,7 @@ public class GlueTimedPlayer implements TimedPlayer {
         stop();
 
         while (running) {
-            if ((currentState == states.PLAYING)
-                    || (currentState == states.REDRAWING)
+            if ((currentState == states.PLAYING) || (currentState == states.REDRAWING)
                     || (currentState == states.MOVIEMAKING)) {
                 try {
                     if (!isScreenshotNeeded()) {
@@ -125,11 +119,7 @@ public class GlueTimedPlayer implements TimedPlayer {
                         if (currentState == states.MOVIEMAKING) {
                             final VecF3 rotation = inputHandler.getRotation();
                             if (settings.getMovieRotate()) {
-                                rotation.set(
-                                        1,
-                                        rotation.get(1)
-                                                + settings
-                                                        .getMovieRotationSpeedDef());
+                                rotation.set(1, rotation.get(1) + settings.getMovieRotationSpeedDef());
                                 inputHandler.setRotation(rotation);
 
                                 setScreenshotNeeded(true);
@@ -142,8 +132,7 @@ public class GlueTimedPlayer implements TimedPlayer {
                         if (currentState != states.REDRAWING) {
                             int newFrameNumber;
                             try {
-                                newFrameNumber = dsManager
-                                        .getNextFrameNumber(frameNumber);
+                                newFrameNumber = dsManager.getNextFrameNumber(frameNumber);
                                 if (sceneStorage.doneWithLastRequest()) {
                                     updateFrame(newFrameNumber, false);
                                 }
@@ -198,18 +187,15 @@ public class GlueTimedPlayer implements TimedPlayer {
         }
     }
 
-    protected synchronized void updateFrame(int newFrameNumber,
-            boolean overrideUpdate) {
+    protected synchronized void updateFrame(int newFrameNumber, boolean overrideUpdate) {
         if (dsManager != null) {
             if (newFrameNumber != frameNumber || overrideUpdate) {
 
                 frameNumber = newFrameNumber;
                 settings.setCurrentFrameNumber(newFrameNumber);
 
-                this.timeBar.setValue(dsManager
-                        .getIndexOfFrameNumber(newFrameNumber));
-                this.frameCounter.setValue(dsManager
-                        .getIndexOfFrameNumber(newFrameNumber));
+                this.timeBar.setValue(dsManager.getIndexOfFrameNumber(newFrameNumber));
+                this.frameCounter.setValue(dsManager.getIndexOfFrameNumber(newFrameNumber));
             }
         }
     }
@@ -222,7 +208,7 @@ public class GlueTimedPlayer implements TimedPlayer {
             int newFrameNumber = dsManager.getPreviousFrameNumber(frameNumber);
             updateFrame(newFrameNumber, false);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("one back failed.");
         }
     }
 
@@ -234,7 +220,7 @@ public class GlueTimedPlayer implements TimedPlayer {
             int newFrameNumber = dsManager.getNextFrameNumber(frameNumber);
             updateFrame(newFrameNumber, false);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("one forward failed.");
         }
     }
 
@@ -274,8 +260,7 @@ public class GlueTimedPlayer implements TimedPlayer {
 
     @Override
     public synchronized boolean isPlaying() {
-        if ((currentState == states.PLAYING)
-                || (currentState == states.MOVIEMAKING)) {
+        if ((currentState == states.PLAYING) || (currentState == states.MOVIEMAKING)) {
             return true;
         }
 
@@ -293,12 +278,10 @@ public class GlueTimedPlayer implements TimedPlayer {
             final VecF3 rotation = inputHandler.getRotation();
             final float viewDist = inputHandler.getViewDist();
 
-            System.out.println("Simulation frame: " + frameNumber
-                    + ", Rotation x: " + rotation.get(0) + " y: "
+            System.out.println("Simulation frame: " + frameNumber + ", Rotation x: " + rotation.get(0) + " y: "
                     + rotation.get(1) + " , viewDist: " + viewDist);
 
-            screenshotFilename = settings.getScreenshotPath()
-                    + String.format("%05d", (frameNumber)) + ".png";
+            screenshotFilename = String.format("%05d", (frameNumber)) + ".png";
         }
         needsScreenshot = value;
     }

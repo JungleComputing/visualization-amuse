@@ -16,7 +16,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -28,41 +27,35 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueSceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.data.GlueTimedPlayer;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.TimedPlayer;
-import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
 import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
 import nl.esciencecenter.visualization.openglCommon.swing.GoggleSwing;
-import nl.esciencecenter.visualization.openglCommon.swing.RangeSlider;
-import nl.esciencecenter.visualization.openglCommon.swing.RangeSliderUI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AmusePanel extends JPanel {
-    private final static Logger logger = LoggerFactory
-                                               .getLogger(AmusePanel.class);
+    private final static Logger logger = LoggerFactory.getLogger(AmusePanel.class);
 
     public static enum TweakState {
         NONE, DATA, VISUAL, MOVIE
     }
 
-    private final AmuseSettings   settings           = AmuseSettings
-                                                             .getInstance();
+    private final AmuseSettings settings = AmuseSettings.getInstance();
 
-    private static final long     serialVersionUID   = 1L;
+    private static final long serialVersionUID = 1L;
 
-    protected CustomJSlider       timeBar;
+    protected CustomJSlider timeBar;
 
     protected JFormattedTextField frameCounter;
-    private TweakState            currentConfigState = TweakState.MOVIE;
+    private TweakState currentConfigState = TweakState.MOVIE;
 
-    public static TimedPlayer     timer;
+    public static TimedPlayer timer;
 
-    private final JPanel          configPanel;
+    private final JPanel configPanel;
 
-    private final JPanel          dataConfig, visualConfig, movieConfig;
+    private final JPanel dataConfig, visualConfig, movieConfig;
 
     public AmusePanel() {
         setLayout(new BorderLayout(0, 0));
@@ -84,14 +77,14 @@ public class AmusePanel extends JPanel {
 
         final JMenu options = new JMenu("Options");
 
-        final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        makeMovie.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.MOVIE);
-            }
-        });
-        options.add(makeMovie);
+        // final JMenuItem makeMovie = new JMenuItem("Make movie.");
+        // makeMovie.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.MOVIE);
+        // }
+        // });
+        // options.add(makeMovie);
 
         final JMenuItem showDataPanel = new JMenuItem("Show data config panel.");
         showDataPanel.addActionListener(new ActionListener() {
@@ -102,8 +95,7 @@ public class AmusePanel extends JPanel {
         });
         options.add(showDataPanel);
 
-        final JMenuItem showVisualPanel = new JMenuItem(
-                "Show visual config panel.");
+        final JMenuItem showVisualPanel = new JMenuItem("Show visual config panel.");
         showVisualPanel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
@@ -117,8 +109,8 @@ public class AmusePanel extends JPanel {
 
         final JMenuBar menuBar2 = new JMenuBar();
 
-        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
-                "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 200, 20);
+        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon("images/ESCIENCE_logo.jpg", "eScienceCenter Logo",
+                200, 20);
         JLabel nlesclogo = new JLabel(nlescIcon);
         // nlesclogo.setMinimumSize(new Dimension(300, 20));
         // nlesclogo.setMaximumSize(new Dimension(311, 28));
@@ -175,14 +167,12 @@ public class AmusePanel extends JPanel {
         bottomPanel.setFocusCycleRoot(true);
         bottomPanel.setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
-            public Component getComponentAfter(Container aContainer,
-                    Component aComponent) {
+            public Component getComponentAfter(Container aContainer, Component aComponent) {
                 return null;
             }
 
             @Override
-            public Component getComponentBefore(Container aContainer,
-                    Component aComponent) {
+            public Component getComponentBefore(Container aContainer, Component aComponent) {
                 return null;
             }
 
@@ -204,20 +194,15 @@ public class AmusePanel extends JPanel {
             }
         });
 
-        final JButton oneForwardButton = GoggleSwing.createImageButton(
-                "images/media-playback-oneforward.png", "Next", null);
-        final JButton oneBackButton = GoggleSwing.createImageButton(
-                "images/media-playback-onebackward.png", "Previous", null);
-        final JButton rewindButton = GoggleSwing.createImageButton(
-                "images/media-playback-rewind.png", "Rewind", null);
-        final JButton screenshotButton = GoggleSwing.createImageButton(
-                "images/camera.png", "Screenshot", null);
-        final JButton playButton = GoggleSwing.createImageButton(
-                "images/media-playback-start.png", "Start", null);
-        final ImageIcon playIcon = GoggleSwing.createImageIcon(
-                "images/media-playback-start.png", "Start");
-        final ImageIcon stopIcon = GoggleSwing.createImageIcon(
-                "images/media-playback-stop.png", "Start");
+        final JButton oneForwardButton = GoggleSwing.createImageButton("images/media-playback-oneforward.png", "Next",
+                null);
+        final JButton oneBackButton = GoggleSwing.createImageButton("images/media-playback-onebackward.png",
+                "Previous", null);
+        final JButton rewindButton = GoggleSwing.createImageButton("images/media-playback-rewind.png", "Rewind", null);
+        final JButton screenshotButton = GoggleSwing.createImageButton("images/camera.png", "Screenshot", null);
+        final JButton playButton = GoggleSwing.createImageButton("images/media-playback-start.png", "Start", null);
+        final ImageIcon playIcon = GoggleSwing.createImageIcon("images/media-playback-start.png", "Start");
+        final ImageIcon stopIcon = GoggleSwing.createImageIcon("images/media-playback-stop.png", "Start");
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
         final JPanel bottomPanel1 = new JPanel();
@@ -289,15 +274,11 @@ public class AmusePanel extends JPanel {
         frameCounter.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                final JFormattedTextField source = (JFormattedTextField) e
-                        .getSource();
+                final JFormattedTextField source = (JFormattedTextField) e.getSource();
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (timer.isInitialized()) {
-                            timer.setFrame(
-                                    ((Number) frameCounter.getValue())
-                                            .intValue() - timeBar.getMinimum(),
-                                    false);
+                            timer.setFrame(((Number) frameCounter.getValue()).intValue() - timeBar.getMinimum(), false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -341,33 +322,25 @@ public class AmusePanel extends JPanel {
                 timer.redraw();
             }
         };
-        movieConfig.add(GoggleSwing.checkboxBox(
-                "",
-                new GoggleSwing.CheckBoxItem("Rotation", settings
-                        .getMovieRotate(), checkBoxListener)));
+        movieConfig.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Rotation", settings.getMovieRotate(),
+                checkBoxListener)));
 
-        final JLabel rotationSetting = new JLabel(""
-                + settings.getMovieRotationSpeedDef());
+        final JLabel rotationSetting = new JLabel("" + settings.getMovieRotationSpeedDef());
         final ChangeListener movieRotationSpeedListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
                     settings.setMovieRotationSpeed(source.getValue() * .25f);
-                    rotationSetting.setText(""
-                            + settings.getMovieRotationSpeedDef());
+                    rotationSetting.setText("" + settings.getMovieRotationSpeedDef());
                 }
             }
         };
-        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed",
-                movieRotationSpeedListener,
-                (int) (settings.getMovieRotationSpeedMin() * 4f),
-                (int) (settings.getMovieRotationSpeedMax() * 4f), 1,
-                (int) (settings.getMovieRotationSpeedDef() * 4f),
-                rotationSetting));
+        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed", movieRotationSpeedListener,
+                (int) (settings.getMovieRotationSpeedMin() * 4f), (int) (settings.getMovieRotationSpeedMax() * 4f), 1,
+                (int) (settings.getMovieRotationSpeedDef() * 4f), rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("",
-                new String[] { "Start Recording" },
+        movieConfig.add(GoggleSwing.buttonBox("", new String[] { "Start Recording" },
                 new ActionListener[] { new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -387,90 +360,115 @@ public class AmusePanel extends JPanel {
 
         dataConfig.add(GoggleSwing.verticalStrut(5));
 
-        dataConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] {
-                "Low", "Medium", "High" }, new ActionListener[] {
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        settings.setCurrentLOD(0);
-                        timer.redraw();
-                    }
-                }, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        settings.setCurrentLOD(1);
-                        timer.redraw();
-                    }
-                }, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        settings.setCurrentLOD(2);
-                        timer.redraw();
-                    }
-                } }, "Low"));
+        // dataConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] {
+        // "Low", "Medium", "High" },
+        // new ActionListener[] { new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // settings.setCurrentLOD(0);
+        // timer.redraw();
+        // }
+        // }, new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // settings.setCurrentLOD(1);
+        // timer.redraw();
+        // }
+        // }, new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // settings.setCurrentLOD(2);
+        // timer.redraw();
+        // }
+        // } }, "Low"));
 
-        final JComboBox comboBoxColorMaps = ColormapInterpreter
-                .getLegendJComboBox(new Dimension(200, 25));
-
-        GlueSceneDescription description = settings.getCurrentDescription();
-
-        comboBoxColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(description.getColorMap()));
-
-        comboBoxColorMaps.setMinimumSize(new Dimension(200, 25));
-        comboBoxColorMaps.setMaximumSize(new Dimension(200, 25));
-        dataConfig.add(comboBoxColorMaps);
-
-        dataConfig.add(GoggleSwing.verticalStrut(5));
-
-        final RangeSlider legendSlider = new RangeSlider();
-        ((RangeSliderUI) legendSlider.getUI()).setRangeColorMap(description
-                .getColorMap());
-        legendSlider.setMinimum(0);
-        legendSlider.setMaximum(100);
-        legendSlider.setValue(settings.getRangeSliderLowerValue());
-        legendSlider.setUpperValue(settings.getRangeSliderUpperValue());
-
-        final String[] colorMaps = ColormapInterpreter.getColormapNames();
-
-        final RangeSliderUI frs = ((RangeSliderUI) legendSlider.getUI());
-        comboBoxColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setCurrentColorMap(colorMaps[comboBoxColorMaps
-                        .getSelectedIndex()]);
-
-                frs.setRangeColorMap(colorMaps[comboBoxColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-        legendSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                RangeSlider slider = (RangeSlider) e.getSource();
-                if (!slider.getValueIsAdjusting()) {
-                    settings.setVariableRange(slider.getValue(),
-                            slider.getUpperValue());
-                }
-            }
-        });
-        dataConfig.add(legendSlider);
-
-        dataConfig.add(GoggleSwing.verticalStrut(5));
-
-        final ChangeListener gasOpacityRatioListener = new ChangeListener() {
+        final ChangeListener octreeLODSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setGasOpacityRatio(source.getValue());
+                    settings.setOctreeLOD(source.getValue());
                 }
             }
         };
-        dataConfig.add(GoggleSwing.sliderBox("Gas Opacity Ratio",
-                gasOpacityRatioListener, (settings.getGasOpacityRatioMin()),
-                (settings.getGasOpacityRatioMax()), 1,
-                (int) (settings.getGasOpacityRatio()), new JLabel("")));
+        dataConfig.add(GoggleSwing.sliderBox("Octree Detail (lower = slower&better)", octreeLODSliderListener,
+                (int) (settings.getOctreeLODMin()), (int) (settings.getOctreeLODMax()), 1,
+                (int) (settings.getOctreeLOD()), new JLabel("")));
+
+        dataConfig.add(GoggleSwing.verticalStrut(5));
+
+        final ChangeListener octreeDensitySliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setOctreeDensity(source.getValue());
+                }
+            }
+        };
+        dataConfig.add(GoggleSwing.sliderBox("Octree Density cutoff.", octreeDensitySliderListener,
+                (int) (settings.getOctreeDensityMin()), (int) (settings.getOctreeDensityMax()), 1,
+                (int) (settings.getOctreeDensity()), new JLabel("")));
+
+        dataConfig.add(GoggleSwing.verticalStrut(5));
+
+        // final JComboBox comboBoxColorMaps =
+        // ColormapInterpreter.getLegendJComboBox(new Dimension(200, 25));
+        //
+        // GlueSceneDescription description = settings.getCurrentDescription();
+        //
+        // comboBoxColorMaps.setSelectedItem(ColormapInterpreter.getIndexOfColormap(description.getColorMap()));
+        //
+        // comboBoxColorMaps.setMinimumSize(new Dimension(200, 25));
+        // comboBoxColorMaps.setMaximumSize(new Dimension(200, 25));
+        // dataConfig.add(comboBoxColorMaps);
+        //
+        // dataConfig.add(GoggleSwing.verticalStrut(5));
+        //
+        // final RangeSlider legendSlider = new RangeSlider();
+        // ((RangeSliderUI)
+        // legendSlider.getUI()).setRangeColorMap(description.getColorMap());
+        // legendSlider.setMinimum(0);
+        // legendSlider.setMaximum(100);
+        // legendSlider.setValue(settings.getRangeSliderLowerValue());
+        // legendSlider.setUpperValue(settings.getRangeSliderUpperValue());
+        //
+        // final String[] colorMaps = ColormapInterpreter.getColormapNames();
+        //
+        // final RangeSliderUI frs = ((RangeSliderUI) legendSlider.getUI());
+        // comboBoxColorMaps.addItemListener(new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // settings.setCurrentColorMap(colorMaps[comboBoxColorMaps.getSelectedIndex()]);
+        //
+        // frs.setRangeColorMap(colorMaps[comboBoxColorMaps.getSelectedIndex()]);
+        // }
+        // });
+        // legendSlider.addChangeListener(new ChangeListener() {
+        // @Override
+        // public void stateChanged(ChangeEvent e) {
+        // RangeSlider slider = (RangeSlider) e.getSource();
+        // if (!slider.getValueIsAdjusting()) {
+        // settings.setVariableRange(slider.getValue(), slider.getUpperValue());
+        // }
+        // }
+        // });
+        // dataConfig.add(legendSlider);
+
+        dataConfig.add(GoggleSwing.verticalStrut(5));
+
+        final ChangeListener particleSizeMultiplierListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setParticleSizeMultiplier(source.getValue());
+                }
+            }
+        };
+        dataConfig.add(GoggleSwing.sliderBox("Particle size multiplier.", particleSizeMultiplierListener,
+                (settings.getParticleSizeMultiplierMin()), (settings.getParticleSizeMultiplierMax()), 1,
+                (int) (settings.getParticleSizeMultiplier()), new JLabel("")));
 
     }
 
@@ -481,67 +479,62 @@ public class AmusePanel extends JPanel {
                 setTweakState(TweakState.NONE);
             }
         };
-        visualConfig
-                .add(GoggleSwing.titleBox("Visual Configuration", listener));
+        visualConfig.add(GoggleSwing.titleBox("Visual Configuration", listener));
 
-        final ItemListener cblBeamerMode = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setInvertGasColor(e.getStateChange());
-                timer.redraw();
-            }
-        };
-        final ItemListener cblInvertedBackground = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setGasInvertedBackgroundColor(e.getStateChange());
-                timer.redraw();
-            }
-        };
-        final ItemListener cblStereo = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setStereo(e.getStateChange());
-                timer.redraw();
-            }
-        };
-        final ItemListener cblStereoSwitch = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setStereoSwitched(e.getStateChange());
-                timer.redraw();
-            }
-        };
-        visualConfig
-                .add(GoggleSwing.checkboxBox(
-                        "",
-                        new GoggleSwing.CheckBoxItem("Beamer mode", settings
-                                .getGasInvertedColor(), cblBeamerMode),
-                        new GoggleSwing.CheckBoxItem("White background",
-                                settings.getGasInvertedBackgroundColor(),
-                                cblInvertedBackground),
-                        new GoggleSwing.CheckBoxItem("Stereo view", settings
-                                .getStereo(), cblStereo),
-                        new GoggleSwing.CheckBoxItem(
-                                "Stereo left/right switch", settings
-                                        .getStereoSwitched(), cblStereoSwitch)));
+        // final ItemListener cblBeamerMode = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // settings.setInvertGasColor(e.getStateChange());
+        // timer.redraw();
+        // }
+        // };
+        // final ItemListener cblInvertedBackground = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // settings.setGasInvertedBackgroundColor(e.getStateChange());
+        // timer.redraw();
+        // }
+        // };
+        // final ItemListener cblStereo = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // settings.setStereo(e.getStateChange());
+        // timer.redraw();
+        // }
+        // };
+        // final ItemListener cblStereoSwitch = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // settings.setStereoSwitched(e.getStateChange());
+        // timer.redraw();
+        // }
+        // };
+        // visualConfig
+        // .add(GoggleSwing.checkboxBox("",
+        // new GoggleSwing.CheckBoxItem("Beamer mode",
+        // settings.getGasInvertedColor(), cblBeamerMode),
+        // new GoggleSwing.CheckBoxItem("White background",
+        // settings.getGasInvertedBackgroundColor(),
+        // cblInvertedBackground),
+        // new GoggleSwing.CheckBoxItem("Stereo view", settings.getStereo(),
+        // cblStereo),
+        // new GoggleSwing.CheckBoxItem("Stereo left/right switch",
+        // settings.getStereoSwitched(),
+        // cblStereoSwitch)));
 
         final ChangeListener overallBrightnessSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setPostprocessingOverallBrightness(source
-                            .getValue());
+                    settings.setPostprocessingOverallBrightness(source.getValue());
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Overall Brightness",
-                overallBrightnessSliderListener,
+        visualConfig.add(GoggleSwing.sliderBox("Overall Brightness", overallBrightnessSliderListener,
                 (int) (settings.getPostprocessingOverallBrightnessMin()),
                 (int) (settings.getPostprocessingOverallBrightnessMax()), 1,
-                (int) (settings.getPostprocessingOverallBrightness()),
-                new JLabel("")));
+                (int) (settings.getPostprocessingOverallBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -554,12 +547,10 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Axes Brightness",
-                axesBrightnessSliderListener, (int) (settings
-                        .getPostprocessingAxesBrightnessMin()), (int) (settings
-                        .getPostprocessingAxesBrightnessMax()), 1,
-                (int) (settings.getPostprocessingAxesBrightness()), new JLabel(
-                        "")));
+        visualConfig.add(GoggleSwing.sliderBox("Axes Brightness", axesBrightnessSliderListener,
+                (int) (settings.getPostprocessingAxesBrightnessMin()),
+                (int) (settings.getPostprocessingAxesBrightnessMax()), 1,
+                (int) (settings.getPostprocessingAxesBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -572,31 +563,42 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("HUD Brightness",
-                hudBrightnessSliderListener, (int) (settings
-                        .getPostprocessingHudBrightnessMin()), (int) (settings
-                        .getPostprocessingHudBrightnessMax()), 1,
-                (int) (settings.getPostprocessingHudBrightness()), new JLabel(
-                        "")));
+        visualConfig.add(GoggleSwing.sliderBox("HUD Brightness", hudBrightnessSliderListener,
+                (int) (settings.getPostprocessingHudBrightnessMin()),
+                (int) (settings.getPostprocessingHudBrightnessMax()), 1,
+                (int) (settings.getPostprocessingHudBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
-        final ChangeListener gasBrightnessSliderListener = new ChangeListener() {
+        final ChangeListener pointGasBrightnessSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setPostprocessingGasBrightness(source
-                            .getValue());
+                    settings.setPostprocessingPointGasBrightness(source.getValue());
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Gas Brightness",
-                gasBrightnessSliderListener,
-                (int) (settings.getPostprocessingGasBrightnessMin()),
-                (int) (settings.getPostprocessingGasBrightnessMax()), 1,
-                (int) (settings.getPostprocessingGasBrightness()),
-                new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Point Gas Brightness", pointGasBrightnessSliderListener,
+                (int) (settings.getPostprocessingPointGasBrightnessMin()),
+                (int) (settings.getPostprocessingPointGasBrightnessMax()), 1,
+                (int) (settings.getPostprocessingPointGasBrightness()), new JLabel("")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
+
+        final ChangeListener octreeGasBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setPostprocessingOctreeGasBrightness(source.getValue());
+                }
+            }
+        };
+        visualConfig.add(GoggleSwing.sliderBox("Octree Gas Brightness", octreeGasBrightnessSliderListener,
+                (int) (settings.getPostprocessingOctreeGasBrightnessMin()),
+                (int) (settings.getPostprocessingOctreeGasBrightnessMax()), 1,
+                (int) (settings.getPostprocessingOctreeGasBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -605,17 +607,14 @@ public class AmusePanel extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setPostprocessingStarHaloBrightness(source
-                            .getValue());
+                    settings.setPostprocessingStarHaloBrightness(source.getValue());
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Star Halo Brightness",
-                starHaloBrightnessSliderListener,
+        visualConfig.add(GoggleSwing.sliderBox("Star Halo Brightness", starHaloBrightnessSliderListener,
                 (int) (settings.getPostprocessingStarHaloBrightnessMin()),
                 (int) (settings.getPostprocessingStarHaloBrightnessMax()), 1,
-                (int) (settings.getPostprocessingStarHaloBrightness()),
-                new JLabel("")));
+                (int) (settings.getPostprocessingStarHaloBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -628,12 +627,10 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Star Brightness",
-                starBrightnessSliderListener, (int) (settings
-                        .getPostprocessingStarBrightnessMin()), (int) (settings
-                        .getPostprocessingStarBrightnessMax()), 1,
-                (int) (settings.getPostprocessingStarBrightness()), new JLabel(
-                        "")));
+        visualConfig.add(GoggleSwing.sliderBox("Star Brightness", starBrightnessSliderListener,
+                (int) (settings.getPostprocessingStarBrightnessMin()),
+                (int) (settings.getPostprocessingStarBrightnessMax()), 1,
+                (int) (settings.getPostprocessingStarBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -646,31 +643,12 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Sphere Brightness",
-                sphereBrightnessSliderListener, (int) (settings
-                        .getPostprocessingSphereBrightnessMin()), (int) (settings
-                        .getPostprocessingSphereBrightnessMax()), 1,
-                (int) (settings.getPostprocessingSphereBrightness()), new JLabel(
-                        "")));
+        visualConfig.add(GoggleSwing.sliderBox("Sphere Brightness", sphereBrightnessSliderListener,
+                (int) (settings.getPostprocessingSphereBrightnessMin()),
+                (int) (settings.getPostprocessingSphereBrightnessMax()), 1,
+                (int) (settings.getPostprocessingSphereBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
-
-        final ChangeListener stereoOcularDistanceListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                final JSlider source = (JSlider) e.getSource();
-                if (source.hasFocus()) {
-                    settings.setStereoOcularDistance(source.getValue() / 10f);
-                }
-            }
-        };
-        visualConfig
-                .add(GoggleSwing.sliderBox("Stereo Ocular Distance",
-                        stereoOcularDistanceListener,
-                        (int) (settings.getStereoOcularDistanceMin() * 10),
-                        (int) (settings.getStereoOcularDistanceMax() * 10), 1,
-                        (int) (settings.getStereoOcularDistance() * 10),
-                        new JLabel("")));
 
         final ChangeListener blurTypeListener = new ChangeListener() {
             @Override
@@ -681,9 +659,10 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Blur Type", blurTypeListener,
-                settings.getBlurTypeMin(), settings.getBlurTypeMax(), 1,
-                settings.getBlurTypeSetting(), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Blur Type", blurTypeListener, settings.getBlurTypeMin(),
+                settings.getBlurTypeMax(), 1, settings.getBlurTypeSetting(), new JLabel("")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
 
         final ChangeListener blurPassListener = new ChangeListener() {
             @Override
@@ -694,9 +673,10 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Blur Passes", blurPassListener,
-                settings.getBlurPassMin(), settings.getBlurPassMax(), 1,
-                settings.getBlurPassSetting(), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Blur Passes", blurPassListener, settings.getBlurPassMin(),
+                settings.getBlurPassMax(), 1, settings.getBlurPassSetting(), new JLabel("")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
 
         final ChangeListener blurSizeListener = new ChangeListener() {
             @Override
@@ -707,9 +687,26 @@ public class AmusePanel extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Blur Size", blurSizeListener,
-                settings.getBlurSizeMin(), settings.getBlurSizeMax(), 1,
-                settings.getBlurSizeSetting(), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Blur Size", blurSizeListener, settings.getBlurSizeMin(),
+                settings.getBlurSizeMax(), 1, settings.getBlurSizeSetting(), new JLabel("")));
+
+        // final ChangeListener stereoOcularDistanceListener = new
+        // ChangeListener() {
+        // @Override
+        // public void stateChanged(ChangeEvent e) {
+        // final JSlider source = (JSlider) e.getSource();
+        // if (source.hasFocus()) {
+        // settings.setStereoOcularDistance(source.getValue() / 10f);
+        // }
+        // }
+        // };
+        // visualConfig.add(GoggleSwing.sliderBox("Stereo Ocular Distance",
+        // stereoOcularDistanceListener,
+        // (int) (settings.getStereoOcularDistanceMin() * 10), (int)
+        // (settings.getStereoOcularDistanceMax() * 10),
+        // 1, (int) (settings.getStereoOcularDistance() * 10), new JLabel("")));
+        //
+        // visualConfig.add(GoggleSwing.verticalStrut(5));
 
     }
 
@@ -726,7 +723,7 @@ public class AmusePanel extends JPanel {
         configPanel.setVisible(false);
         configPanel.remove(dataConfig);
         configPanel.remove(visualConfig);
-        configPanel.remove(movieConfig);
+        // configPanel.remove(movieConfig);
 
         currentConfigState = newState;
 
@@ -737,9 +734,9 @@ public class AmusePanel extends JPanel {
         } else if (currentConfigState == TweakState.VISUAL) {
             configPanel.setVisible(true);
             configPanel.add(visualConfig, BorderLayout.WEST);
-        } else if (currentConfigState == TweakState.MOVIE) {
-            configPanel.setVisible(true);
-            configPanel.add(movieConfig, BorderLayout.WEST);
+            // } else if (currentConfigState == TweakState.MOVIE) {
+            // configPanel.setVisible(true);
+            // configPanel.add(movieConfig, BorderLayout.WEST);
         }
     }
 

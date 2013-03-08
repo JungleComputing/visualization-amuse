@@ -15,17 +15,13 @@ import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
 import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
-import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
-import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
-import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SPHOctreeNode {
     private final static AmuseSettings settings = AmuseSettings.getInstance();
-    private final static Logger        logger   = LoggerFactory
-                                                        .getLogger(SPHOctreeNode.class);
+    private final static Logger logger = LoggerFactory.getLogger(SPHOctreeNode.class);
 
     public static enum Octant {
         PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
@@ -50,22 +46,21 @@ public class SPHOctreeNode {
     }
 
     private final ArrayList<SPHOctreeElement> elements;
-    private final VecF3                       center;
-    private final float                       cubeSize;
-    private final int                         depth;
-    private final Model                       baseModel;
-    private final MatF4                       TMatrix;
-    private final float                       modelScale;
+    private final VecF3 center;
+    private final float cubeSize;
+    private final int depth;
+    private final Model baseModel;
+    private final MatF4 TMatrix;
+    private final float modelScale;
 
-    private SPHOctreeNode                     ppp, ppn, pnp, npp, pnn, npn,
-                                              nnp, nnn;
-    private int                               childCounter;
-    private boolean                           subdivided  = false;
-    private boolean                           initialized = false;
-    private VecF4                             color;
+    private SPHOctreeNode ppp, ppn, pnp, npp, pnn, npn, nnp, nnn;
+    private int childCounter;
+    private boolean subdivided = false;
+    private boolean initialized = false;
+    private VecF4 color;
 
-    private final GlueSceneDescription        description;
-    private float                             density;
+    private final GlueSceneDescription description;
+    private float density;
 
     public SPHOctreeNode(Model baseModel, int depth, VecF3 center, float size, GlueSceneDescription description) {
         this.baseModel = baseModel;
@@ -88,17 +83,14 @@ public class SPHOctreeNode {
     public void addElement(SPHOctreeElement element) {
         final VecF3 location = element.getCenter();
 
-        if ((location.get(0) > (center.get(0) - cubeSize))
-                && (location.get(1) > (center.get(1) - cubeSize))
-                && (location.get(2) > (center.get(2) - cubeSize))
-                && (location.get(0) < (center.get(0) + cubeSize))
-                && (location.get(1) < (center.get(1) + cubeSize))
-                && (location.get(2) < (center.get(2) + cubeSize))) {
+        if ((location.get(0) > (center.get(0) - cubeSize)) && (location.get(1) > (center.get(1) - cubeSize))
+                && (location.get(2) > (center.get(2) - cubeSize)) && (location.get(0) < (center.get(0) + cubeSize))
+                && (location.get(1) < (center.get(1) + cubeSize)) && (location.get(2) < (center.get(2) + cubeSize))) {
 
             if (subdivided) {
                 addElementSubdivided(element);
             } else {
-                if ((childCounter > GlueConstants.MAX_ELEMENTS)) {
+                if (childCounter > settings.getOctreeLOD()) {
                     if (depth < GlueConstants.MAX_OCTREE_DEPTH) {
                         subDiv();
                         childCounter = 0;
@@ -150,22 +142,14 @@ public class SPHOctreeNode {
     protected void subDiv() {
         float childSize = cubeSize / 2f;
 
-        VecF3 pppCenter = center
-                .add(new VecF3(childSize, childSize, childSize));
-        VecF3 ppnCenter = center
-                .add(new VecF3(childSize, childSize, -childSize));
-        VecF3 pnpCenter = center
-                .add(new VecF3(childSize, -childSize, childSize));
-        VecF3 nppCenter = center
-                .add(new VecF3(-childSize, childSize, childSize));
-        VecF3 pnnCenter = center.add(new VecF3(childSize, -childSize,
-                -childSize));
-        VecF3 npnCenter = center.add(new VecF3(-childSize, childSize,
-                -childSize));
-        VecF3 nnpCenter = center.add(new VecF3(-childSize, -childSize,
-                childSize));
-        VecF3 nnnCenter = center.add(new VecF3(-childSize, -childSize,
-                -childSize));
+        VecF3 pppCenter = center.add(new VecF3(childSize, childSize, childSize));
+        VecF3 ppnCenter = center.add(new VecF3(childSize, childSize, -childSize));
+        VecF3 pnpCenter = center.add(new VecF3(childSize, -childSize, childSize));
+        VecF3 nppCenter = center.add(new VecF3(-childSize, childSize, childSize));
+        VecF3 pnnCenter = center.add(new VecF3(childSize, -childSize, -childSize));
+        VecF3 npnCenter = center.add(new VecF3(-childSize, childSize, -childSize));
+        VecF3 nnpCenter = center.add(new VecF3(-childSize, -childSize, childSize));
+        VecF3 nnnCenter = center.add(new VecF3(-childSize, -childSize, -childSize));
 
         ppp = new SPHOctreeNode(baseModel, depth + 1, pppCenter, childSize, description);
         ppn = new SPHOctreeNode(baseModel, depth + 1, ppnCenter, childSize, description);
@@ -189,23 +173,12 @@ public class SPHOctreeNode {
         if (subdivided) {
             draw_sorted(gl, program);
         } else {
-
-            float delta = description.getUpperBound() -
-                    description.getLowerBound();
-
-            float alpha = 0f;
-            if (density > description.getLowerBound() && density <
-                    description.getUpperBound()) {
-                alpha = density / delta;
-            } else if (density >= description.getUpperBound()) {
-                alpha = 1f;
+            float alpha = density / settings.getOctreeDensity();
+            if (alpha < 0f) {
+                alpha = 0f;
             }
 
-            Dimensions d = new Dimensions(description.getLowerBound(), description.getUpperBound());
-
-            Color c = ColormapInterpreter.getColor(description.getColorMap(), d, density);
-
-            VecF4 newColor = new VecF4(c.red, c.green, c.blue, alpha);
+            VecF4 newColor = new VecF4(color.get(0), color.get(1), color.get(2), alpha);
 
             // System.err.println("alpha " + alpha);
             if (alpha > 0.01f) {
