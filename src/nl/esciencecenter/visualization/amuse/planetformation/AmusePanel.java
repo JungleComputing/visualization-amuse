@@ -42,20 +42,20 @@ public class AmusePanel extends JPanel {
         NONE, DATA, VISUAL, MOVIE
     }
 
-    private final AmuseSettings settings = AmuseSettings.getInstance();
+    private final AmuseSettings   settings           = AmuseSettings.getInstance();
 
-    private static final long serialVersionUID = 1L;
+    private static final long     serialVersionUID   = 1L;
 
-    protected CustomJSlider timeBar;
+    protected CustomJSlider       timeBar;
 
     protected JFormattedTextField frameCounter;
-    private TweakState currentConfigState = TweakState.MOVIE;
+    private TweakState            currentConfigState = TweakState.MOVIE;
 
-    public static TimedPlayer timer;
+    public static TimedPlayer     timer;
 
-    private final JPanel configPanel;
+    private final JPanel          configPanel;
 
-    private final JPanel dataConfig, visualConfig, movieConfig;
+    private final JPanel          dataConfig, visualConfig, movieConfig;
 
     public AmusePanel() {
         setLayout(new BorderLayout(0, 0));
@@ -340,13 +340,13 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getMovieRotationSpeedMin() * 4f), (int) (settings.getMovieRotationSpeedMax() * 4f), 1,
                 (int) (settings.getMovieRotationSpeedDef() * 4f), rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("", new String[] { "Start Recording" },
-                new ActionListener[] { new ActionListener() {
+        movieConfig.add(GoggleSwing.buttonBox("", new GoggleSwing.ButtonBoxItem("Start Recording",
+                new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         timer.movieMode();
                     }
-                } }));
+                })));
     }
 
     private void createDataTweakPanel() {
@@ -392,8 +392,8 @@ public class AmusePanel extends JPanel {
             }
         };
         dataConfig.add(GoggleSwing.sliderBox("Octree Detail (lower = slower&better)", octreeLODSliderListener,
-                (int) (settings.getOctreeLODMin()), (int) (settings.getOctreeLODMax()), 1,
-                (int) (settings.getOctreeLOD()), new JLabel("")));
+                (settings.getOctreeLODMin()), (settings.getOctreeLODMax()), 1,
+                (settings.getOctreeLOD()), new JLabel("")));
 
         dataConfig.add(GoggleSwing.verticalStrut(5));
 

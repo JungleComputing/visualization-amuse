@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class SPHOctreeNode {
     private final static AmuseSettings settings = AmuseSettings.getInstance();
-    private final static Logger logger = LoggerFactory.getLogger(SPHOctreeNode.class);
+    private final static Logger        logger   = LoggerFactory.getLogger(SPHOctreeNode.class);
 
     public static enum Octant {
         PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
@@ -46,21 +46,21 @@ public class SPHOctreeNode {
     }
 
     private final ArrayList<SPHOctreeElement> elements;
-    private final VecF3 center;
-    private final float cubeSize;
-    private final int depth;
-    private final Model baseModel;
-    private final MatF4 TMatrix;
-    private final float modelScale;
+    private final VecF3                       center;
+    private final float                       cubeSize;
+    private final int                         depth;
+    private final Model                       baseModel;
+    private final MatF4                       TMatrix;
+    private final float                       modelScale;
 
-    private SPHOctreeNode ppp, ppn, pnp, npp, pnn, npn, nnp, nnn;
-    private int childCounter;
-    private boolean subdivided = false;
-    private boolean initialized = false;
-    private VecF4 color;
+    private SPHOctreeNode                     ppp, ppn, pnp, npp, pnn, npn, nnp, nnn;
+    private int                               childCounter;
+    private boolean                           subdivided  = false;
+    private boolean                           initialized = false;
+    private VecF4                             color;
 
-    private final GlueSceneDescription description;
-    private float density;
+    private final GlueSceneDescription        description;
+    private float                             density;
 
     public SPHOctreeNode(Model baseModel, int depth, VecF3 center, float size, GlueSceneDescription description) {
         this.baseModel = baseModel;
@@ -336,4 +336,41 @@ public class SPHOctreeNode {
             initialized = true;
         }
     }
+
+    // public FloatBuffer gatherTriangles() {
+    // if (subdivided) {
+    // FloatBuffer pppBuffer = ppp.gatherTriangles();
+    // FloatBuffer ppnBuffer = ppn.gatherTriangles();
+    // FloatBuffer pnpBuffer = pnp.gatherTriangles();
+    // FloatBuffer nppBuffer = npp.gatherTriangles();
+    // FloatBuffer pnnBuffer = pnn.gatherTriangles();
+    // FloatBuffer npnBuffer = npn.gatherTriangles();
+    // FloatBuffer nnpBuffer = nnp.gatherTriangles();
+    // FloatBuffer nnnBuffer = nnn.gatherTriangles();
+    //
+    // int size = pppBuffer.capacity() +
+    // ppnBuffer.capacity() +
+    // pnpBuffer.capacity() +
+    // nppBuffer.capacity() +
+    // pnnBuffer.capacity() +
+    // npnBuffer.capacity() +
+    // nnpBuffer.capacity() +
+    // nnnBuffer.capacity();
+    //
+    // FloatBuffer result = Buffers.newDirectFloatBuffer(size);
+    //
+    // result.put(pppBuffer);
+    // result.put(ppnBuffer);
+    // result.put(pnpBuffer);
+    // result.put(nppBuffer);
+    // result.put(pnnBuffer);
+    // result.put(npnBuffer);
+    // result.put(nnpBuffer);
+    // result.put(nnnBuffer);
+    //
+    // result.rewind();
+    // } else {
+    // baseModel
+    // }
+    // }
 }
