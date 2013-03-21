@@ -9,7 +9,6 @@ import nl.esciencecenter.visualization.amuse.planetformation.glue.GlueConstants;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneDescription;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.SceneStorage;
 import nl.esciencecenter.visualization.amuse.planetformation.interfaces.VisualScene;
-import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
 import nl.esciencecenter.visualization.openglCommon.models.Sphere;
 
@@ -38,10 +37,10 @@ public class GlueSceneStorage implements SceneStorage {
         sceneStorage = new HashMap<GlueSceneDescription, GlueScene>();
         legendStorage = new HashMap<GlueSceneDescription, ByteBuffer>();
 
-        this.starBaseModel = new Sphere(GlueConstants.STAR_SUBDIVISION, 1f, new VecF3(0, 0, 0), true);
-        this.planetBaseModel = new Sphere(GlueConstants.PLANET_SUBDIVISION, 1f, new VecF3(0, 0, 0), true);
-        this.sphereBaseModel = new Sphere(GlueConstants.SPHERE_SUBDIVISION, 1f, new VecF3(0, 0, 0), true);
-        this.sphOctreeBaseModel = new Sphere(GlueConstants.OCTREE_MODEL_SUBDIVISION, 1f, new VecF3(0, 0, 0), true);
+        this.starBaseModel = new Sphere(GlueConstants.STAR_SUBDIVISION);
+        this.planetBaseModel = new Sphere(GlueConstants.PLANET_SUBDIVISION);
+        this.sphereBaseModel = new Sphere(GlueConstants.SPHERE_SUBDIVISION);
+        this.sphOctreeBaseModel = new Sphere(GlueConstants.OCTREE_MODEL_SUBDIVISION);
 
         this.manager = manager;
     }

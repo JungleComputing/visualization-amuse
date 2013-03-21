@@ -173,17 +173,11 @@ public class SPHOctreeNode {
         if (subdivided) {
             draw_sorted(gl, program);
         } else {
-            float alpha = density / settings.getOctreeDensity();
-            if (alpha < 0f) {
-                alpha = 0f;
-            }
 
-            VecF4 newColor = new VecF4(color.get(0), color.get(1), color.get(2), alpha);
-
-            // System.err.println("alpha " + alpha);
-            if (alpha > 0.01f) {
+            // System.err.println("alpha " + density);
+            if (color.get(3) > 0.01f) {
                 program.setUniform("node_scale", modelScale);
-                program.setUniformVector("Color", newColor);
+                program.setUniformVector("Color", color);
                 program.setUniformMatrix("node_MVmatrix", TMatrix);
 
                 try {
@@ -323,20 +317,20 @@ public class SPHOctreeNode {
                 nnn.init();
             } else {
                 VecF4 tmpColor = new VecF4();
-                for (SPHOctreeElement element : elements) {
-                    tmpColor = tmpColor.add(element.getColor());
+                if (elements.size() != 0) {
+                    for (SPHOctreeElement element : elements) {
+                        tmpColor = tmpColor.add(element.getColor());
+                    }
+                    color = tmpColor.div(elements.size());
+                } else {
+                    color = tmpColor;
                 }
-                color = tmpColor.div(elements.size());
-                density = (elements.size() / (cubeSize * cubeSize * cubeSize)) / 100000;
-
-                // System.err.println("density " + density);
             }
 
             elements.clear();
             initialized = true;
         }
     }
-
     // public FloatBuffer gatherTriangles() {
     // if (subdivided) {
     // FloatBuffer pppBuffer = ppp.gatherTriangles();

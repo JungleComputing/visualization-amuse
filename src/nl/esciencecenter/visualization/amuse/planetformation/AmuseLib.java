@@ -67,7 +67,7 @@ public class AmuseLib {
     private static float shiftBound(float orig, float maxDelta) {
         float calc = (float) (orig - (.5f * maxDelta) + (Math.random() * maxDelta));
 
-        System.err.println(orig + " : " + calc);
+        // System.err.println(orig + " : " + calc);
 
         if (calc < -1f) {
             return -1f;

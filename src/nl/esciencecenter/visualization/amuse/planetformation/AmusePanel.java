@@ -198,17 +198,17 @@ public class AmusePanel extends JPanel {
                 null);
         final JButton oneBackButton = GoggleSwing.createImageButton("images/media-playback-onebackward.png",
                 "Previous", null);
-        final JButton rewindButton = GoggleSwing.createImageButton("images/media-playback-rewind.png", "Rewind", null);
+        final JButton rewindButton = GoggleSwing.createImageButton("images/media-skip-backward.png", "Rewind", null);
         final JButton screenshotButton = GoggleSwing.createImageButton("images/camera.png", "Screenshot", null);
         final JButton playButton = GoggleSwing.createImageButton("images/media-playback-start.png", "Start", null);
         final ImageIcon playIcon = GoggleSwing.createImageIcon("images/media-playback-start.png", "Start");
         final ImageIcon stopIcon = GoggleSwing.createImageIcon("images/media-playback-stop.png", "Start");
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-        final JPanel bottomPanel1 = new JPanel();
-        final JPanel bottomPanel2 = new JPanel();
-        bottomPanel1.setLayout(new BoxLayout(bottomPanel1, BoxLayout.X_AXIS));
-        bottomPanel2.setLayout(new BoxLayout(bottomPanel2, BoxLayout.X_AXIS));
+        final JPanel buttonPanel = new JPanel();
+        final JPanel timebarPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        timebarPanel.setLayout(new BoxLayout(timebarPanel, BoxLayout.X_AXIS));
 
         screenshotButton.addActionListener(new ActionListener() {
             @Override
@@ -223,7 +223,9 @@ public class AmusePanel extends JPanel {
                 timer.setScreenshotNeeded(true);
             }
         });
-        bottomPanel1.add(screenshotButton);
+        buttonPanel.add(screenshotButton);
+
+        buttonPanel.add(GoggleSwing.horizontalStrut(2));
 
         rewindButton.addActionListener(new ActionListener() {
             @Override
@@ -232,7 +234,9 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel1.add(rewindButton);
+        buttonPanel.add(rewindButton);
+
+        buttonPanel.add(GoggleSwing.horizontalStrut(2));
 
         oneBackButton.addActionListener(new ActionListener() {
             @Override
@@ -241,7 +245,9 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel1.add(oneBackButton);
+        buttonPanel.add(oneBackButton);
+
+        buttonPanel.add(GoggleSwing.horizontalStrut(2));
 
         playButton.addActionListener(new ActionListener() {
             @Override
@@ -255,7 +261,9 @@ public class AmusePanel extends JPanel {
                 }
             }
         });
-        bottomPanel1.add(playButton);
+        buttonPanel.add(playButton);
+
+        buttonPanel.add(GoggleSwing.horizontalStrut(2));
 
         oneForwardButton.addActionListener(new ActionListener() {
             @Override
@@ -264,7 +272,9 @@ public class AmusePanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel1.add(oneForwardButton);
+        buttonPanel.add(oneForwardButton);
+
+        buttonPanel.add(GoggleSwing.horizontalStrut(20));
 
         frameCounter = new JFormattedTextField();
         frameCounter.setValue(new Integer(1));
@@ -286,7 +296,7 @@ public class AmusePanel extends JPanel {
             }
         });
 
-        bottomPanel1.add(frameCounter);
+        buttonPanel.add(frameCounter);
 
         timeBar.addChangeListener(new ChangeListener() {
             @Override
@@ -298,10 +308,10 @@ public class AmusePanel extends JPanel {
                 }
             }
         });
-        bottomPanel2.add(timeBar);
+        timebarPanel.add(timeBar);
 
-        bottomPanel.add(bottomPanel1);
-        bottomPanel.add(bottomPanel2);
+        bottomPanel.add(buttonPanel);
+        bottomPanel.add(timebarPanel);
 
         return bottomPanel;
     }
@@ -358,7 +368,7 @@ public class AmusePanel extends JPanel {
         };
         dataConfig.add(GoggleSwing.titleBox("Data Configuration", listener));
 
-        dataConfig.add(GoggleSwing.verticalStrut(5));
+        dataConfig.add(GoggleSwing.verticalStrut(1));
 
         // dataConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] {
         // "Low", "Medium", "High" },
@@ -395,7 +405,7 @@ public class AmusePanel extends JPanel {
                 (settings.getOctreeLODMin()), (settings.getOctreeLODMax()), 1,
                 (settings.getOctreeLOD()), new JLabel("")));
 
-        dataConfig.add(GoggleSwing.verticalStrut(5));
+        dataConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener octreeDensitySliderListener = new ChangeListener() {
             @Override
@@ -410,7 +420,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getOctreeDensityMin()), (int) (settings.getOctreeDensityMax()), 1,
                 (int) (settings.getOctreeDensity()), new JLabel("")));
 
-        dataConfig.add(GoggleSwing.verticalStrut(5));
+        dataConfig.add(GoggleSwing.verticalStrut(1));
 
         // final JComboBox comboBoxColorMaps =
         // ColormapInterpreter.getLegendJComboBox(new Dimension(200, 25));
@@ -423,7 +433,7 @@ public class AmusePanel extends JPanel {
         // comboBoxColorMaps.setMaximumSize(new Dimension(200, 25));
         // dataConfig.add(comboBoxColorMaps);
         //
-        // dataConfig.add(GoggleSwing.verticalStrut(5));
+        // dataConfig.add(GoggleSwing.verticalStrut(1));
         //
         // final RangeSlider legendSlider = new RangeSlider();
         // ((RangeSliderUI)
@@ -455,7 +465,7 @@ public class AmusePanel extends JPanel {
         // });
         // dataConfig.add(legendSlider);
 
-        dataConfig.add(GoggleSwing.verticalStrut(5));
+        dataConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener particleSizeMultiplierListener = new ChangeListener() {
             @Override
@@ -536,7 +546,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingOverallBrightnessMax()), 1,
                 (int) (settings.getPostprocessingOverallBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener axesBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -552,7 +562,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingAxesBrightnessMax()), 1,
                 (int) (settings.getPostprocessingAxesBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener hudBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -568,7 +578,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingHudBrightnessMax()), 1,
                 (int) (settings.getPostprocessingHudBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener pointGasBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -584,7 +594,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingPointGasBrightnessMax()), 1,
                 (int) (settings.getPostprocessingPointGasBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener octreeGasBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -600,7 +610,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingOctreeGasBrightnessMax()), 1,
                 (int) (settings.getPostprocessingOctreeGasBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener starHaloBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -616,7 +626,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingStarHaloBrightnessMax()), 1,
                 (int) (settings.getPostprocessingStarHaloBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener starBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -632,7 +642,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingStarBrightnessMax()), 1,
                 (int) (settings.getPostprocessingStarBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener sphereBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -648,7 +658,7 @@ public class AmusePanel extends JPanel {
                 (int) (settings.getPostprocessingSphereBrightnessMax()), 1,
                 (int) (settings.getPostprocessingSphereBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener blurTypeListener = new ChangeListener() {
             @Override
@@ -662,7 +672,7 @@ public class AmusePanel extends JPanel {
         visualConfig.add(GoggleSwing.sliderBox("Blur Type", blurTypeListener, settings.getBlurTypeMin(),
                 settings.getBlurTypeMax(), 1, settings.getBlurTypeSetting(), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener blurPassListener = new ChangeListener() {
             @Override
@@ -676,7 +686,7 @@ public class AmusePanel extends JPanel {
         visualConfig.add(GoggleSwing.sliderBox("Blur Passes", blurPassListener, settings.getBlurPassMin(),
                 settings.getBlurPassMax(), 1, settings.getBlurPassSetting(), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.verticalStrut(5));
+        visualConfig.add(GoggleSwing.verticalStrut(1));
 
         final ChangeListener blurSizeListener = new ChangeListener() {
             @Override
@@ -706,7 +716,7 @@ public class AmusePanel extends JPanel {
         // (settings.getStereoOcularDistanceMax() * 10),
         // 1, (int) (settings.getStereoOcularDistance() * 10), new JLabel("")));
         //
-        // visualConfig.add(GoggleSwing.verticalStrut(5));
+        // visualConfig.add(GoggleSwing.verticalStrut(1));
 
     }
 

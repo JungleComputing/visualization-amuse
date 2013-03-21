@@ -17,33 +17,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GlueTimedPlayer implements TimedPlayer {
-    private final GlueDatasetManager dsManager;
-    private final GlueSceneStorage sceneStorage;
+    private final GlueDatasetManager  dsManager;
+    private final GlueSceneStorage    sceneStorage;
 
-    private states currentState = states.UNOPENED;
-    private final static Logger logger = LoggerFactory.getLogger(GlueTimedPlayer.class);
+    private states                    currentState       = states.UNOPENED;
+    private final static Logger       logger             = LoggerFactory.getLogger(GlueTimedPlayer.class);
 
-    private final AmuseSettings settings = AmuseSettings.getInstance();
-    private int frameNumber;
+    private final AmuseSettings       settings           = AmuseSettings.getInstance();
+    private int                       frameNumber;
 
-    private final boolean running = true;
-    private boolean initialized = false;
-    private boolean fileLessMode = false;
+    private final boolean             running            = true;
+    private boolean                   initialized        = false;
+    private boolean                   fileLessMode       = false;
 
-    private long startTime, stopTime;
+    private long                      startTime, stopTime;
 
-    private final CustomJSlider timeBar;
+    private final CustomJSlider       timeBar;
     private final JFormattedTextField frameCounter;
 
-    private final InputHandler inputHandler;
+    private final InputHandler        inputHandler;
 
-    private boolean needsScreenshot = false;
-    private String screenshotFilename = "";
+    private boolean                   needsScreenshot    = false;
+    private String                    screenshotFilename = "";
 
-    private final long waittime = settings.getWaitTimeMovie();
+    private final long                waittime           = settings.getWaitTimeMovie();
 
-    public GlueTimedPlayer(CustomJSlider timeBar2, JFormattedTextField frameCounter) {
-        this.timeBar = timeBar2;
+    public GlueTimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
+        this.timeBar = timeBar;
         this.frameCounter = frameCounter;
         this.inputHandler = InputHandler.getInstance();
         this.dsManager = new GlueDatasetManager(1, 4);
@@ -137,7 +137,8 @@ public class GlueTimedPlayer implements TimedPlayer {
                                     updateFrame(newFrameNumber, false);
                                 }
                             } catch (IOException e) {
-                                stop();
+                                // currentState = states.WAITINGONFRAME;
+                                // stop();
                                 logger.debug("nextFrame returned IOException.");
                             }
                         }
@@ -163,8 +164,7 @@ public class GlueTimedPlayer implements TimedPlayer {
                 currentState = states.STOPPED;
             } else if (currentState == states.WAITINGONFRAME) {
                 try {
-                    Thread.sleep(settings.getWaitTimeRetry());
-                    currentState = states.PLAYING;
+                    Thread.sleep(10);
                 } catch (final InterruptedException e) {
                     System.err.println("Interrupted while waiting.");
                 }
@@ -174,6 +174,13 @@ public class GlueTimedPlayer implements TimedPlayer {
 
     public void addScene(Scene scene) {
         dsManager.addScene(scene);
+
+        timeBar.setMaximum(dsManager.getNumFrames() - 1);
+        timeBar.invalidate();
+
+        if (currentState == states.WAITINGONFRAME) {
+            start();
+        }
     }
 
     @Override

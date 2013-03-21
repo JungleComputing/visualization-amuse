@@ -35,6 +35,14 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
      */
     protected float rotationY;
 
+    /** Initial value for the rotation in the Y direction */
+    protected float rotationZorigin     = 0;
+    /**
+     * Final rotation in the Y direction, translated to openGL units, stored to
+     * make successive rotations smooth
+     */
+    protected float rotationZ;
+
     /** Mouse drag start point in X direction */
     protected float dragLeftXorigin;
     /** Mouse drag start point in Y direction */
@@ -65,6 +73,20 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
         rotation = new VecF3();
     }
 
+    private void reset() {
+        rotationXorigin = 0;
+        rotationX = 0;
+        rotationYorigin = 0;
+        rotationY = 0;
+        rotationZorigin = 0;
+        rotationZ = 0;
+        dragLeftXorigin = 0;
+        dragLeftYorigin = 0;
+        rotation = new VecF3();
+        viewDist = -3f;
+        current_view_octant = octants.PPP;
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
     }
@@ -81,7 +103,7 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.isButtonDown(MouseEvent.BUTTON1)) {
+        if (e.isButtonDown(MouseEvent.BUTTON1) || e.isButtonDown(MouseEvent.BUTTON2)) {
             dragLeftXorigin = e.getX();
             dragLeftYorigin = e.getY();
         }
@@ -91,6 +113,7 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
     public void mouseReleased(MouseEvent e) {
         rotationXorigin = rotationX;
         rotationYorigin = rotationY;
+        rotationZorigin = rotationZ;
     }
 
     @Override
@@ -98,24 +121,35 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
         if (e.isButtonDown(MouseEvent.BUTTON1)) {
             // x/y reversed because of axis orientation. (up/down => x axis
             // rotation in OpenGL)
-            if (e.isShiftDown()) {
-                rotationX = ((e.getX() - dragLeftXorigin) / 10f + rotationXorigin) % 360;
-                rotationY = ((e.getY() - dragLeftYorigin) / 10f + rotationYorigin) % 360;
+            if (e.isControlDown()) {
+                rotationZ = ((e.getX() - dragLeftXorigin) + rotationZorigin) % 360;
             } else {
-                rotationX = ((e.getX() - dragLeftXorigin) + rotationXorigin) % 360;
-                rotationY = ((e.getY() - dragLeftYorigin) + rotationYorigin) % 360;
+                if (e.isShiftDown()) {
+                    rotationX = ((e.getX() - dragLeftXorigin) / 10f + rotationXorigin) % 360;
+                    rotationY = ((e.getY() - dragLeftYorigin) / 10f + rotationYorigin) % 360;
+                } else {
+                    rotationX = ((e.getX() - dragLeftXorigin) + rotationXorigin) % 360;
+                    rotationY = ((e.getY() - dragLeftYorigin) + rotationYorigin) % 360;
+                }
             }
             // Make sure the numbers are always positive (so we can determine
             // the octant we're in more easily)
-            if (rotationX < 0)
+            if (rotationX < 0) {
                 rotationX = 360f + rotationX % 360;
-            if (rotationY < 0)
+            }
+            if (rotationY < 0) {
                 rotationY = 360f + rotationY % 360;
+            }
+            if (rotationZ < 0) {
+                rotationZ = 360f + rotationZ % 360;
+            }
 
             rotation.set(0, rotationY);
             rotation.set(1, rotationX);
-            rotation.set(2, 0f); // We never rotate around the Z axis.
+            rotation.set(2, rotationZ);
             setCurrentOctant(rotation);
+        } else if (e.isButtonDown(MouseEvent.BUTTON1)) {
+
         }
     }
 
@@ -129,9 +163,9 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
         float newViewDist = this.viewDist;
 
         if (e.isShiftDown()) {
-            newViewDist -= e.getWheelRotation() * 0.02f;
+            newViewDist += e.getWheelRotation() * 0.02f;
         } else {
-            newViewDist -= e.getWheelRotation() * 0.10f;
+            newViewDist += e.getWheelRotation() * 0.10f;
         }
         viewDist = newViewDist;
     }
@@ -188,20 +222,24 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
 
     @Override
     public void keyPressed(KeyEvent arg0) {
-        // TODO Auto-generated method stub
+        if (arg0.getKeyCode() == KeyEvent.VK_SPACE) {
+            reset();
+        }
 
     }
 
     @Override
     public void keyReleased(KeyEvent arg0) {
-        // TODO Auto-generated method stub
-
+        if (arg0.getKeyCode() == KeyEvent.VK_SPACE) {
+            reset();
+        }
     }
 
     @Override
     public void keyTyped(KeyEvent arg0) {
-        // TODO Auto-generated method stub
-
+        if (arg0.getKeyCode() == KeyEvent.VK_SPACE) {
+            reset();
+        }
     }
 
     /**

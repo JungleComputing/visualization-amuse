@@ -35,67 +35,69 @@ import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.Axis;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
 import nl.esciencecenter.visualization.openglCommon.models.Quad;
+import nl.esciencecenter.visualization.openglCommon.noise.Perlin3D;
 import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
 import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgramLoader;
 import nl.esciencecenter.visualization.openglCommon.text.MultiColorText;
 import nl.esciencecenter.visualization.openglCommon.text.jogampExperimental.Font;
 import nl.esciencecenter.visualization.openglCommon.text.jogampExperimental.FontFactory;
-import nl.esciencecenter.visualization.openglCommon.textures.Perlin3D;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AmuseWindow implements GLEventListener {
-    private final static Logger logger = LoggerFactory.getLogger(AmuseWindow.class);
+    private final static Logger         logger         = LoggerFactory.getLogger(AmuseWindow.class);
 
-    private Model legendModel;
+    private Model                       legendModel;
 
-    private MultiColorText legendTextmin, legendTextmax;
+    private MultiColorText              legendTextmin, legendTextmax;
 
-    private ShaderProgram animatedTurbulenceShader, pplShader, starHaloShader, axesShader, pointGasShader,
-            octreeGasShader, starGlowShader, postprocessShader, gaussianBlurShader, textShader, legendProgram;
+    private ShaderProgram               animatedTurbulenceShader, pplShader, starHaloShader, axesShader, pointGasShader,
+                                        octreeGasShader, starGlowShader, postprocessShader, gaussianBlurShader, textShader,
+                                        legendProgram;
 
-    private FBO starHaloFBO, pointGasFBO, octreeGasFBO, sphereFBO, starFBO, axesFBO, hudFBO, legendTextureFBO;
+    private FBO                         starHaloFBO, pointGasFBO, octreeGasFBO, sphereFBO, starFBO, axesFBO, hudFBO,
+                                        legendTextureFBO;
 
-    private Quad FSQ_postprocess, FSQ_blur;
-    private Model xAxis, yAxis, zAxis;
+    private Quad                        FSQ_postprocess, FSQ_blur;
+    private Model                       xAxis, yAxis, zAxis;
 
-    private final int fontSize = 30;
+    private final int                   fontSize       = 30;
 
-    private MultiColorText frameNumberText;
-    private Perlin3D noiseTex;
+    private MultiColorText              frameNumberText;
+    private Perlin3D                    noiseTex;
 
-    private float offset = 0;
+    private float                       offset         = 0;
 
-    private final boolean snapshotting = false;
+    private final boolean               snapshotting   = false;
 
-    private final AmuseSettings settings = AmuseSettings.getInstance();
+    private final AmuseSettings         settings       = AmuseSettings.getInstance();
 
-    private GlueSceneDescription requestedScene = null;
+    private GlueSceneDescription        requestedScene = null;
 
-    private SceneStorage sceneStore;
+    private SceneStorage                sceneStore;
 
-    private TimedPlayer timer;
+    private TimedPlayer                 timer;
 
-    private IntPBO finalPBO;
+    private IntPBO                      finalPBO;
 
-    private VisualScene oldScene;
+    private VisualScene                 oldScene;
 
-    private final AmuseInputHandler inputHandler;
+    private final AmuseInputHandler     inputHandler;
 
     protected final ShaderProgramLoader loader;
-    protected int canvasWidth, canvasHeight;
+    protected int                       canvasWidth, canvasHeight;
 
-    protected int fontSet = FontFactory.UBUNTU;
-    protected Font font;
-    protected final float radius = 1.0f;
-    protected final float ftheta = 0.0f;
-    protected final float phi = 0.0f;
+    protected int                       fontSet        = FontFactory.UBUNTU;
+    protected Font                      font;
+    protected final float               radius         = 1.0f;
+    protected final float               ftheta         = 0.0f;
+    protected final float               phi            = 0.0f;
 
-    protected final float fovy = 45.0f;
-    private float aspect;
-    protected final float zNear = 0.1f;
-    protected final float zFar = 3000.0f;
+    protected final float               fovy           = 45.0f;
+    private float                       aspect;
+    protected final float               zNear          = 0.1f;
+    protected final float               zFar           = 3000.0f;
 
     public AmuseWindow(AmuseInputHandler inputHandler) {
         this.loader = new ShaderProgramLoader();
@@ -230,6 +232,7 @@ public class AmuseWindow implements GLEventListener {
             mv = mv.mul(MatrixFMath.translate(new VecF3(-.5f * settings.getStereoOcularDistance(), 0f, 0f)));
             mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
 
             renderScene(gl, mv.clone(), newScene);
 
@@ -248,6 +251,7 @@ public class AmuseWindow implements GLEventListener {
             mv2 = mv2.mul(MatrixFMath.translate(new VecF3(.5f * settings.getStereoOcularDistance(), 0f, 0f)));
             mv2 = mv2.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv2 = mv2.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
 
             renderScene(gl, mv2.clone(), newScene);
 
@@ -262,6 +266,7 @@ public class AmuseWindow implements GLEventListener {
             mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
             mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
 
             renderScene(gl, mv.clone(), newScene);
 
@@ -356,7 +361,7 @@ public class AmuseWindow implements GLEventListener {
         animatedTurbulenceShader.setUniformMatrix("PMatrix", p);
         animatedTurbulenceShader.setUniformMatrix("SMatrix",
                 MatrixFMath.scale(settings.getParticleSizeMultiplier() * .1f));
-        animatedTurbulenceShader.setUniformMatrix("MVMatrix", mv);
+        // animatedTurbulenceShader.setUniformMatrix("MVMatrix", mv);
         animatedTurbulenceShader.setUniform("Offset", offset);
 
         offset += .001f;
@@ -379,10 +384,9 @@ public class AmuseWindow implements GLEventListener {
 
         newScene.drawStars(gl, starHaloShader, mv);
 
-        starHaloFBO = starGlow(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPasses(),
-                settings.getStarHaloBlurType(), settings.getStarHaloBlurSize());
-
         starHaloFBO.unBind(gl);
+        blur(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPasses(),
+                settings.getStarHaloBlurType(), settings.getStarHaloBlurSize());
     }
 
     private void renderAxes(GL3 gl, MatF4 mv) throws UninitializedException {
@@ -528,7 +532,7 @@ public class AmuseWindow implements GLEventListener {
         sphereFBO.init(gl);
     }
 
-    private FBO starGlow(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
+    private void starGlow(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
         starGlowShader.setUniform("Texture", target.getTexture().getMultitexNumber());
 
         starGlowShader.setUniformMatrix("PMatrix", new MatF4());
@@ -547,11 +551,9 @@ public class AmuseWindow implements GLEventListener {
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
-
-        return target;
     }
 
-    private FBO blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
+    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getTexture().getMultitexNumber());
 
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
@@ -585,8 +587,6 @@ public class AmuseWindow implements GLEventListener {
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
-
-        return target;
     }
 
     @Override
