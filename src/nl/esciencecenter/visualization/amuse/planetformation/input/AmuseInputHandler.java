@@ -49,11 +49,17 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
     protected float dragLeftYorigin;
 
     /** Final rotation in openGL units */
-    public VecF3    rotation;
+    public VecF3    rotation, translation;
     /** Final view distance (translation) in openGL units */
     public float    viewDist            = -3f;
     /** Current direction of the view */
     private octants current_view_octant = octants.PPP;
+
+    private float   translationX        = 0f;
+    private float   translationY        = 0f;
+
+    private float   translationXorigin  = 0f;
+    private float   translationYorigin  = 0f;
 
     private static class SingletonHolder {
         public static final AmuseInputHandler instance = new AmuseInputHandler();
@@ -70,7 +76,7 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
     }
 
     protected AmuseInputHandler() {
-        rotation = new VecF3();
+        reset();
     }
 
     private void reset() {
@@ -80,9 +86,17 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
         rotationY = 0;
         rotationZorigin = 0;
         rotationZ = 0;
+
         dragLeftXorigin = 0;
         dragLeftYorigin = 0;
+
+        translationX = 0f;
+        translationXorigin = 0f;
+        translationY = 0f;
+        translationYorigin = 0f;
+
         rotation = new VecF3();
+        translation = new VecF3();
         viewDist = -3f;
         current_view_octant = octants.PPP;
     }
@@ -103,10 +117,11 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.isButtonDown(MouseEvent.BUTTON1) || e.isButtonDown(MouseEvent.BUTTON2)) {
-            dragLeftXorigin = e.getX();
-            dragLeftYorigin = e.getY();
-        }
+        // if (e.isButtonDown(MouseEvent.BUTTON1) ||
+        // e.isButtonDown(MouseEvent.BUTTON3)) {
+        dragLeftXorigin = e.getX();
+        dragLeftYorigin = e.getY();
+        // }
     }
 
     @Override
@@ -114,6 +129,9 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
         rotationXorigin = rotationX;
         rotationYorigin = rotationY;
         rotationZorigin = rotationZ;
+
+        translationXorigin = translationX;
+        translationYorigin = translationY;
     }
 
     @Override
@@ -148,8 +166,12 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
             rotation.set(1, rotationX);
             rotation.set(2, rotationZ);
             setCurrentOctant(rotation);
-        } else if (e.isButtonDown(MouseEvent.BUTTON1)) {
+        } else if (e.isButtonDown(MouseEvent.BUTTON3)) {
+            translationX = (.01f * (e.getX() - dragLeftXorigin)) + translationXorigin;
+            translationY = (-.01f * (e.getY() - dragLeftYorigin)) + translationYorigin;
 
+            translation.set(0, translationX);
+            translation.set(1, translationY);
         }
     }
 
@@ -258,6 +280,22 @@ public class AmuseInputHandler extends InputHandler implements MouseListener,
     @Override
     public void setRotation(VecF3 rotation) {
         this.rotation = rotation;
+    }
+
+    /**
+     * 
+     * @return the current OpenGL ModelView translation variable
+     */
+    public VecF3 getTranslation() {
+        return translation;
+    }
+
+    /**
+     * @param rotation
+     *            the OpenGL ModelView translation variable to set
+     */
+    public void setTranslation(VecF3 translation) {
+        this.translation = translation;
     }
 
     /**

@@ -1,5 +1,7 @@
 package nl.esciencecenter.visualization.amuse.planetformation.glue.visual;
 
+import java.util.Random;
+
 import javax.media.opengl.GL3;
 
 import nl.esciencecenter.visualization.amuse.planetformation.glue.Star;
@@ -18,6 +20,7 @@ public class StarModel {
     private VecF3       coords;
     private VecF4       color;
     private float       radius;
+    private float       offsetRandomValue;
 
     private boolean     initialized;
 
@@ -32,6 +35,11 @@ public class StarModel {
         if (!initialized) {
             float[] rawCoords = glueStar.getCoordinates();
             float[] rawColor = glueStar.getColor();
+            int index = glueStar.getIndex();
+
+            offsetRandomValue = (new Random(index * 10000)).nextFloat() * 3.14f;
+
+            // System.err.println("Offset Random Value: " + offsetRandomValue);
 
             coords = new VecF3(rawCoords[0], rawCoords[1], rawCoords[2]);
             color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
@@ -53,6 +61,7 @@ public class StarModel {
         program.setUniformMatrix("MVMatrix", newM);
 
         program.setUniformVector("Color", color);
+        program.setUniform("OffsetRandomValue", offsetRandomValue);
 
         try {
             program.use(gl);

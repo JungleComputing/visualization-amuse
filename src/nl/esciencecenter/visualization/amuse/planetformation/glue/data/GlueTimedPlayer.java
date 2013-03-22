@@ -50,44 +50,10 @@ public class GlueTimedPlayer implements TimedPlayer {
         this.sceneStorage = dsManager.getSceneStorage();
     }
 
-    // public void init(File file_bin, File file_gas) {
-    // this.dsManager = new GlueDatasetManager(1, 4);
-    // this.sceneStorage = dsManager.getSceneStorage();
-    //
-    // try {
-    // frameNumber = dsManager.getFrameNumberOfIndex(0);
-    // final int initialMaxBar = dsManager.getNumFiles() - 1;
-    //
-    // timeBar.setMaximum(initialMaxBar);
-    // timeBar.setMinimum(0);
-    //
-    // updateFrame(frameNumber, true);
-    //
-    // initialized = true;
-    //
-    // } catch (IndexNotAvailableException e) {
-    // e.printStackTrace();
-    // }
-    // }
-
     @Override
     public void init() {
         this.fileLessMode = true;
-
-        // try {
-        // frameNumber = dsManager.getFrameNumberOfIndex(0);
-        // final int initialMaxBar = dsManager.getNumFiles() - 1;
-        //
-        // timeBar.setMaximum(initialMaxBar);
-        // timeBar.setMinimum(0);
-        //
-        // updateFrame(frameNumber, true);
-        //
         initialized = true;
-        //
-        // } catch (IndexNotAvailableException e) {
-        // e.printStackTrace();
-        // }
     }
 
     @Override
@@ -99,10 +65,6 @@ public class GlueTimedPlayer implements TimedPlayer {
 
         inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
-
-        // inputHandler.setRotation(new VecF3(bezierPoints.get(0).get(0),
-        // bezierPoints.get(0).get(1), 0f));
-        // inputHandler.setViewDist(bezierPoints.get(0).get(2));
 
         int frame = settings.getInitialSimulationFrame();
         updateFrame(frame, true);
@@ -172,7 +134,7 @@ public class GlueTimedPlayer implements TimedPlayer {
         }
     }
 
-    public void addScene(Scene scene) {
+    public synchronized void addScene(Scene scene) {
         dsManager.addScene(scene);
 
         timeBar.setMaximum(dsManager.getNumFrames() - 1);
@@ -282,13 +244,9 @@ public class GlueTimedPlayer implements TimedPlayer {
     @Override
     public synchronized void setScreenshotNeeded(boolean value) {
         if (value) {
-            final VecF3 rotation = inputHandler.getRotation();
-            final float viewDist = inputHandler.getViewDist();
+            screenshotFilename = String.format("screenshots" + System.getProperty("file.separator") + "%05d", (frameNumber))
+                    + ".png";
 
-            System.out.println("Simulation frame: " + frameNumber + ", Rotation x: " + rotation.get(0) + " y: "
-                    + rotation.get(1) + " , viewDist: " + viewDist);
-
-            screenshotFilename = String.format("%05d", (frameNumber)) + ".png";
         }
         needsScreenshot = value;
     }

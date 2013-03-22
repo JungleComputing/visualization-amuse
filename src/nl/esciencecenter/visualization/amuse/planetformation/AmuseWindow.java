@@ -182,8 +182,10 @@ public class AmuseWindow implements GLEventListener {
                     BufferedImage bufIm = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_RGB);
                     bufIm.setRGB(0, 0, canvasWidth, canvasHeight, dest.array(), 0, canvasWidth);
                     try {
-
-                        ImageIO.write(bufIm, "png", new File(timer.getScreenshotFileName()));
+                        String filename = timer.getScreenshotFileName();
+                        new File(filename).mkdirs();
+                        ImageIO.write(bufIm, "png", new File(filename));
+                        System.out.println("Saved screenshot: " + filename);
                     } catch (IOException e2) {
                         // TODO Auto-generated catch block
                         e2.printStackTrace();
@@ -233,6 +235,7 @@ public class AmuseWindow implements GLEventListener {
             mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
             mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
+            mv = mv.mul(MatrixFMath.translate(inputHandler.getTranslation()));
 
             renderScene(gl, mv.clone(), newScene);
 
@@ -252,6 +255,7 @@ public class AmuseWindow implements GLEventListener {
             mv2 = mv2.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
             mv2 = mv2.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
+            mv2 = mv2.mul(MatrixFMath.translate(inputHandler.getTranslation()));
 
             renderScene(gl, mv2.clone(), newScene);
 
@@ -264,6 +268,7 @@ public class AmuseWindow implements GLEventListener {
         } else {
             MatF4 mv = MatrixFMath.lookAt(eye, at, up);
             mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
+            mv = mv.mul(MatrixFMath.translate(inputHandler.getTranslation()));
             mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
             mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
             mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
@@ -495,6 +500,8 @@ public class AmuseWindow implements GLEventListener {
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
+        System.err.println("RESHAPE");
+
         final GL3 gl = drawable.getGL().getGL3();
 
         canvasWidth = w;

@@ -322,6 +322,12 @@ public class SPHOctreeNode {
                         tmpColor = tmpColor.add(element.getColor());
                     }
                     color = tmpColor.div(elements.size());
+                    color.set(
+                            3,
+                            (float) (depth * depth * depth)
+                                    / (float) (GlueConstants.MAX_OCTREE_DEPTH * GlueConstants.MAX_OCTREE_DEPTH * GlueConstants.MAX_OCTREE_DEPTH));
+
+                    // System.err.println(color);
                 } else {
                     color = tmpColor;
                 }

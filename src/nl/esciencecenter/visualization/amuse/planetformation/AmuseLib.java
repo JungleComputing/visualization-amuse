@@ -122,7 +122,7 @@ public class AmuseLib {
                     (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random() };
             pGas1[i] = new PointGas(i, coordinates, color);
         }
-        Scene scene1 = new Scene("willekeurig", spheres1, stars1, sphGas1, null);
+        Scene scene1 = new Scene("willekeurig", spheres1, stars1, null, pGas1);
         lib.addScene(scene1);
 
         for (int j = 0; j < SCENES; j++) {
@@ -174,7 +174,7 @@ public class AmuseLib {
                 pGas1[i] = new PointGas(i, coordinates, color);
             }
 
-            Scene scene = new Scene("random " + j, spheres1, stars1, sphGas1, pGas1);
+            Scene scene = new Scene("random " + j, spheres1, stars1, null, pGas1);
             lib.addScene(scene);
         }
     }
