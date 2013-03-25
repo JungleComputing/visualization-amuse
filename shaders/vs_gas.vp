@@ -17,6 +17,6 @@ void main() {
     
     pColor = MCcolor;
     
-    gl_PointSize = 2.0;
+    gl_PointSize = 3;
     gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);    
 }
